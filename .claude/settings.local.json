@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm -v)",
+      "Read(//Users/chloeenglish/**)",
+      "Read(//usr/local/**)",
+      "Bash(mdfind \"kMDItemFSName == 'node'\")",
+      "Bash(brew --version)",
+      "Bash(curl -sI https://nodejs.org)",
+      "Bash(curl -s https://nodejs.org/dist/index.json)",
+      "Bash(curl -s https://nodejs.org/dist/index.json -o /tmp/node_index.json)",
+      "Bash(python3 -c ' *)",
+      "Bash(mkdir -p ~/.local)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -sL -o node.tar.gz \"https://nodejs.org/dist/v24.18.1/node-v24.18.1-darwin-arm64.tar.gz\")",
+      "Bash(tar -xzf node.tar.gz)",
+      "Bash(rm -rf ~/.local/node)",
+      "Bash(mkdir -p /tmp/wu-backup)",
+      "Bash(mv index.html.bak /tmp/wu-backup/)",
+      "Bash(cd \"/Users/chloeenglish/Desktop/claude code/warmup-test\" && mv /tmp/wu-backup/index.html.bak ./legacy-fun-facts.html.bak && ls -la)",
+      "Bash(mkdir -p \"/Users/chloeenglish/Desktop/claude code/warmup-test/.claude\")",
+      "Bash(chmod +x \"/Users/chloeenglish/Desktop/claude code/warmup-test/.claude/dev-with-node.sh\")",
+      "Bash(curl -sI http://localhost:5173)",
+      "Bash(rm -f /tmp/spin_check.mjs; curl -sI http://localhost:5173 | head -3)",
+      "WebFetch(domain:www.hockey-reference.com)",
+      "WebFetch(domain:web.archive.org)",
+      "WebSearch",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.hockeydb.com)",
+      "WebFetch(domain:r.jina.ai)",
+      "WebFetch(domain:www.statmuse.com)",
+      "WebFetch(domain:www.quanthockey.com)",
+      "Bash(lsof -ti:5173)",
+      "Bash(ps -p 49164 -p 97554 -o pid,ppid,command)",
+      "Bash(kill 49164)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

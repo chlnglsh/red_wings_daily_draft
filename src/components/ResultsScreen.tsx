@@ -1,0 +1,141 @@
+import { useMemo, useState } from 'react';
+import type { DraftPick, Season, SlotId } from '../types';
+import { SLOT_ORDER } from '../types';
+import { rosterScore, pickPercentile } from '../lib/scoring';
+import { getTierFromPoints, getTierFromRosterScore } from '../lib/tiers';
+import { simulateRecord } from '../lib/simulate';
+import { SEASON_LENGTH, type SeasonSimResult } from '../lib/gameSim';
+import { generateMockLeaderboard, rankAmong } from '../lib/leaderboard';
+import { buildShareText } from '../lib/share';
+
+function squareClass(percentile: number): string {
+  if (percentile >= 0.75) return 'pick-square good';
+  if (percentile >= 0.4) return 'pick-square mid';
+  return 'pick-square low';
+}
+
+export function ResultsScreen({
+  dateStr,
+  dateSeed,
+  picks,
+  seasonsById,
+  simResult,
+  onPlayAgainDev,
+}: {
+  dateStr: string;
+  dateSeed: number;
+  picks: DraftPick[];
+  seasonsById: Map<string, Season>;
+  simResult: SeasonSimResult;
+  onPlayAgainDev: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const score = useMemo(() => rosterScore(picks, seasonsById), [picks, seasonsById]);
+  const predicted = useMemo(() => simulateRecord(score), [score]);
+  const pointsPct = simResult.points / (SEASON_LENGTH * 2);
+  const tier = useMemo(() => getTierFromPoints(pointsPct), [pointsPct]);
+  const predictedTier = useMemo(() => getTierFromRosterScore(score), [score]);
+
+  const leaderboard = useMemo(() => generateMockLeaderboard(dateSeed), [dateSeed]);
+  const { rank, total } = useMemo(() => rankAmong(simResult.points, leaderboard), [simResult.points, leaderboard]);
+
+  const shareText = useMemo(
+    () => buildShareText({ dateStr, tier, record: simResult, picks, seasonsById, rank, totalPlayers: total }),
+    [dateStr, tier, simResult, picks, seasonsById, rank, total],
+  );
+
+  const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
+  const rankedLeaderboard = leaderboard
+    .map((entry) => ({ ...entry, record: simulateRecord(entry.score) }))
+    .sort((a, b) => b.record.points - a.record.points);
+  const nearby = rankedLeaderboard.slice(Math.max(0, rank - 4), rank + 2);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard API unavailable — nothing to do in the Phase 1 prototype
+    }
+  }
+
+  const pointsDiff = simResult.points - predicted.points;
+
+  return (
+    <div className="results-screen rink-backdrop">
+      <p className="results-eyebrow">r/RedWings · {dateStr}</p>
+      <div className="results-tier">
+        <span className="results-tier-emoji">{tier.emoji}</span>
+        <h1 className="results-tier-label">{tier.label}</h1>
+        <p className="results-tier-flavor">{tier.flavor}</p>
+      </div>
+      <p className="results-record">
+        {simResult.wins}-{simResult.losses}-{simResult.otl}
+      </p>
+      <p className="results-points">
+        {simResult.points} standings pts · {simResult.goalsFor}-{simResult.goalsAgainst} GF-GA over {SEASON_LENGTH} games
+      </p>
+      <p className="results-vs-predicted">
+        {pointsDiff > 0 && `📈 ${pointsDiff} pts above predicted pace`}
+        {pointsDiff < 0 && `📉 ${Math.abs(pointsDiff)} pts below predicted pace`}
+        {pointsDiff === 0 && '🎯 right on predicted pace'}
+      </p>
+
+      <p className="predicted-comparison">
+        Predicted standing: {predictedTier.emoji} {predictedTier.label} ({predicted.wins}-{predicted.losses}-{predicted.otl})
+      </p>
+
+      <div className="results-roster">
+        {SLOT_ORDER.map((slot) => {
+          const pick = bySlot.get(slot);
+          if (!pick) return null;
+          const season = seasonsById.get(pick.seasonId)!;
+          const pct = pickPercentile(pick.player, season);
+          return (
+            <div key={slot} className="results-roster-row">
+              <span className={squareClass(pct)} />
+              <span className="results-roster-slot">{slot}</span>
+              <span className="results-roster-name">{pick.player.name}</span>
+              <span className="results-roster-season">{season.year}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="results-rank">
+        Rank <strong>#{rank}</strong> of {total} in r/RedWings today (simulated leaderboard — Phase 1 prototype)
+      </div>
+
+      <ol className="mock-leaderboard">
+        {nearby.map((entry, i) => {
+          const entryRank = Math.max(0, rank - 4) + i + 1;
+          const isYou = entryRank === rank;
+          const entryRecord = isYou ? simResult : entry.record;
+          return (
+            <li key={entry.username + i} className={isYou ? 'you' : ''}>
+              <span className="mock-leaderboard-rank">#{entryRank}</span>
+              <span className="mock-leaderboard-name">{isYou ? 'You' : entry.username}</span>
+              <span className="mock-leaderboard-record">
+                {entryRecord.wins}-{entryRecord.losses}-{entryRecord.otl}
+              </span>
+              <span className="mock-leaderboard-score">{entryRecord.points} pts</span>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="share-block">
+        <pre className="share-text">{shareText}</pre>
+        <button type="button" className="primary-btn" onClick={handleCopy}>
+          {copied ? 'Copied!' : 'Copy shareable result'}
+        </button>
+      </div>
+
+      <button type="button" className="text-btn dev-reset" onClick={onPlayAgainDev}>
+        ↺ Replay (dev only — real game is once per day)
+      </button>
+    </div>
+  );
+}

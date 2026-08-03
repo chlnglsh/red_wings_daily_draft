@@ -1,0 +1,955 @@
+.app-shell {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wings-red);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.primary-btn:hover {
+  background: var(--wings-red-dark);
+}
+.primary-btn:active {
+  transform: scale(0.98);
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px;
+}
+.text-btn:hover {
+  color: var(--ink);
+}
+
+/* ---------- Intro ---------- */
+
+.intro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+  padding: 48px 0;
+}
+
+.intro-eyebrow {
+  color: var(--wings-red);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.intro-title {
+  font-size: 64px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.intro-sub {
+  color: var(--ink-soft);
+  font-size: 16px;
+  max-width: 46ch;
+}
+
+/* ---------- Game card backdrop (spin + pick screens only) ---------- */
+
+/* Red-bordered card that follows the page's own theme tokens (black/near-black
+   in dark mode, matching the results screen) instead of forcing a separate
+   light "ice" look — the --border override just keeps the outline red. */
+.rink-backdrop {
+  --border: var(--wings-red);
+  position: relative;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+  background: var(--paper-soft);
+  border: 2px solid var(--border);
+  border-top: 6px solid var(--wings-red);
+  box-shadow: 6px 6px 0 var(--wings-red-dark);
+  overflow: hidden;
+}
+
+/* ---------- Round screen (fixed size so the card doesn't resize between rounds) ---------- */
+
+.round-screen {
+  display: flex;
+  flex-direction: column;
+  height: 780px;
+}
+.round-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Progress tracker ---------- */
+
+.progress-tracker {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.progress-pill {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 6px 4px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-soft);
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+.progress-pill-slot {
+  font-family: var(--display);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.progress-pill-name {
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.progress-pill-slot {
+  color: var(--wings-red);
+}
+.progress-pill.filled {
+  border-color: var(--wings-red-dark);
+  background: var(--wings-red);
+  color: #fff;
+}
+.progress-pill.filled .progress-pill-slot {
+  color: #fff;
+}
+/* ---------- Spin reveal ---------- */
+
+.spin-reveal {
+  position: relative;
+  flex-shrink: 0;
+  text-align: center;
+  padding: 8px 0 20px;
+}
+.spin-reveal-round {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wings-red);
+  margin-bottom: 6px;
+}
+.spin-reveal-season {
+  font-size: 40px;
+  line-height: 1.05;
+  animation: spin-pop 0.16s ease;
+}
+.spin-reveal-season.spinning {
+  color: var(--wings-red);
+}
+.spin-reveal-blurb {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin: 8px auto 0;
+  max-width: 42ch;
+}
+.spin-reveal-blurb.spinning {
+  animation: pulse-fade 0.5s ease-in-out infinite alternate;
+}
+
+.spin-placeholder {
+  text-align: center;
+  padding: 20px 0 8px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  animation: pulse-fade 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes spin-pop {
+  from {
+    opacity: 0.15;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse-fade {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reroll-btn {
+  margin-top: 14px;
+  background: var(--paper);
+  border: 2px dashed var(--wings-red);
+  color: var(--wings-red-dark);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reroll-btn:hover {
+  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+}
+
+/* ---------- Strength meter ---------- */
+
+.strength-meter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.strength-meter-bars {
+  display: flex;
+  gap: 3px;
+}
+.strength-bar {
+  width: 18px;
+  height: 8px;
+  border-radius: 3px;
+  background: var(--ink-soft);
+}
+.strength-bar.on {
+  background: var(--wings-red);
+}
+.strength-meter-tag {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.strength-thin {
+  color: #fff;
+  background: var(--low);
+}
+.strength-solid {
+  color: #fff;
+  background: var(--mid);
+}
+.strength-stacked {
+  color: #fff;
+  background: var(--good);
+}
+
+/* ---------- Roster picker ---------- */
+
+.roster-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.roster-picker-heading {
+  flex-shrink: 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+.roster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+}
+/* Only fade an edge when there's actually more content to scroll past it —
+   scroll-tracked classes (see RosterPicker.tsx) toggle these off at the ends. */
+.roster-list.at-top {
+  -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0, black calc(100% - 20px), transparent 100%);
+}
+.roster-list.at-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black 100%);
+}
+.roster-list.at-top.at-bottom {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.roster-list::-webkit-scrollbar {
+  display: none;
+}
+.roster-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 14px;
+  background: var(--paper);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.roster-row:hover {
+  border-color: var(--wings-red);
+  background: color-mix(in srgb, var(--wings-red) 5%, var(--paper));
+}
+.roster-row.filled-position {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.roster-row.filled-position:hover {
+  border-color: var(--border);
+  background: var(--paper);
+}
+.roster-row.filled-position .roster-row-stats {
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 11px;
+}
+.roster-row-name {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.roster-row-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.roster-row-pos {
+  flex-shrink: 0;
+  font-family: var(--display);
+  font-size: 15px;
+  color: var(--wings-red);
+}
+.roster-row-stats {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  text-align: right;
+  justify-self: end;
+}
+
+.slot-choice-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.slot-choice-btn {
+  font-family: var(--display);
+  font-size: 20px;
+  border: 2px solid var(--wings-red);
+  background: var(--paper);
+  color: var(--wings-red-dark);
+  border-radius: 10px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+.slot-choice-btn:hover {
+  background: var(--wings-red);
+  color: #fff;
+}
+
+/* ---------- Results ---------- */
+
+.results-screen {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin: 32px 0 40px;
+}
+.results-eyebrow {
+  color: var(--wings-red);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+.results-tier-emoji {
+  font-size: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--wings-red);
+  border: 2px solid var(--wings-red-dark);
+}
+.results-tier-label {
+  font-size: 48px;
+  line-height: 1.05;
+  color: var(--wings-red);
+}
+.results-tier-flavor {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin-top: 4px;
+}
+.results-record {
+  font-family: var(--mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.results-points {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: -12px;
+}
+
+.results-roster {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.results-roster-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.pick-square {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.pick-square.good {
+  background: var(--good);
+}
+.pick-square.mid {
+  background: var(--mid);
+}
+.pick-square.low {
+  background: var(--low);
+}
+.results-roster-slot {
+  font-family: var(--display);
+  font-size: 16px;
+  color: var(--wings-red);
+  width: 28px;
+}
+.results-roster-name {
+  flex: 1;
+  font-weight: 600;
+}
+.results-roster-season {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.results-rank {
+  font-size: 14px;
+  color: var(--ink-soft);
+  max-width: 40ch;
+}
+.results-rank strong {
+  color: var(--ink);
+}
+
+.mock-leaderboard {
+  width: 100%;
+  max-width: 440px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.mock-leaderboard li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-bottom: 2px solid var(--border);
+}
+.mock-leaderboard li:last-child {
+  border-bottom: none;
+}
+.mock-leaderboard li.you {
+  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+  font-weight: 700;
+}
+.mock-leaderboard-rank {
+  font-family: var(--mono);
+  color: var(--ink-soft);
+  width: 32px;
+}
+.mock-leaderboard-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mock-leaderboard-record {
+  font-family: var(--mono);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.mock-leaderboard-score {
+  font-family: var(--mono);
+  white-space: nowrap;
+  width: 56px;
+  text-align: right;
+}
+
+.share-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.share-text {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--paper-soft);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.dev-reset {
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+/* ---------- Squad summary (ratings + predicted standing) ---------- */
+
+.squad-summary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  margin: 32px 0 40px;
+}
+.squad-summary-title {
+  font-size: 36px;
+  color: var(--wings-red);
+}
+
+.position-diagram {
+  width: 100%;
+  max-width: 420px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    'lw c rw'
+    'ld . rd'
+    '. g .';
+  gap: 10px;
+}
+.position-diagram-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: 2px solid var(--wings-red);
+  border-radius: 10px;
+  padding: 10px 6px;
+  background: var(--paper);
+  min-width: 0;
+}
+.position-diagram-pos {
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--wings-red);
+}
+.position-diagram-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.position-diagram-season {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+.rating-bars {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rating-bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.rating-bar-label {
+  text-align: left;
+  color: var(--ink-soft);
+}
+.rating-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ink-soft);
+  overflow: hidden;
+}
+.rating-bar-fill {
+  height: 100%;
+  background: var(--wings-red);
+  border-radius: 999px;
+}
+.rating-bar-value {
+  font-family: var(--mono);
+  text-align: right;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.predicted-standing {
+  width: 100%;
+  max-width: 420px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.predicted-standing-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wings-red);
+}
+.predicted-standing-record {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.predicted-standing-tier {
+  font-weight: 600;
+  margin-top: 2px;
+}
+.predicted-standing-note {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+.results-vs-predicted {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.predicted-comparison {
+  font-size: 13px;
+  color: var(--ink-soft);
+  max-width: 40ch;
+}
+
+
+/* ---------- Season simulation feed ---------- */
+
+.season-sim {
+  display: flex;
+  flex-direction: column;
+  height: 640px;
+}
+.season-sim-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.season-sim-game-count {
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wings-red-dark);
+  background: var(--paper);
+  border: 2px solid var(--wings-red);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.season-sim-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sim-action-btn {
+  background: var(--wings-red);
+  color: #fff;
+  border: 2px solid var(--wings-red-dark);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sim-action-btn:hover {
+  background: var(--wings-red-dark);
+}
+.season-sim-live {
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: var(--paper);
+}
+.season-sim-live-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--display);
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.season-sim-live-score {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--wings-red);
+}
+.season-sim-progress-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ink-soft);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.season-sim-progress-fill {
+  height: 100%;
+  background: var(--wings-red);
+  border-radius: 999px;
+  transition: width 0.1s linear;
+}
+.season-sim-progress-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--paper);
+}
+.season-sim-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+.season-sim-ot-suspense {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wings-red);
+  margin-bottom: 8px;
+  animation: pulse-fade 0.7s ease-in-out infinite alternate;
+}
+.season-sim-goals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 16px;
+  min-height: 22px;
+}
+.season-sim-goals-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.season-sim-goals-col.opp {
+  align-items: flex-end;
+  text-align: right;
+}
+.season-sim-goals-col-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wings-red);
+  margin-bottom: 2px;
+}
+.season-sim-goals-empty {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.season-sim-goal-line {
+  font-size: 13px;
+  color: var(--ink);
+  animation: spin-pop 0.2s ease;
+}
+.season-sim-goal-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.season-sim-feed {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+}
+.season-sim-feed.at-top {
+  -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0, black calc(100% - 20px), transparent 100%);
+}
+.season-sim-feed.at-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black 100%);
+}
+.season-sim-feed.at-top.at-bottom {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.season-sim-feed::-webkit-scrollbar {
+  display: none;
+}
+.season-sim-game {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  background: var(--paper);
+}
+.season-sim-result {
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 6px;
+  padding: 2px 0;
+}
+.season-sim-result.win {
+  color: var(--good);
+}
+.season-sim-result.loss {
+  color: var(--low);
+}
+.season-sim-opponent {
+  color: var(--ink);
+}
+.season-sim-score {
+  font-family: var(--mono);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.season-sim-tally {
+  flex-shrink: 0;
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--paper);
+  padding: 14px 8px;
+}
+.season-sim-tally div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.season-sim-tally strong {
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--ink);
+}
+.season-sim-tally span {
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
