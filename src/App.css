@@ -605,45 +605,49 @@
 
 .position-diagram {
   width: 100%;
-  max-width: 420px;
+  max-width: 300px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-areas:
     'lw c rw'
     'ld . rd'
     '. g .';
-  gap: 10px;
+  gap: 18px 8px;
+  margin: 0 auto;
 }
 .position-diagram-slot {
+  width: 92px;
+  height: 92px;
+  justify-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   border: 2px solid var(--wings-red);
-  border-radius: 10px;
-  padding: 10px 6px;
+  border-radius: 50%;
   background: var(--paper);
-  min-width: 0;
 }
 .position-diagram-pos {
   font-family: var(--display);
-  font-size: 13px;
+  font-size: 26px;
   letter-spacing: 0.02em;
   color: var(--wings-red);
+  line-height: 1;
 }
 .position-diagram-name {
-  font-weight: 700;
-  font-size: 13px;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
   color: var(--ink);
-  max-width: 100%;
+  text-transform: uppercase;
+  max-width: 72px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.position-diagram-season {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--ink-soft);
+  text-align: center;
 }
 
 .rating-bars {
@@ -730,7 +734,7 @@
 .season-sim {
   display: flex;
   flex-direction: column;
-  height: 640px;
+  height: 760px;
 }
 .season-sim-header {
   flex-shrink: 0;
@@ -874,6 +878,7 @@
   scrollbar-width: none;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 8px;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
@@ -890,6 +895,9 @@
   -webkit-mask-image: none;
   mask-image: none;
 }
+.season-sim-feed.fast {
+  justify-content: flex-start;
+}
 .season-sim-feed::-webkit-scrollbar {
   display: none;
 }
@@ -903,6 +911,8 @@
   padding: 10px 14px;
   font-size: 13px;
   background: var(--paper);
+  flex-shrink: 0;
+  filter: saturate(0.4);
 }
 .season-sim-result {
   font-family: var(--display);
@@ -928,7 +938,7 @@
 }
 .season-sim-tally {
   flex-shrink: 0;
-  margin-top: 16px;
+  margin-bottom: 12px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;

@@ -42,12 +42,11 @@ export function SquadSummaryScreen({
         {SLOT_ORDER.map((slot) => {
           const pick = bySlot.get(slot);
           if (!pick) return null;
-          const season = seasonsById.get(pick.seasonId)!;
+          const surname = pick.player.name.split(' ').pop();
           return (
             <div key={slot} className="position-diagram-slot" style={{ gridArea: slot.toLowerCase() }}>
               <span className="position-diagram-pos">{slot}</span>
-              <span className="position-diagram-name">{pick.player.name}</span>
-              <span className="position-diagram-season">{season.year}</span>
+              <span className="position-diagram-name">{surname}</span>
             </div>
           );
         })}

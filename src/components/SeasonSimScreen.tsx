@@ -12,9 +12,9 @@ import {
 } from '../lib/gameSim';
 
 const TICKS_PER_GAME = 14;
-const VISIBLE_COMPLETED_NORMAL = 3;
-const VISIBLE_COMPLETED_FAST = 8;
-const FAST_GAME_MS = 70; // how long each game sits in the fast-scroll feed before the next one lands
+const VISIBLE_COMPLETED_NORMAL = 5;
+const VISIBLE_COMPLETED_FAST = 14;
+const FAST_GAME_MS = 150; // how long each game sits in the fast-scroll feed before the next one lands
 
 // Pace for the normal (live, detailed) mode. Fast mode skips the live clock
 // entirely — see the fast-scroll effect below — so it doesn't need its own pace.
@@ -195,6 +195,31 @@ export function SeasonSimScreen({
         </div>
       </div>
 
+      <div className="season-sim-tally">
+        <div>
+          <strong>{tally.wins}</strong>
+          <span>W</span>
+        </div>
+        <div>
+          <strong>{tally.losses}</strong>
+          <span>L</span>
+        </div>
+        <div>
+          <strong>{tally.otl}</strong>
+          <span>OTL</span>
+        </div>
+        <div>
+          <strong>{points}</strong>
+          <span>PTS</span>
+        </div>
+        <div>
+          <strong>
+            {tally.gf}-{tally.ga}
+          </strong>
+          <span>GF-GA</span>
+        </div>
+      </div>
+
       {!fast && currentGame && (
         <div className="season-sim-live">
           <div className="season-sim-live-header">
@@ -241,7 +266,11 @@ export function SeasonSimScreen({
         </div>
       )}
 
-      <div className="season-sim-feed" ref={feedRef} onScroll={(e) => updateEdgeClasses(e.currentTarget)}>
+      <div
+        className={`season-sim-feed${fast ? ' fast' : ''}`}
+        ref={feedRef}
+        onScroll={(e) => updateEdgeClasses(e.currentTarget)}
+      >
         {recentCompleted.map((g) => (
           <div key={g.gameNumber} className="season-sim-game">
             <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
@@ -251,31 +280,6 @@ export function SeasonSimScreen({
             <span className="season-sim-score">{gameLine(g)}</span>
           </div>
         ))}
-      </div>
-
-      <div className="season-sim-tally">
-        <div>
-          <strong>{tally.wins}</strong>
-          <span>W</span>
-        </div>
-        <div>
-          <strong>{tally.losses}</strong>
-          <span>L</span>
-        </div>
-        <div>
-          <strong>{tally.otl}</strong>
-          <span>OTL</span>
-        </div>
-        <div>
-          <strong>{points}</strong>
-          <span>PTS</span>
-        </div>
-        <div>
-          <strong>
-            {tally.gf}-{tally.ga}
-          </strong>
-          <span>GF-GA</span>
-        </div>
       </div>
     </div>
   );
