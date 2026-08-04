@@ -862,8 +862,15 @@
   align-items: center;
   text-align: center;
   gap: 10px;
-  min-height: 600px;
   padding-bottom: 24px;
+}
+/* Unlike the 82-game regular season, a best-of-7 series rarely has enough
+   completed games to justify stretching the feed to fill a tall fixed-height
+   card — let it sit at its natural size right under the live panel instead. */
+.postseason-screen .season-sim-feed {
+  flex: none;
+  width: 100%;
+  margin-top: 12px;
 }
 .postseason-live-header {
   display: flex;
