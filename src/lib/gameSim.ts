@@ -22,6 +22,18 @@ export function deriveWinPct(rosterScore: number): number {
   return Math.min(MAX_WINPCT, Math.max(MIN_WINPCT, raw));
 }
 
+// Postseason opponent-vs-opponent games (neither side is the player's roster) don't
+// have a roster score to compare against a baseline — instead this derives a win%
+// straight from the gap between the two sides' sampled standings-point totals.
+// DIFF_TO_WINPCT is a first estimate (an ~18-point gap, a typical division-winner-vs
+// -bubble-wildcard spread, lands around 68%) — tune empirically like TEAM_GOAL_MEAN was.
+const DIFF_TO_WINPCT = 0.01;
+
+export function deriveOpponentWinPct(pointsA: number, pointsB: number): number {
+  const raw = 0.5 + (pointsA - pointsB) * DIFF_TO_WINPCT;
+  return Math.min(MAX_WINPCT, Math.max(MIN_WINPCT, raw));
+}
+
 // Flavor opponents only — not real schedules or opposing rosters. One rotating pool
 // per era so old seasons face period-appropriate rivals instead of expansion teams
 // that didn't exist yet.
@@ -136,12 +148,10 @@ function buildGoalMinutes(goalCount: number, hasDecidingGoal: boolean, endMinute
   return minutes;
 }
 
-export function simulateSeason(seed: number, winPct: number, era: SeasonEra, skaters: WeightedSkater[]): SeasonSimResult {
-  const rng = mulberry32(seed);
-  const opponentPool = era === 'yzermanOnward' ? MODERN_RIVALS : ORIGINAL_SIX_RIVALS;
+/** Builds a scorer-picker closure once per season/series so totalWeight isn't recomputed per game. */
+export function buildScorerPicker(skaters: WeightedSkater[], rng: () => number): () => string | null {
   const totalWeight = skaters.reduce((sum, s) => sum + Math.max(1, s.weight), 0) || 1;
-
-  function pickScorer(): string | null {
+  return function pickScorer(): string | null {
     if (skaters.length === 0) return null;
     if (rng() > SKATER_ATTRIBUTION_RATE) return null; // scored by an unnamed teammate instead
     let roll = rng() * totalWeight;
@@ -150,7 +160,64 @@ export function simulateSeason(seed: number, winPct: number, era: SeasonEra, ska
       if (roll <= 0) return s.name;
     }
     return skaters[skaters.length - 1].name;
+  };
+}
+
+// One game's worth of the engine — regulation/OT/SO, goal-by-goal detail, everything
+// the live sim screen needs. Extracted from simulateSeason so playoff series (best-of-7,
+// fixed real opponents, alternating home/away) can reuse the exact same engine one game
+// at a time instead of duplicating it.
+export function simulateGame(params: {
+  rng: () => number;
+  gameNumber: number;
+  winPct: number;
+  opponent: string;
+  home: boolean;
+  pickScorer: () => string | null;
+}): GameResult {
+  const { rng, gameNumber, winPct, opponent, home, pickScorer } = params;
+  const isWin = rng() < winPct;
+  const wentExtra = rng() < OT_RATE;
+  const decidedIn: GameResult['decidedIn'] = wentExtra ? (rng() < OT_VS_SHOOTOUT ? 'OT' : 'SO') : 'REG';
+  const endMinute = decidedIn === 'REG' ? REGULATION_END : decidedIn === 'OT' ? OT_MARK : SO_MARK;
+
+  let winnerGoals: number;
+  let loserGoals: number;
+  if (decidedIn === 'REG') {
+    ({ winnerGoals, loserGoals } = sampleRegulationScore(rng));
+  } else {
+    loserGoals = poissonSample(TEAM_GOAL_MEAN, rng); // OT/SO always a 1-goal final margin
+    winnerGoals = loserGoals + 1;
   }
+
+  const teamGoals = isWin ? winnerGoals : loserGoals;
+  const oppGoals = isWin ? loserGoals : winnerGoals;
+
+  // The deciding OT/SO goal only exists as a distinct event for whichever side won it.
+  const ourMinutes = buildGoalMinutes(teamGoals, isWin && decidedIn !== 'REG', endMinute, rng);
+  const oppMinutes = buildGoalMinutes(oppGoals, !isWin && decidedIn !== 'REG', endMinute, rng);
+
+  const goalEvents: GoalEvent[] = ourMinutes.map((minute) => ({ minute, label: formatMinute(minute), scorer: pickScorer() }));
+  const oppGoalEvents: OpponentGoalEvent[] = oppMinutes.map((minute) => ({ minute, label: formatMinute(minute) }));
+
+  return {
+    gameNumber,
+    opponent,
+    home,
+    result: isWin ? 'W' : 'L',
+    decidedIn,
+    teamGoals,
+    oppGoals,
+    goalEvents,
+    oppGoalEvents,
+    endMinute,
+  };
+}
+
+export function simulateSeason(seed: number, winPct: number, era: SeasonEra, skaters: WeightedSkater[]): SeasonSimResult {
+  const rng = mulberry32(seed);
+  const opponentPool = era === 'yzermanOnward' ? MODERN_RIVALS : ORIGINAL_SIX_RIVALS;
+  const pickScorer = buildScorerPicker(skaters, rng);
 
   const games: GameResult[] = [];
   let wins = 0;
@@ -160,50 +227,16 @@ export function simulateSeason(seed: number, winPct: number, era: SeasonEra, ska
   let goalsAgainst = 0;
 
   for (let i = 1; i <= SEASON_LENGTH; i++) {
-    const isWin = rng() < winPct;
-    const wentExtra = rng() < OT_RATE;
-    const decidedIn: GameResult['decidedIn'] = wentExtra ? (rng() < OT_VS_SHOOTOUT ? 'OT' : 'SO') : 'REG';
-    const endMinute = decidedIn === 'REG' ? REGULATION_END : decidedIn === 'OT' ? OT_MARK : SO_MARK;
-
-    let winnerGoals: number;
-    let loserGoals: number;
-    if (decidedIn === 'REG') {
-      ({ winnerGoals, loserGoals } = sampleRegulationScore(rng));
-    } else {
-      loserGoals = poissonSample(TEAM_GOAL_MEAN, rng); // OT/SO always a 1-goal final margin
-      winnerGoals = loserGoals + 1;
-    }
-
-    const teamGoals = isWin ? winnerGoals : loserGoals;
-    const oppGoals = isWin ? loserGoals : winnerGoals;
     const opponent = opponentPool[Math.floor(rng() * opponentPool.length)];
     const home = rng() < 0.5;
+    const game = simulateGame({ rng, gameNumber: i, winPct, opponent, home, pickScorer });
+    games.push(game);
 
-    // The deciding OT/SO goal only exists as a distinct event for whichever side won it.
-    const ourMinutes = buildGoalMinutes(teamGoals, isWin && decidedIn !== 'REG', endMinute, rng);
-    const oppMinutes = buildGoalMinutes(oppGoals, !isWin && decidedIn !== 'REG', endMinute, rng);
-
-    const goalEvents: GoalEvent[] = ourMinutes.map((minute) => ({ minute, label: formatMinute(minute), scorer: pickScorer() }));
-    const oppGoalEvents: OpponentGoalEvent[] = oppMinutes.map((minute) => ({ minute, label: formatMinute(minute) }));
-
-    games.push({
-      gameNumber: i,
-      opponent,
-      home,
-      result: isWin ? 'W' : 'L',
-      decidedIn,
-      teamGoals,
-      oppGoals,
-      goalEvents,
-      oppGoalEvents,
-      endMinute,
-    });
-
-    if (isWin) wins++;
-    else if (decidedIn !== 'REG') otl++;
+    if (game.result === 'W') wins++;
+    else if (game.decidedIn !== 'REG') otl++;
     else losses++;
-    goalsFor += teamGoals;
-    goalsAgainst += oppGoals;
+    goalsFor += game.teamGoals;
+    goalsAgainst += game.oppGoals;
   }
 
   return { games, wins, losses, otl, points: wins * 2 + otl, goalsFor, goalsAgainst };
