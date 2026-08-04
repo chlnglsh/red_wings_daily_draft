@@ -7,7 +7,7 @@ const RATING_MIN = 40;
 const RATING_MAX = 99;
 const PLAYER_SCORE_CEILING = 140; // roughly the best a skater/goalie hits in the dataset
 
-function toRating(rawScore: number): number {
+export function toRating(rawScore: number): number {
   const pct = Math.max(0, Math.min(1, rawScore / PLAYER_SCORE_CEILING));
   return Math.round(RATING_MIN + pct * (RATING_MAX - RATING_MIN));
 }

@@ -13,7 +13,8 @@ export const ERA_WEIGHTS: Record<SeasonEra, number> = {
   yzermanOnward: 1.8,
 };
 
-function weightedPick(seasons: Season[], rng: () => number): Season {
+/** Era-weighted season spin — same odds the initial draft uses, reused by Trade Deadline sourcing. */
+export function weightedPick(seasons: Season[], rng: () => number): Season {
   const eraGroups = new Map<SeasonEra, Season[]>();
   for (const season of seasons) {
     const group = eraGroups.get(season.era);

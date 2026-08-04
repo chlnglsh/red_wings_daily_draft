@@ -1,4 +1,3 @@
-import { mulberry32 } from './prng';
 import type { SeasonEra } from '../types';
 
 // Real game-by-game season simulation. Hockey has no draws — every game is decided
@@ -14,8 +13,8 @@ const OT_VS_SHOOTOUT = 0.65; // of those, share that end in OT rather than a sho
 // roster score means, even though the real simulation lets individual games swing.
 const BASELINE_SCORE = 375;
 const SCORE_TO_WINPCT = 0.00171;
-const MIN_WINPCT = 0.15;
-const MAX_WINPCT = 0.85;
+export const MIN_WINPCT = 0.15;
+export const MAX_WINPCT = 0.85;
 
 export function deriveWinPct(rosterScore: number): number {
   const raw = 0.5 + (rosterScore - BASELINE_SCORE) * SCORE_TO_WINPCT;
@@ -214,30 +213,50 @@ export function simulateGame(params: {
   };
 }
 
-export function simulateSeason(seed: number, winPct: number, era: SeasonEra, skaters: WeightedSkater[]): SeasonSimResult {
-  const rng = mulberry32(seed);
+// Games are generated in ranges rather than all 82 at once, so a mid-season event
+// (Trade Deadline today; GM/Coach, Hockey Fight, and March Collapse later) can change
+// the roster or apply a win% modifier partway through and have it actually affect the
+// remaining games — not just be cosmetic. Callers share one persistent `rng` instance
+// across every call for a given day's sim, so the overall sequence stays a single
+// continuous deterministic stream regardless of how many ranges it's split into.
+export function simulateGamesInRange(params: {
+  rng: () => number;
+  pickScorer: () => string | null;
+  startGame: number; // inclusive
+  endGame: number; // inclusive
+  baseWinPct: number;
+  era: SeasonEra;
+  // Additive per-game adjustment, e.g. a Hockey Fight streak boost or a March Collapse
+  // penalty. Defaults to 0 — no modifier features exist yet, this is just the hook.
+  modifierForGame?: (gameNumber: number) => number;
+}): GameResult[] {
+  const { rng, pickScorer, startGame, endGame, baseWinPct, era, modifierForGame } = params;
   const opponentPool = era === 'yzermanOnward' ? MODERN_RIVALS : ORIGINAL_SIX_RIVALS;
-  const pickScorer = buildScorerPicker(skaters, rng);
-
   const games: GameResult[] = [];
+
+  for (let i = startGame; i <= endGame; i++) {
+    const modifier = modifierForGame ? modifierForGame(i) : 0;
+    const winPct = Math.min(MAX_WINPCT, Math.max(MIN_WINPCT, baseWinPct + modifier));
+    const opponent = opponentPool[Math.floor(rng() * opponentPool.length)];
+    const home = rng() < 0.5;
+    games.push(simulateGame({ rng, gameNumber: i, winPct, opponent, home, pickScorer }));
+  }
+  return games;
+}
+
+/** Tallies a full (or partial) games array into the W/L/OTL/points/goals bundle the UI displays. */
+export function aggregateGames(games: GameResult[]): SeasonSimResult {
   let wins = 0;
   let losses = 0;
   let otl = 0;
   let goalsFor = 0;
   let goalsAgainst = 0;
-
-  for (let i = 1; i <= SEASON_LENGTH; i++) {
-    const opponent = opponentPool[Math.floor(rng() * opponentPool.length)];
-    const home = rng() < 0.5;
-    const game = simulateGame({ rng, gameNumber: i, winPct, opponent, home, pickScorer });
-    games.push(game);
-
+  for (const game of games) {
     if (game.result === 'W') wins++;
     else if (game.decidedIn !== 'REG') otl++;
     else losses++;
     goalsFor += game.teamGoals;
     goalsAgainst += game.oppGoals;
   }
-
   return { games, wins, losses, otl, points: wins * 2 + otl, goalsFor, goalsAgainst };
 }

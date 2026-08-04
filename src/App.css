@@ -771,6 +771,100 @@
   text-align: center;
 }
 
+/* ---------- Trade Deadline ---------- */
+
+.trade-deadline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding-bottom: 24px;
+}
+.trade-deadline-eyebrow {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--wings-red);
+  margin-top: 8px;
+}
+.trade-deadline-title {
+  font-size: 32px;
+  color: var(--ink);
+  margin: 0;
+}
+.trade-deadline-prompt {
+  font-size: 14px;
+  color: var(--ink-soft);
+  max-width: 42ch;
+}
+.trade-deadline-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.trade-swap-card {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.trade-swap-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--paper);
+}
+.trade-swap-slot {
+  font-family: var(--display);
+  font-size: 15px;
+  color: var(--wings-red);
+}
+.trade-swap-out,
+.trade-swap-in {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+.trade-swap-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trade-swap-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.trade-swap-arrow {
+  color: var(--wings-red);
+  font-size: 18px;
+}
+.trade-swap-delta {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 999px;
+  padding: 3px 0;
+}
+.trade-swap-delta.up {
+  color: var(--good);
+}
+.trade-swap-delta.down {
+  color: var(--low);
+}
+
 /* ---------- Cup Final shootout ceremony (postseason, Final series only) ---------- */
 
 .shootout-ceremony {

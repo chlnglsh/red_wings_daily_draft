@@ -78,8 +78,9 @@ export default function App() {
     setScreen('simulating');
   }
 
-  function handleSimComplete(result: SeasonSimResult) {
+  function handleSimComplete(result: SeasonSimResult, finalPicks: DraftPick[]) {
     setSimResult(result);
+    setPicks(finalPicks); // may differ from the drafted roster if a trade happened
     setScreen('results');
   }
 
@@ -166,7 +167,13 @@ export default function App() {
   if (screen === 'simulating') {
     return (
       <div className="app-shell">
-        <SeasonSimScreen picks={picks} seasonsById={seasonsById} runSeed={runSeed} onComplete={handleSimComplete} />
+        <SeasonSimScreen
+          picks={picks}
+          seasonsById={seasonsById}
+          seasons={SEASONS}
+          runSeed={runSeed}
+          onComplete={handleSimComplete}
+        />
       </div>
     );
   }

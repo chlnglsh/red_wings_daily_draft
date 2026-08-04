@@ -7,6 +7,12 @@ export type SlotId = 'LW' | 'C' | 'RW' | 'LD' | 'RD' | 'G';
 
 export const SLOT_ORDER: SlotId[] = ['LW', 'C', 'RW', 'LD', 'RD', 'G'];
 
+/** Real roster position a slot requires (LD/RD both need a plain "D" — the left/right split only exists at the slot level). */
+export function eligiblePosition(slot: SlotId): Position {
+  if (slot === 'LD' || slot === 'RD') return 'D';
+  return slot as Position;
+}
+
 export interface Player {
   id: string;
   name: string;

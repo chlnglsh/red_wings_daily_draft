@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Player, Season, SlotId } from '../types';
-
-function eligiblePosition(slot: SlotId): Player['position'] {
-  if (slot === 'LD' || slot === 'RD') return 'D';
-  return slot as Player['position'];
-}
+import { eligiblePosition } from '../types';
 
 function slotsForPosition(position: Player['position'], openSlots: SlotId[]): SlotId[] {
   return openSlots.filter((slot) => eligiblePosition(slot) === position);

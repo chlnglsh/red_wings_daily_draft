@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { DraftPick, Season, SeasonEra } from '../types';
-import { rosterScore } from '../lib/scoring';
-import { hashStringToInt } from '../lib/prng';
+import type { DraftPick, Season } from '../types';
+import { hashStringToInt, mulberry32 } from '../lib/prng';
+import { deriveRosterGameState } from '../lib/rosterState';
 import {
-  deriveWinPct,
-  simulateSeason,
+  simulateGamesInRange,
+  aggregateGames,
+  buildScorerPicker,
   REGULATION_END,
+  SEASON_LENGTH,
   type GameResult,
   type SeasonSimResult,
-  type WeightedSkater,
 } from '../lib/gameSim';
+import { TradeDeadlineFlow } from './TradeDeadlineFlow';
 
 const TICKS_PER_GAME = 14;
 const VISIBLE_COMPLETED_NORMAL = 6;
 const VISIBLE_COMPLETED_FAST = 14;
 const FAST_GAME_MS = 150; // how long each game sits in the fast-scroll feed before the next one lands
+
+// Real NHL trade deadline lands around game 60-63 of 82 — games 1 through this
+// constant minus one play out first, then the deadline gate appears before the rest.
+const TRADE_DEADLINE_GAME = 61;
 
 // Pace for the normal (live, detailed) mode. Fast mode skips the live clock
 // entirely — see the fast-scroll effect below — so it doesn't need its own pace.
@@ -22,24 +28,6 @@ const PACE = { tickMs: 90, startPauseMs: 500, otSuspenseMs: 1300, endPauseMs: 13
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function majorityEra(picks: DraftPick[], seasonsById: Map<string, Season>): SeasonEra {
-  const counts = new Map<SeasonEra, number>();
-  for (const pick of picks) {
-    const era = seasonsById.get(pick.seasonId)?.era;
-    if (!era) continue;
-    counts.set(era, (counts.get(era) ?? 0) + 1);
-  }
-  let best: SeasonEra = 'yzermanOnward';
-  let bestCount = 0;
-  for (const [era, count] of counts) {
-    if (count > bestCount) {
-      best = era;
-      bestCount = count;
-    }
-  }
-  return best;
 }
 
 function gameLine(game: GameResult): string {
@@ -51,24 +39,45 @@ function gameLine(game: GameResult): string {
 export function SeasonSimScreen({
   picks,
   seasonsById,
+  seasons,
   runSeed,
   onComplete,
 }: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
+  seasons: Season[];
   runSeed: number;
-  onComplete: (result: SeasonSimResult) => void;
+  onComplete: (result: SeasonSimResult, finalPicks: DraftPick[]) => void;
 }) {
-  const fullResult = useMemo(() => {
-    const score = rosterScore(picks, seasonsById);
-    const winPct = deriveWinPct(score);
-    const era = majorityEra(picks, seasonsById);
-    const skaters: WeightedSkater[] = picks
-      .filter((p) => p.player.position !== 'G')
-      .map((p) => ({ name: p.player.name, weight: p.player.g }));
-    const seed = hashStringToInt(`${runSeed}:simseason:${picks.map((p) => p.player.id + p.slot).join(',')}`);
-    return simulateSeason(seed, winPct, era, skaters);
-  }, [picks, seasonsById, runSeed]);
+  // One persistent RNG for the whole day's sim — shared across the pre-trade and
+  // post-trade halves so the overall sequence is a single continuous deterministic
+  // stream regardless of what happens at the deadline.
+  const rngRef = useRef<(() => number) | null>(null);
+  if (!rngRef.current) {
+    rngRef.current = mulberry32(hashStringToInt(`${runSeed}:simseason:${picks.map((p) => p.player.id + p.slot).join(',')}`));
+  }
+
+  const initialRosterState = useMemo(() => deriveRosterGameState(picks, seasonsById), [picks, seasonsById]);
+
+  // Games 1 through the deadline, from the roster as drafted — computed once on mount.
+  const preTradeGames = useMemo(() => {
+    const pickScorer = buildScorerPicker(initialRosterState.skaters, rngRef.current!);
+    return simulateGamesInRange({
+      rng: rngRef.current!,
+      pickScorer,
+      startGame: 1,
+      endGame: TRADE_DEADLINE_GAME - 1,
+      baseWinPct: initialRosterState.winPct,
+      era: initialRosterState.era,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const [currentPicks, setCurrentPicks] = useState(picks);
+  const [postTradeGames, setPostTradeGames] = useState<GameResult[] | null>(null);
+  const [tradeStage, setTradeStage] = useState<'pending' | 'active' | 'resolved'>('pending');
+
+  const allGames = useMemo(() => (postTradeGames ? [...preTradeGames, ...postTradeGames] : preTradeGames), [preTradeGames, postTradeGames]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentMinute, setCurrentMinute] = useState(0);
@@ -78,7 +87,8 @@ export function SeasonSimScreen({
   const [fast, setFast] = useState(false);
   const feedRef = useRef<HTMLDivElement | null>(null);
 
-  const currentGame = fullResult.games[currentIndex] ?? null;
+  const currentGame = allGames[currentIndex] ?? null;
+  const atDeadline = currentIndex >= preTradeGames.length && !postTradeGames;
 
   // Reset the live clock whenever we move to a new game, regardless of which mode got us here.
   useEffect(() => {
@@ -99,11 +109,31 @@ export function SeasonSimScreen({
     updateEdgeClasses(feedRef.current);
   });
 
+  function generatePostTradeGames(finalPicks: DraftPick[]): GameResult[] {
+    const rosterState = deriveRosterGameState(finalPicks, seasonsById);
+    const pickScorer = buildScorerPicker(rosterState.skaters, rngRef.current!);
+    return simulateGamesInRange({
+      rng: rngRef.current!,
+      pickScorer,
+      startGame: TRADE_DEADLINE_GAME,
+      endGame: SEASON_LENGTH,
+      baseWinPct: rosterState.winPct,
+      era: rosterState.era,
+    });
+  }
+
+  function handleTradeResolved(finalPicks: DraftPick[]) {
+    setCurrentPicks(finalPicks);
+    setPostTradeGames(generatePostTradeGames(finalPicks));
+    setTradeStage('resolved');
+  }
+
   // Normal mode: live per-game clock. Ticks through regulation, then — if the game
   // went to OT/SO — holds at the OT marker for a beat before revealing the decider,
   // so there's actually some suspense instead of the bar just sailing past 60'.
   useEffect(() => {
-    if (skipped || fast || !currentGame) return;
+    if (skipped || fast || atDeadline) return;
+    if (atDeadline || !currentGame) return;
     let cancelled = false;
 
     async function play() {
@@ -116,45 +146,59 @@ export function SeasonSimScreen({
         await sleep(PACE.tickMs);
       }
       if (cancelled) return;
-      if (currentGame.endMinute > REGULATION_END) {
+      if (currentGame!.endMinute > REGULATION_END) {
         setOtSuspense(true);
         await sleep(PACE.otSuspenseMs);
         if (cancelled) return;
         setOtSuspense(false);
-        setCurrentMinute(currentGame.endMinute);
+        setCurrentMinute(currentGame!.endMinute);
       }
       await sleep(PACE.endPauseMs);
       if (cancelled) return;
-      setCompletedGames((prev) => [...prev, currentGame]);
+      setCompletedGames((prev) => [...prev, currentGame!]);
       setCurrentIndex((i) => i + 1);
     }
     play();
     return () => {
       cancelled = true;
     };
-  }, [currentIndex, currentGame, skipped, fast]);
+  }, [currentIndex, currentGame, skipped, fast, atDeadline]);
 
   // Fast mode: no live theater, just bank finished games one after another quickly.
   useEffect(() => {
-    if (skipped || !fast || !currentGame) return;
+    if (skipped || !fast || atDeadline || !currentGame) return;
     const t = setTimeout(() => {
       setCompletedGames((prev) => [...prev, currentGame]);
       setCurrentIndex((i) => i + 1);
     }, FAST_GAME_MS);
     return () => clearTimeout(t);
-  }, [currentIndex, currentGame, skipped, fast]);
+  }, [currentIndex, currentGame, skipped, fast, atDeadline]);
+
+  // Reaching the end of the pre-trade half pauses for the deadline gate instead of
+  // trying to animate a game that doesn't exist yet.
+  useEffect(() => {
+    if (atDeadline && tradeStage === 'pending') {
+      setTradeStage('active');
+    }
+  }, [atDeadline, tradeStage]);
 
   useEffect(() => {
-    if (currentIndex >= fullResult.games.length) {
-      const t = setTimeout(() => onComplete(fullResult), 400);
+    if (currentIndex >= SEASON_LENGTH && postTradeGames) {
+      const t = setTimeout(() => onComplete(aggregateGames(allGames), currentPicks), 400);
       return () => clearTimeout(t);
     }
-  }, [currentIndex, fullResult, onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, postTradeGames, allGames, currentPicks, onComplete]);
 
   function handleSkip() {
     setSkipped(true);
-    setCompletedGames(fullResult.games);
-    setCurrentIndex(fullResult.games.length);
+    // Skipping past an unresolved trade decision defaults to standing pat, so the
+    // whole season can still resolve instantly instead of forcing the player through it.
+    const finalGames = postTradeGames ? allGames : [...preTradeGames, ...generatePostTradeGames(currentPicks)];
+    setPostTradeGames(finalGames.slice(preTradeGames.length));
+    setTradeStage('resolved');
+    setCompletedGames(finalGames);
+    setCurrentIndex(finalGames.length);
   }
 
   const tally = completedGames.reduce(
@@ -170,18 +214,32 @@ export function SeasonSimScreen({
   );
   const points = tally.wins * 2 + tally.otl;
 
+  if (tradeStage === 'active') {
+    return (
+      <TradeDeadlineFlow
+        tally={{ wins: tally.wins, losses: tally.losses, otl: tally.otl, points, goalsFor: tally.gf, goalsAgainst: tally.ga }}
+        picks={currentPicks}
+        seasonsById={seasonsById}
+        seasons={seasons}
+        rng={rngRef.current!}
+        onResolved={handleTradeResolved}
+      />
+    );
+  }
+
   const liveGoals = currentGame ? currentGame.goalEvents.filter((e) => e.minute <= currentMinute) : [];
   const liveOppGoals = currentGame ? currentGame.oppGoalEvents.filter((e) => e.minute <= currentMinute) : [];
   const progressPct = currentGame ? (currentMinute / currentGame.endMinute) * 100 : 100;
   const goesToExtra = currentGame ? currentGame.endMinute > REGULATION_END : false;
   const visibleCompleted = fast ? VISIBLE_COMPLETED_FAST : VISIBLE_COMPLETED_NORMAL;
   const recentCompleted = completedGames.slice(-visibleCompleted).reverse();
+  const totalGames = postTradeGames ? SEASON_LENGTH : Math.max(SEASON_LENGTH, preTradeGames.length);
 
   return (
     <div className="season-sim rink-backdrop">
       <div className="season-sim-header">
         <span className="season-sim-game-count">
-          Game {Math.min(currentIndex + 1, fullResult.games.length)} of {fullResult.games.length}
+          Game {Math.min(currentIndex + 1, totalGames)} of {SEASON_LENGTH}
         </span>
         <div className="season-sim-header-actions">
           {!skipped && (
