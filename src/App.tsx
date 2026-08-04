@@ -5,7 +5,7 @@ import { SEASONS } from './data/seasons';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
 import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
-import { simulatePostseason, type PostseasonResult } from './lib/postseason';
+import { simulatePostseason, findCupFinalShootoutSeed, type PostseasonResult } from './lib/postseason';
 import { RoundScreen } from './components/RoundScreen';
 import { SquadSummaryScreen } from './components/SquadSummaryScreen';
 import { SeasonSimScreen } from './components/SeasonSimScreen';
@@ -87,6 +87,22 @@ export default function App() {
     setScreen('postseason');
   }
 
+  // Dev-only: jumps straight to a real (not fabricated) postseason run that happens
+  // to play out to a Stanley Cup Final shootout, so the ceremony can be checked
+  // without waiting on the ~5%-per-game odds in a normal playthrough. Searched with
+  // the same (empty, since this fires from the intro screen pre-draft) skaters the
+  // app will actually recompute with, so the found seed reproduces deterministically.
+  function handleForceShootoutTest() {
+    const found = findCupFinalShootoutSeed(140, []);
+    if (!found) {
+      alert('No shootout scenario found in range — try again.');
+      return;
+    }
+    setRunSeed(found.seed);
+    setSimResult({ games: [], wins: 0, losses: 0, otl: 0, points: 140, goalsFor: 0, goalsAgainst: 0 });
+    setScreen('postseason');
+  }
+
   function handlePlayAgainDev() {
     // Dev-only reset so we can exercise the loop repeatedly while prototyping.
     // Real game is one play per day per user — this button won't exist post-Phase-1.
@@ -112,6 +128,9 @@ export default function App() {
           </p>
           <button type="button" className="primary-btn" onClick={handleStart}>
             Start today's draft
+          </button>
+          <button type="button" className="text-btn dev-reset" onClick={handleForceShootoutTest}>
+            🧪 Force Cup Final shootout (dev test)
           </button>
         </header>
       </div>

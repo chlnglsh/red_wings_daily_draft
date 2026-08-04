@@ -25,5 +25,6 @@ export function generateHallOfChampions(dailySeed: number, poolSize = 400): Hall
       entries.push({ username, achievement: 'Conference Champion' });
     }
   }
-  return entries;
+  // Stanley Cup champions are the bigger achievement — list them first.
+  return entries.sort((a, b) => (a.achievement === b.achievement ? 0 : a.achievement === 'Stanley Cup Champion' ? -1 : 1));
 }

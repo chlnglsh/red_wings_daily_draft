@@ -927,13 +927,14 @@
   padding: 3px 8px;
   border-radius: 999px;
   white-space: nowrap;
-  color: #fff;
 }
 .hall-of-champions-badge.cup {
   background: var(--wings-red);
+  color: #fff;
 }
 .hall-of-champions-badge.conference {
-  background: var(--ink-soft);
+  background: #fff;
+  color: var(--wings-red);
 }
 
 /* ---------- Season simulation feed ---------- */

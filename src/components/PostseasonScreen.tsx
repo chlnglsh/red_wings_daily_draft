@@ -52,7 +52,21 @@ export function PostseasonScreen({
   onPlayAgainDev: () => void;
 }) {
   const playerSeries = useMemo(() => getPlayerSeries(postseason), [postseason]);
-  const hallOfChampions = useMemo(() => generateHallOfChampions(dateSeed), [dateSeed]);
+  const hallOfChampions = useMemo(() => {
+    const entries: (ReturnType<typeof generateHallOfChampions>[number] & { isYou?: boolean })[] = generateHallOfChampions(dateSeed);
+    if (postseason.playerWonCup) {
+      entries.unshift({ username: 'You', achievement: 'Stanley Cup Champion', isYou: true });
+    } else if (postseason.playerWonConference) {
+      entries.unshift({ username: 'You', achievement: 'Conference Champion', isYou: true });
+    }
+    // Cup champions before conference champions; within each group, you go first.
+    return entries.sort((a, b) => {
+      if (a.achievement !== b.achievement) return a.achievement === 'Stanley Cup Champion' ? -1 : 1;
+      if (a.isYou) return -1;
+      if (b.isYou) return 1;
+      return 0;
+    });
+  }, [dateSeed, postseason]);
 
   const [seriesIdx, setSeriesIdx] = useState(0);
   const [gameIdx, setGameIdx] = useState(0);
@@ -211,21 +225,13 @@ export function PostseasonScreen({
         <p className="hoc-heading">Hall of Champions · {dateStr}</p>
         <ol className="hall-of-champions">
           {hallOfChampions.slice(0, 12).map((entry, i) => (
-            <li key={entry.username + i}>
+            <li key={entry.username + i} className={entry.isYou ? 'you' : ''}>
               <span className="hall-of-champions-name">{entry.username}</span>
               <span className={`hall-of-champions-badge ${entry.achievement === 'Stanley Cup Champion' ? 'cup' : 'conference'}`}>
                 {entry.achievement}
               </span>
             </li>
           ))}
-          {postseason.playerWonCup || postseason.playerWonConference ? (
-            <li className="you">
-              <span className="hall-of-champions-name">You</span>
-              <span className={`hall-of-champions-badge ${postseason.playerWonCup ? 'cup' : 'conference'}`}>
-                {postseason.playerWonCup ? 'Stanley Cup Champion' : 'Conference Champion'}
-              </span>
-            </li>
-          ) : null}
         </ol>
 
         <p className="results-daily-note">🗓️ One play per day — come back tomorrow for a fresh draft.</p>

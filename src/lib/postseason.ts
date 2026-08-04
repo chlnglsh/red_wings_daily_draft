@@ -353,3 +353,20 @@ export function simulatePostseason(
     playerWonConference,
   };
 }
+
+// Dev-only test helper — real games, no fabricated data. Searches seeds until it
+// finds one that actually plays out to a Final-series shootout, so the ceremony can
+// be eyeballed without waiting on the ~5%-per-game odds in a normal playthrough.
+export function findCupFinalShootoutSeed(
+  playerPoints: number,
+  skaters: WeightedSkater[],
+  maxAttempts = 5000,
+): { seed: number; result: PostseasonResult } | null {
+  for (let seed = 1; seed <= maxAttempts; seed++) {
+    const result = simulatePostseason(seed, playerPoints, skaters);
+    if (result.qualified && result.finalSeries.games.some((g) => g.decidedIn === 'SO')) {
+      return { seed, result };
+    }
+  }
+  return null;
+}

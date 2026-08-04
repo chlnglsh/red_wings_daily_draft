@@ -12,7 +12,7 @@ import {
 } from '../lib/gameSim';
 
 const TICKS_PER_GAME = 14;
-const VISIBLE_COMPLETED_NORMAL = 5;
+const VISIBLE_COMPLETED_NORMAL = 6;
 const VISIBLE_COMPLETED_FAST = 14;
 const FAST_GAME_MS = 150; // how long each game sits in the fast-scroll feed before the next one lands
 
