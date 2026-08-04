@@ -774,6 +774,8 @@
 /* ---------- Cup Final shootout ceremony (postseason, Final series only) ---------- */
 
 .shootout-ceremony {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -793,8 +795,9 @@
 }
 .shootout-row {
   width: 100%;
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 12px;
 }
@@ -802,10 +805,17 @@
   font-weight: 700;
   font-size: 14px;
   color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .shootout-attempts {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 6px;
+  max-width: 200px;
 }
 .shootout-attempt {
   width: 26px;
