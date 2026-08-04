@@ -63,6 +63,7 @@ export interface PostseasonResult {
   finalSeries: Series;
   cupChampion: SeedEntry;
   playerEliminatedRound: Round | null; // null if never qualified, or if they won the Cup
+  eliminatedBy: SeedEntry | null; // the team that beat them, if eliminated before round 4
   playerWonCup: boolean;
   playerWonConference: boolean;
 }
@@ -320,6 +321,7 @@ export function simulatePostseason(
   const playerWonCup = cupChampion.team.isPlayer;
 
   let playerEliminatedRound: Round | null = null;
+  let eliminatedBy: SeedEntry | null = null;
   if (playerQualified && !playerWonCup) {
     // Find the first series (in round order) where the player took part and lost.
     const allEastSeries: Series[] = [
@@ -334,6 +336,7 @@ export function simulatePostseason(
     ].filter((s): s is Series => s !== null);
     const lostSeries = allEastSeries.find((s) => s.isPlayerSeries && s.winner && !s.winner.team.isPlayer);
     playerEliminatedRound = lostSeries ? lostSeries.round : null;
+    eliminatedBy = lostSeries?.winner ?? null;
   }
 
   return {
@@ -345,6 +348,7 @@ export function simulatePostseason(
     finalSeries,
     cupChampion,
     playerEliminatedRound,
+    eliminatedBy,
     playerWonCup,
     playerWonConference,
   };

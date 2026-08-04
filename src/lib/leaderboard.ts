@@ -4,7 +4,7 @@ import { simulateRecord } from './simulate';
 // Phase 1 has no backend, so the leaderboard is simulated: a deterministic set
 // of "other players" for the day, seeded off the same daily seed everyone shares.
 // Replace with real Redis-backed aggregation in Phase 3.
-const MOCK_USERNAMES = [
+export const MOCK_USERNAMES = [
   'zetterberg_stan', 'HockeytownHermit', 'wings_since_97', 'OctopusThrower',
   'yzerman_captain', 'lidstrom_perfect', 'GordieHoweHatTrick', 'winged_wheel_fan',
   'joelouisghost', 'PavelD13', 'RedWingsOrBust', 'ShanahanShot', 'sawchuk_stonewall',

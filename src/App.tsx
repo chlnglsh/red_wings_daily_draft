@@ -4,14 +4,16 @@ import { SLOT_ORDER } from './types';
 import { SEASONS } from './data/seasons';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
-import type { SeasonSimResult } from './lib/gameSim';
+import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
+import { simulatePostseason, type PostseasonResult } from './lib/postseason';
 import { RoundScreen } from './components/RoundScreen';
 import { SquadSummaryScreen } from './components/SquadSummaryScreen';
 import { SeasonSimScreen } from './components/SeasonSimScreen';
 import { ResultsScreen } from './components/ResultsScreen';
+import { PostseasonScreen } from './components/PostseasonScreen';
 import './App.css';
 
-type Screen = 'intro' | 'round' | 'squadSummary' | 'simulating' | 'results';
+type Screen = 'intro' | 'round' | 'squadSummary' | 'simulating' | 'results' | 'postseason';
 
 const seasonsById = new Map(SEASONS.map((s) => [s.id, s] as [string, Season]));
 
@@ -33,6 +35,15 @@ export default function App() {
 
   const draftedPlayerIds = useMemo(() => new Set(picks.map((p) => p.player.id)), [picks]);
   const openSlots = useMemo(() => SLOT_ORDER.filter((s) => !picks.some((p) => p.slot === s)), [picks]);
+
+  const skaters: WeightedSkater[] = useMemo(
+    () => picks.filter((p) => p.player.position !== 'G').map((p) => ({ name: p.player.name, weight: p.player.g })),
+    [picks],
+  );
+  const postseason: PostseasonResult | null = useMemo(
+    () => (simResult ? simulatePostseason(runSeed, simResult.points, skaters) : null),
+    [simResult, runSeed, skaters],
+  );
 
   const currentSeason =
     rerolledRoundIndex === roundIndex && rerollAlternate ? rerollAlternate : primaryRounds[roundIndex];
@@ -70,6 +81,10 @@ export default function App() {
   function handleSimComplete(result: SeasonSimResult) {
     setSimResult(result);
     setScreen('results');
+  }
+
+  function handleStartPostseason() {
+    setScreen('postseason');
   }
 
   function handlePlayAgainDev() {
@@ -137,6 +152,19 @@ export default function App() {
     );
   }
 
+  if (screen === 'postseason') {
+    return (
+      <div className="app-shell">
+        <PostseasonScreen
+          postseason={postseason!}
+          dateStr={dateStr}
+          dateSeed={dateSeed}
+          onPlayAgainDev={handlePlayAgainDev}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <ResultsScreen
@@ -145,6 +173,8 @@ export default function App() {
         picks={picks}
         seasonsById={seasonsById}
         simResult={simResult!}
+        postseason={postseason!}
+        onStartPostseason={handleStartPostseason}
         onPlayAgainDev={handlePlayAgainDev}
       />
     </div>

@@ -7,6 +7,7 @@ import { simulateRecord } from '../lib/simulate';
 import { SEASON_LENGTH, type SeasonSimResult } from '../lib/gameSim';
 import { generateMockLeaderboard, rankAmong } from '../lib/leaderboard';
 import { buildShareText } from '../lib/share';
+import type { PostseasonResult } from '../lib/postseason';
 
 function squareClass(percentile: number): string {
   if (percentile >= 0.75) return 'pick-square good';
@@ -20,6 +21,8 @@ export function ResultsScreen({
   picks,
   seasonsById,
   simResult,
+  postseason,
+  onStartPostseason,
   onPlayAgainDev,
 }: {
   dateStr: string;
@@ -27,6 +30,8 @@ export function ResultsScreen({
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
+  postseason: PostseasonResult;
+  onStartPostseason: () => void;
   onPlayAgainDev: () => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -62,6 +67,7 @@ export function ResultsScreen({
   }
 
   const pointsDiff = simResult.points - predicted.points;
+  const atlanticRank = postseason.atlanticStandings.findIndex((t) => t.isPlayer) + 1;
 
   return (
     <div className="results-screen rink-backdrop">
@@ -86,6 +92,23 @@ export function ResultsScreen({
       <p className="predicted-comparison">
         Predicted standing: {predictedTier.emoji} {predictedTier.label} ({predicted.wins}-{predicted.losses}-{predicted.otl})
       </p>
+
+      {postseason.qualified ? (
+        <div className="postseason-callout qualified">
+          <p className="postseason-callout-label">🏒 Playoff berth clinched — {postseason.playerSeedLabel} seed</p>
+          <p className="postseason-callout-detail">The postseason starts now. Every game from here counts.</p>
+          <button type="button" className="primary-btn" onClick={onStartPostseason}>
+            Enter the Playoffs →
+          </button>
+        </div>
+      ) : (
+        <div className="postseason-callout missed">
+          <p className="postseason-callout-label">Missed the playoffs this time</p>
+          <p className="postseason-callout-detail">
+            {atlanticRank}th in the Atlantic wasn't enough to qualify — see how the division shook out below.
+          </p>
+        </div>
+      )}
 
       <div className="results-roster">
         {SLOT_ORDER.map((slot) => {
@@ -132,6 +155,8 @@ export function ResultsScreen({
           {copied ? 'Copied!' : 'Copy shareable result'}
         </button>
       </div>
+
+      <p className="results-daily-note">🗓️ One play per day — come back tomorrow for a fresh draft.</p>
 
       <button type="button" className="text-btn dev-reset" onClick={onPlayAgainDev}>
         ↺ Replay (dev only — real game is once per day)
