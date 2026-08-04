@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameResult } from '../lib/gameSim';
 import { REGULATION_END } from '../lib/gameSim';
 import type { PostseasonResult, Series } from '../lib/postseason';
@@ -76,6 +76,19 @@ export function PostseasonScreen({
   const [completedGames, setCompletedGames] = useState<GameResult[]>([]);
   const [skipped, setSkipped] = useState(false);
   const [stage, setStage] = useState<'playing' | 'seriesComplete' | 'finished'>('playing');
+  const feedRef = useRef<HTMLDivElement | null>(null);
+
+  // Only fade the feed's top/bottom edge when there's more content to scroll past
+  // it — otherwise the gradient permanently obscures whichever game sits at the edge.
+  function updateEdgeClasses(el: HTMLDivElement | null) {
+    if (!el) return;
+    el.classList.toggle('at-top', el.scrollTop <= 1);
+    el.classList.toggle('at-bottom', el.scrollTop + el.clientHeight >= el.scrollHeight - 1);
+  }
+
+  useEffect(() => {
+    updateEdgeClasses(feedRef.current);
+  });
 
   const currentSeries = playerSeries[seriesIdx] ?? null;
   const currentGame = currentSeries?.games[gameIdx] ?? null;
@@ -252,18 +265,28 @@ export function PostseasonScreen({
 
   return (
     <div className="postseason-screen rink-backdrop">
-      <div className="season-sim-header">
-        <span className="season-sim-game-count">{ROUND_NAMES[currentSeries.round]}</span>
-        <div className="season-sim-header-actions">
-          <button type="button" className="sim-action-btn" onClick={handleSkipSeries}>
-            Skip series →
-          </button>
-        </div>
+      <div className="postseason-live-header">
+        <h2 className="postseason-round-title">{ROUND_NAMES[currentSeries.round]}</h2>
+        <button type="button" className="sim-action-btn" onClick={handleSkipSeries}>
+          Skip series →
+        </button>
       </div>
 
       <p className="postseason-series-status">
-        vs {opponent!.team.name} ({opponent!.label}) · Series {playerWinsSoFar}-{oppWinsSoFar} · Game {gameIdx + 1}
+        vs {opponent!.team.name} ({opponent!.label})
       </p>
+      <div className="postseason-tally">
+        <div>
+          <strong>
+            {playerWinsSoFar}-{oppWinsSoFar}
+          </strong>
+          <span>Series</span>
+        </div>
+        <div>
+          <strong>{gameIdx + 1}</strong>
+          <span>Game</span>
+        </div>
+      </div>
 
       {shootoutActive && currentGame && (
         <ShootoutCeremony
@@ -321,7 +344,7 @@ export function PostseasonScreen({
         </div>
       )}
 
-      <div className="season-sim-feed">
+      <div className="season-sim-feed" ref={feedRef} onScroll={(e) => updateEdgeClasses(e.currentTarget)}>
         {completedGames
           .slice(-5)
           .reverse()
