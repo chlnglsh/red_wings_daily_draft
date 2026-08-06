@@ -597,14 +597,15 @@
   width: 190px;
   height: 190px;
   object-fit: contain;
-  margin: 0 auto;
-  /* transform (not width/height) so the image renders larger without growing
-     its layout box — that would push the heading/flavor text below it down. */
-  transform: scale(1.35) translateY(12px);
-  /* The cup's own tones are silver/grey, which reads a bit flat straight
-     against a near-black background — a soft white glow gives it a halo of
-     separation, and a touch more contrast/brightness makes the metal's
-     highlights pop instead of blending into the dark surrounding card. */
+  /* Generous top margin gives the enlarged cup room above so it doesn't crowd
+     the eyebrow — the transform renders it well beyond its 190px box. */
+  margin: 96px auto 42px;
+  /* transform (not width/height) so the image renders larger without reflowing
+     its layout box. */
+  transform: scale(2.1) translateY(4px);
+  /* Original glow: the cup's silver/grey tones read a bit flat against the
+     near-black background, so a soft white halo gives it separation and a touch
+     of contrast/brightness makes the metal's highlights pop. */
   filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.3)) contrast(1.15) brightness(1.08);
 }
 .results-tier-label {
