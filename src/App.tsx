@@ -13,6 +13,7 @@ import { hiddenPlatform } from './lib/hiddenPlatform';
 import { RoundScreen } from './components/RoundScreen';
 import { SquadSummaryScreen } from './components/SquadSummaryScreen';
 import { SeasonSimScreen } from './components/SeasonSimScreen';
+import { MarchCollapseFlow } from './components/MarchCollapseFlow';
 import { ResultsScreen } from './components/ResultsScreen';
 import { PostseasonScreen } from './components/PostseasonScreen';
 import slotMachineSrc from './assets/lucky-red-slot-machine.png';
@@ -30,6 +31,12 @@ const defaultPlatform = import.meta.env.DEV ? mockPlatform : hiddenPlatform;
 export default function App({ platform = defaultPlatform }: { platform?: Platform } = {}) {
   const dateStr = useMemo(() => getUtcDateString(), []);
   const dateSeed = useMemo(() => getDateSeed(), []);
+
+  // Dev-only: ?debug=<name> boots straight into an isolated screen, skipping the
+  // whole draft/sim flow — handy for iterating on one piece. See the debug render
+  // branch below the handlers.
+  const debugScreen = useMemo(() => new URLSearchParams(window.location.search).get('debug'), []);
+  const [debugReplayToken, setDebugReplayToken] = useState(0);
 
   const [screen, setScreen] = useState<Screen>('intro');
   const [runSeed, setRunSeed] = useState(() => getRandomSeed());
@@ -263,6 +270,18 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setPicks(fabricatedPicks);
     setForceMarchCollapse(true);
     setScreen('simulating');
+  }
+
+  // Dev-only debug entry points (?debug=…). March Collapse boots straight into
+  // the minigame in isolation — flicker → hold → Defensive Stand → result —
+  // with no season sim around it, so its visuals/UX can be iterated on directly.
+  // Resolving it remounts a fresh run (via the key) so you can go again.
+  if (import.meta.env.DEV && debugScreen === 'march-collapse') {
+    return (
+      <div className="app-shell">
+        <MarchCollapseFlow key={debugReplayToken} onResolved={() => setDebugReplayToken((t) => t + 1)} />
+      </div>
+    );
   }
 
   if (screen === 'intro') {
