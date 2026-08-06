@@ -367,7 +367,7 @@ export function SeasonSimScreen({
             </button>
           )}
           <button type="button" className="sim-action-btn" onClick={handleSkip}>
-            Skip to end →
+            Skip to end
           </button>
         </div>
       </div>

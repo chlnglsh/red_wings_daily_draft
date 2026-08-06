@@ -121,7 +121,7 @@ export function ResultsScreen({
           <p className="postseason-callout-label">🏒 Playoff berth clinched — {postseason.playerSeedLabel} seed</p>
           <p className="postseason-callout-detail">The postseason starts now. Every game from here counts.</p>
           <button type="button" className="primary-btn" onClick={onStartPostseason}>
-            Enter the Playoffs →
+            Enter the Playoffs
           </button>
         </div>
       ) : (

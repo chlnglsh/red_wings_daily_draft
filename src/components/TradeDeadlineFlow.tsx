@@ -244,7 +244,7 @@ export function TradeDeadlineFlow({
           </div>
         )}
         <button type="button" className="primary-btn" onClick={handleContinue}>
-          Continue the season →
+          Continue the season
         </button>
       </div>
     );

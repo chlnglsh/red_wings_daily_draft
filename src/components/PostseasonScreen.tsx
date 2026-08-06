@@ -336,7 +336,7 @@ export function PostseasonScreen({
             {playerWinsCount}-{oppWinsCount} vs {opponent!.team.name}
           </p>
           <button type="button" className="primary-btn" onClick={handleContinue}>
-            Continue →
+            Continue
           </button>
         </div>
       );
@@ -417,7 +417,7 @@ export function PostseasonScreen({
       <div className="postseason-live-header">
         <h2 className="postseason-round-title">{ROUND_NAMES[currentSeries.round]}</h2>
         <button type="button" className="sim-action-btn" onClick={handleSkipSeries}>
-          Skip series →
+          Skip series
         </button>
       </div>
 

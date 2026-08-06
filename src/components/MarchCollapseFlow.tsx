@@ -158,7 +158,7 @@ export function MarchCollapseFlow({ onResolved }: { onResolved: (success: boolea
           bleak from here on out.
         </p>
         <button type="button" className="collapse-hold-btn" onClick={() => setStage('playing')}>
-          Take the ice →
+          Take the ice
         </button>
       </div>
     );
@@ -173,7 +173,7 @@ export function MarchCollapseFlow({ onResolved }: { onResolved: (success: boolea
         <p className="trade-deadline-eyebrow">{copy.title}</p>
         <p className="trade-deadline-prompt">{copy.blurb}</p>
         <button type="button" className="primary-btn" onClick={() => onResolved(success)}>
-          Continue the season →
+          Continue the season
         </button>
       </div>
     );

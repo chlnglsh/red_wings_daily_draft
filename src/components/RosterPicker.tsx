@@ -108,7 +108,7 @@ export function RosterPicker({
         ))}
       </div>
       <button type="button" className="text-btn" onClick={() => setPendingPlayer(null)}>
-        ← choose a different player
+        choose a different player
       </button>
     </div>
   );
