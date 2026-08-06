@@ -12,6 +12,7 @@ import {
   type SeasonSimResult,
 } from '../lib/gameSim';
 import { MARCH_COLLAPSE_GAME, isMarchCollapseDay, buildCollapsePenaltyModifier } from '../lib/marchCollapse';
+import { goalieTargetSavePct } from '../lib/goalie';
 import { TEAM_NAME, HAS_MARCH_COLLAPSE } from '../data/team';
 import { mascotOnly } from '../data/nhlAlignment';
 import { TradeDeadlineFlow } from './TradeDeadlineFlow';
@@ -340,7 +341,9 @@ export function SeasonSimScreen({
   }
 
   if (collapseStage === 'active') {
-    return <MarchCollapseFlow onResolved={handleCollapseResolved} />;
+    const goalie = currentPicks.find((p) => p.player.position === 'G');
+    const targetSavePct = goalie ? goalieTargetSavePct(goalie.player) : undefined;
+    return <MarchCollapseFlow targetSavePct={targetSavePct} onResolved={handleCollapseResolved} />;
   }
 
   const liveGoals = currentGame ? currentGame.goalEvents.filter((e) => e.minute <= currentMinute) : [];

@@ -1978,7 +1978,8 @@
 .collapse-instructions {
   font-size: 13px;
   color: var(--ink-soft);
-  margin: 0;
+  margin: 0 auto;
+  max-width: 42ch;
 }
 .collapse-hud {
   display: flex;
@@ -1986,6 +1987,16 @@
   font-family: var(--mono);
   font-size: 14px;
   font-weight: 700;
+}
+/* Live save% turns red the moment the player drops below the goalie's target. */
+.collapse-sv-below {
+  color: var(--wings-red);
+}
+.collapse-result-line {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0;
 }
 /* Hockey-stick cursor, scoped to the Defensive Stand gameplay only (not the
    warning/rules or result screens). Desktop only; `auto` falls back if a browser
@@ -1997,26 +2008,38 @@
   position: relative;
   width: 100%;
   max-width: 460px;
-  height: 360px;
+  height: 680px;
   border: 2px solid var(--border);
   border-radius: 10px;
-  background: var(--paper);
+  background: #c9e8f5; /* light ice blue */
   overflow: hidden;
+}
+/* The goal sits at the bottom of the arena: a full-width red goal line flush
+   above the net image — the threshold the player defends, where a puck that
+   reaches it has beaten the stand — with the net directly below it. */
+.collapse-goal {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none; /* pucks stay clickable */
+}
+.collapse-goal-line {
+  width: 100%;
+  height: 10px;
+  /* Matches the red of the net's posts (sampled from collapse-net.png). */
+  background: #c0201f;
 }
 .collapse-puck {
   position: absolute;
   top: 0;
-  width: 46px;
-  height: 42px;
-  margin-left: -23px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--display);
-  font-size: 21px;
-  color: #fff;
-  background: var(--wings-red);
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  width: 48px;
+  height: 44px;
+  margin-left: -24px;
+  background: url('./assets/collapse-puck.png') center / contain no-repeat;
   border: none;
   padding: 0;
   /* Inherit the hockey-stick cursor from .collapse-playing so it stays the stick
@@ -2026,19 +2049,41 @@
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
+/* Forgiving hit zone: a transparent area extending ~16px beyond the puck on all
+   sides, so taps near the puck still count. It's part of the button, so clicks on
+   it fire the same handler; a dissolving puck's pointer-events: none disables it. */
+.collapse-puck::before {
+  content: '';
+  position: absolute;
+  inset: -16px;
+}
 .collapse-puck:active {
   filter: brightness(1.4);
 }
+/* Once a puck crosses the goal line it dissolves out: opacity only, fading in
+   stepped, pixelated chunks (transition-timing steps()) over a per-puck duration
+   set inline (~0.25–0.5s). The fall animation above keeps running untouched, so the
+   puck keeps sliding forward at the same speed while it fades — no jump, no speed-up.
+   Only line-crossing pucks get this class; blocked pucks are removed instantly. */
+.collapse-puck.dissolving {
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: 120ms; /* fast fade (DISSOLVE_FADE_MS); the delay before it is in JS */
+  transition-timing-function: steps(6, end);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 @keyframes collapse-puck-fall {
   from { transform: translateY(0); }
-  to { transform: translateY(310px); }
+  /* One continuous fall past the red goal line (which sits at ~405px); a timer
+     marks the crossing as a miss, and the puck keeps sliding to here through the
+     post-crossing delay and the fast fade. Matches PUCK_FALL_END_Y. */
+  to { transform: translateY(550px); }
 }
-.collapse-net {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 10px;
-  background: repeating-linear-gradient(90deg, var(--border), var(--border) 6px, transparent 6px, transparent 12px);
+.collapse-net-img {
+  width: 88%;
+  height: auto;
+  /* Flipped across its horizontal axis (scaleY(-1)) so the goal faces the pucks. */
+  transform: scaleY(-1);
 }
 
