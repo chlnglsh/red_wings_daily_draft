@@ -1987,6 +1987,12 @@
   font-size: 14px;
   font-weight: 700;
 }
+/* Hockey-stick cursor, scoped to the Defensive Stand gameplay only (not the
+   warning/rules or result screens). Desktop only; `auto` falls back if a browser
+   rejects the image. Hotspot 0 25 is the blade tip. */
+.collapse-playing {
+  cursor: url('./assets/hockey-stick-cursor.png') 0 25, auto;
+}
 .collapse-arena {
   position: relative;
   width: 100%;
@@ -2013,7 +2019,9 @@
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   border: none;
   padding: 0;
-  cursor: pointer;
+  /* Inherit the hockey-stick cursor from .collapse-playing so it stays the stick
+     over the pucks too, rather than reverting to the pointer hand. */
+  cursor: inherit;
   animation-name: collapse-puck-fall;
   animation-timing-function: linear;
   animation-fill-mode: forwards;

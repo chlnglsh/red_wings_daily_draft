@@ -182,7 +182,7 @@ export function MarchCollapseFlow({ onResolved }: { onResolved: (success: boolea
   const secondsLeft = Math.ceil(timeLeftMs / 1000);
 
   return (
-    <div className="march-collapse rink-backdrop">
+    <div className="march-collapse rink-backdrop collapse-playing">
       <p className="trade-deadline-eyebrow">Defensive Stand</p>
       <p className="collapse-instructions">Tap the incoming pucks before they beat you clean.</p>
       <div className="collapse-hud">

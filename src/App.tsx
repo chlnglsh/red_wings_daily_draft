@@ -37,6 +37,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
   // branch below the handlers.
   const debugScreen = useMemo(() => new URLSearchParams(window.location.search).get('debug'), []);
   const [debugReplayToken, setDebugReplayToken] = useState(0);
+  const [showDebugCollapse, setShowDebugCollapse] = useState(false);
 
   const [screen, setScreen] = useState<Screen>('intro');
   const [runSeed, setRunSeed] = useState(() => getRandomSeed());
@@ -48,7 +49,6 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
   const [spinToken, setSpinToken] = useState(0);
   const [simResult, setSimResult] = useState<SeasonSimResult | null>(null);
   const [devSkipToDeadline, setDevSkipToDeadline] = useState(false);
-  const [forceMarchCollapse, setForceMarchCollapse] = useState(false);
   const [postseasonStartRound, setPostseasonStartRound] = useState<number | undefined>(undefined);
 
   const primaryRounds = useMemo(() => generateRoundSeasons(runSeed, SEASONS), [runSeed]);
@@ -210,7 +210,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setSimResult(null);
     setPostseason(null);
     setDevSkipToDeadline(false);
-    setForceMarchCollapse(false);
+    setShowDebugCollapse(false);
     setPostseasonStartRound(undefined);
   }
 
@@ -260,23 +260,19 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setScreen('simulating');
   }
 
-  // Dev-only: March Collapse is normally a 1-in-8 subreddit-wide daily roll, so this
-  // forces it on for a fabricated-roster run to exercise the minigame immediately
-  // instead of waiting for a day it happens to fire.
+  // Dev-only: jump straight to the March Collapse minigame in isolation (the same
+  // screen as the ?debug=march-collapse link) instead of playing a full season sim
+  // to reach the collapse — for iterating on the minigame body.
   function handleForceMarchCollapseTest() {
-    const fabricatedPicks = fabricateRosterPicks();
-    if (!fabricatedPicks) return;
-    setRunSeed(getRandomSeed());
-    setPicks(fabricatedPicks);
-    setForceMarchCollapse(true);
-    setScreen('simulating');
+    setShowDebugCollapse(true);
   }
 
-  // Dev-only debug entry points (?debug=…). March Collapse boots straight into
-  // the minigame in isolation — flicker → hold → Defensive Stand → result —
-  // with no season sim around it, so its visuals/UX can be iterated on directly.
+  // Dev-only debug entry point. March Collapse boots straight into the minigame in
+  // isolation — flicker → hold → Defensive Stand → result — with no season sim
+  // around it, so its visuals/UX can be iterated on directly. Reached via either the
+  // ?debug=march-collapse URL or the intro dev button (handleForceMarchCollapseTest).
   // Resolving it remounts a fresh run (via the key) so you can go again.
-  if (import.meta.env.DEV && debugScreen === 'march-collapse') {
+  if (import.meta.env.DEV && (debugScreen === 'march-collapse' || showDebugCollapse)) {
     return (
       <div className="app-shell">
         <MarchCollapseFlow key={debugReplayToken} onResolved={() => setDebugReplayToken((t) => t + 1)} />
@@ -374,7 +370,6 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
           seasons={SEASONS}
           runSeed={runSeed}
           dateSeed={dateSeed}
-          forceMarchCollapse={forceMarchCollapse}
           devSkipToDeadline={devSkipToDeadline}
           onComplete={handleSimComplete}
         />
