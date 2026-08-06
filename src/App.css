@@ -1855,3 +1855,150 @@
   100% { transform: translate(110vw, 40px); opacity: 0; }
 }
 
+/* ---------- March Collapse (regular season, ~game 66) ---------- */
+
+/* Both warning stages break out of the app-shell's max-width card and cover the
+   full viewport — this is meant to read as a jump-scare interruption, not
+   another card in the flow. */
+.collapse-warning {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  /* JS toggles flash-magenta/flash-yellow directly — no CSS transition, an
+     instant hard cut reads as a strobe instead of a smooth pulse. */
+}
+.collapse-warning.flash-magenta {
+  background: #d6006e;
+}
+.collapse-warning.flash-yellow {
+  background: #eaff00;
+}
+.collapse-warning-hold {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  background: #eaff00;
+  text-align: center;
+}
+.collapse-warning-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+}
+.collapse-warning-eyebrow {
+  font-family: var(--display);
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: #0a0a0a;
+  margin: 0;
+  max-width: 24ch;
+}
+.collapse-warning-title {
+  font-family: var(--display);
+  font-size: 48px;
+  letter-spacing: 0.02em;
+  color: #0a0a0a;
+  margin: 0;
+  line-height: 1.05;
+}
+.collapse-warning-instructions {
+  font-size: 14px;
+  color: #0a0a0a;
+  max-width: 34ch;
+  margin: 4px 0 8px;
+}
+.collapse-hold-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+  color: #d6006e;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.collapse-hold-btn:hover {
+  background: #1a1a1a;
+}
+.march-collapse-title {
+  font-size: 40px;
+  line-height: 1.05;
+  color: var(--wings-red);
+  margin: 0;
+}
+.march-collapse {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+.collapse-instructions {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.collapse-hud {
+  display: flex;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+.collapse-arena {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  height: 360px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.collapse-puck {
+  position: absolute;
+  top: 0;
+  width: 46px;
+  height: 42px;
+  margin-left: -23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 21px;
+  color: #fff;
+  background: var(--wings-red);
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  animation-name: collapse-puck-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.collapse-puck:active {
+  filter: brightness(1.4);
+}
+@keyframes collapse-puck-fall {
+  from { transform: translateY(0); }
+  to { transform: translateY(310px); }
+}
+.collapse-net {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: repeating-linear-gradient(90deg, var(--border), var(--border) 6px, transparent 6px, transparent 12px);
+}
+

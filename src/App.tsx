@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Season, SlotId } from './types';
 import { SLOT_ORDER, eligiblePosition } from './types';
 import { SEASONS } from './data/seasons';
-import { TEAM_NAME, SUBREDDIT } from './data/team';
+import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE } from './data/team';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
 import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
@@ -41,6 +41,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
   const [spinToken, setSpinToken] = useState(0);
   const [simResult, setSimResult] = useState<SeasonSimResult | null>(null);
   const [devSkipToDeadline, setDevSkipToDeadline] = useState(false);
+  const [forceMarchCollapse, setForceMarchCollapse] = useState(false);
   const [postseasonStartRound, setPostseasonStartRound] = useState<number | undefined>(undefined);
 
   const primaryRounds = useMemo(() => generateRoundSeasons(runSeed, SEASONS), [runSeed]);
@@ -202,6 +203,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setSimResult(null);
     setPostseason(null);
     setDevSkipToDeadline(false);
+    setForceMarchCollapse(false);
     setPostseasonStartRound(undefined);
   }
 
@@ -251,6 +253,18 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setScreen('simulating');
   }
 
+  // Dev-only: March Collapse is normally a 1-in-8 subreddit-wide daily roll, so this
+  // forces it on for a fabricated-roster run to exercise the minigame immediately
+  // instead of waiting for a day it happens to fire.
+  function handleForceMarchCollapseTest() {
+    const fabricatedPicks = fabricateRosterPicks();
+    if (!fabricatedPicks) return;
+    setRunSeed(getRandomSeed());
+    setPicks(fabricatedPicks);
+    setForceMarchCollapse(true);
+    setScreen('simulating');
+  }
+
   if (screen === 'intro') {
     return (
       <div className="app-shell">
@@ -294,6 +308,11 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
               <button type="button" className="text-btn dev-reset" onClick={handleForceRegularSeasonTest}>
                 🧪 Force Regular Season (dev test)
               </button>
+              {HAS_MARCH_COLLAPSE && (
+                <button type="button" className="text-btn dev-reset" onClick={handleForceMarchCollapseTest}>
+                  🧪 Force March Collapse (dev test)
+                </button>
+              )}
             </>
           )}
         </header>
@@ -335,6 +354,8 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
           seasonsById={seasonsById}
           seasons={SEASONS}
           runSeed={runSeed}
+          dateSeed={dateSeed}
+          forceMarchCollapse={forceMarchCollapse}
           devSkipToDeadline={devSkipToDeadline}
           onComplete={handleSimComplete}
         />

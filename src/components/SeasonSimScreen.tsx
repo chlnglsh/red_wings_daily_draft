@@ -11,9 +11,11 @@ import {
   type GameResult,
   type SeasonSimResult,
 } from '../lib/gameSim';
-import { TEAM_NAME } from '../data/team';
+import { MARCH_COLLAPSE_GAME, isMarchCollapseDay, buildCollapsePenaltyModifier } from '../lib/marchCollapse';
+import { TEAM_NAME, HAS_MARCH_COLLAPSE } from '../data/team';
 import { mascotOnly } from '../data/nhlAlignment';
 import { TradeDeadlineFlow } from './TradeDeadlineFlow';
+import { MarchCollapseFlow } from './MarchCollapseFlow';
 
 const TICKS_PER_GAME = 14;
 const VISIBLE_COMPLETED_FAST = 14;
@@ -42,6 +44,8 @@ export function SeasonSimScreen({
   seasonsById,
   seasons,
   runSeed,
+  dateSeed,
+  forceMarchCollapse = false,
   devSkipToDeadline = false,
   onComplete,
 }: {
@@ -49,17 +53,29 @@ export function SeasonSimScreen({
   seasonsById: Map<string, Season>;
   seasons: Season[];
   runSeed: number;
+  dateSeed: number;
+  // Dev-only: force the March Collapse event to fire this run regardless of the daily roll.
+  forceMarchCollapse?: boolean;
   // Dev-only: skip straight to the trade deadline gate instead of playing games 1-60.
   devSkipToDeadline?: boolean;
   onComplete: (result: SeasonSimResult, finalPicks: DraftPick[]) => void;
 }) {
-  // One persistent RNG for the whole day's sim — shared across the pre-trade and
-  // post-trade halves so the overall sequence is a single continuous deterministic
-  // stream regardless of what happens at the deadline.
+  // One persistent RNG for the whole day's sim — shared across every segment
+  // (pre-trade, post-trade, post-collapse) so the overall sequence is a single
+  // continuous deterministic stream regardless of how many pause points break it up.
   const rngRef = useRef<(() => number) | null>(null);
   if (!rngRef.current) {
     rngRef.current = mulberry32(hashStringToInt(`${runSeed}:simseason:${picks.map((p) => p.player.id + p.slot).join(',')}`));
   }
+
+  // March Collapse is a subreddit-wide daily roll (tied to dateSeed, not the
+  // per-playthrough runSeed) — same day for everyone, not a per-user random. Gated
+  // on HAS_MARCH_COLLAPSE so a reskinned build never fires it; when off, this stays
+  // false and every collapse-aware branch below falls back to the plain two-segment sim.
+  const isCollapseDay = useMemo(
+    () => HAS_MARCH_COLLAPSE && (forceMarchCollapse || isMarchCollapseDay(dateSeed)),
+    [forceMarchCollapse, dateSeed],
+  );
 
   const initialRosterState = useMemo(() => deriveRosterGameState(picks, seasonsById), [picks, seasonsById]);
 
@@ -78,10 +94,15 @@ export function SeasonSimScreen({
   }, []);
 
   const [currentPicks, setCurrentPicks] = useState(picks);
-  const [postTradeGames, setPostTradeGames] = useState<GameResult[] | null>(null);
+  const [midGames, setMidGames] = useState<GameResult[] | null>(null);
+  const [finalGames, setFinalGames] = useState<GameResult[] | null>(null);
   const [tradeStage, setTradeStage] = useState<'pending' | 'active' | 'resolved'>('pending');
+  const [collapseStage, setCollapseStage] = useState<'pending' | 'active' | 'resolved'>(isCollapseDay ? 'pending' : 'resolved');
 
-  const allGames = useMemo(() => (postTradeGames ? [...preTradeGames, ...postTradeGames] : preTradeGames), [preTradeGames, postTradeGames]);
+  const allGames = useMemo(
+    () => [...preTradeGames, ...(midGames ?? []), ...(finalGames ?? [])],
+    [preTradeGames, midGames, finalGames],
+  );
 
   const [currentIndex, setCurrentIndex] = useState(devSkipToDeadline ? preTradeGames.length : 0);
   const [currentMinute, setCurrentMinute] = useState(0);
@@ -92,7 +113,8 @@ export function SeasonSimScreen({
   const feedRef = useRef<HTMLDivElement | null>(null);
 
   const currentGame = allGames[currentIndex] ?? null;
-  const atDeadline = currentIndex >= preTradeGames.length && !postTradeGames;
+  const atDeadline = currentIndex >= preTradeGames.length && !midGames;
+  const atCollapse = isCollapseDay && !!midGames && currentIndex >= preTradeGames.length + midGames.length && !finalGames;
   const liveFeedWrapRef = useRef<HTMLDivElement | null>(null);
   const [feedTop, setFeedTop] = useState(0);
   // Explicit height (not auto) once sticky: constrains the feed to whatever
@@ -163,31 +185,54 @@ export function SeasonSimScreen({
     updateEdgeClasses(feedRef.current);
   });
 
-  function generatePostTradeGames(finalPicks: DraftPick[]): GameResult[] {
+  // Games from the trade deadline up to either the season's end (no collapse today)
+  // or the collapse pause point — the roster is fixed for this whole stretch.
+  function generateMidGames(finalPicks: DraftPick[]): GameResult[] {
     const rosterState = deriveRosterGameState(finalPicks, seasonsById);
     const pickScorer = buildScorerPicker(rosterState.skaters, rngRef.current!);
     return simulateGamesInRange({
       rng: rngRef.current!,
       pickScorer,
       startGame: TRADE_DEADLINE_GAME,
-      endGame: SEASON_LENGTH,
+      endGame: isCollapseDay ? MARCH_COLLAPSE_GAME - 1 : SEASON_LENGTH,
       baseWinPct: rosterState.winPct,
       era: rosterState.era,
     });
   }
 
+  // Games from the collapse point to the end of the season — same roster, but a
+  // failed stand drags win% down for the rest of the stretch via modifierForGame.
+  function generateFinalGames(success: boolean): GameResult[] {
+    const rosterState = deriveRosterGameState(currentPicks, seasonsById);
+    const pickScorer = buildScorerPicker(rosterState.skaters, rngRef.current!);
+    return simulateGamesInRange({
+      rng: rngRef.current!,
+      pickScorer,
+      startGame: MARCH_COLLAPSE_GAME,
+      endGame: SEASON_LENGTH,
+      baseWinPct: rosterState.winPct,
+      era: rosterState.era,
+      modifierForGame: success ? undefined : buildCollapsePenaltyModifier(MARCH_COLLAPSE_GAME),
+    });
+  }
+
   function handleTradeResolved(finalPicks: DraftPick[]) {
     setCurrentPicks(finalPicks);
-    setPostTradeGames(generatePostTradeGames(finalPicks));
+    setMidGames(generateMidGames(finalPicks));
     setTradeStage('resolved');
+  }
+
+  function handleCollapseResolved(success: boolean) {
+    setFinalGames(generateFinalGames(success));
+    setCollapseStage('resolved');
   }
 
   // Normal mode: live per-game clock. Ticks through regulation, then — if the game
   // went to OT/SO — holds at the OT marker for a beat before revealing the decider,
   // so there's actually some suspense instead of the bar just sailing past 60'.
   useEffect(() => {
-    if (skipped || fast || atDeadline) return;
-    if (atDeadline || !currentGame) return;
+    if (skipped || fast || atDeadline || atCollapse) return;
+    if (!currentGame) return;
     let cancelled = false;
 
     async function play() {
@@ -216,17 +261,17 @@ export function SeasonSimScreen({
     return () => {
       cancelled = true;
     };
-  }, [currentIndex, currentGame, skipped, fast, atDeadline]);
+  }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse]);
 
   // Fast mode: no live theater, just bank finished games one after another quickly.
   useEffect(() => {
-    if (skipped || !fast || atDeadline || !currentGame) return;
+    if (skipped || !fast || atDeadline || atCollapse || !currentGame) return;
     const t = setTimeout(() => {
       setCompletedGames((prev) => [...prev, currentGame]);
       setCurrentIndex((i) => i + 1);
     }, FAST_GAME_MS);
     return () => clearTimeout(t);
-  }, [currentIndex, currentGame, skipped, fast, atDeadline]);
+  }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse]);
 
   // Reaching the end of the pre-trade half pauses for the deadline gate instead of
   // trying to animate a game that doesn't exist yet.
@@ -236,23 +281,36 @@ export function SeasonSimScreen({
     }
   }, [atDeadline, tradeStage]);
 
+  // Same pattern for the collapse pause point, on days it's scheduled to fire.
   useEffect(() => {
-    if (currentIndex >= SEASON_LENGTH && postTradeGames) {
+    if (atCollapse && collapseStage === 'pending') {
+      setCollapseStage('active');
+    }
+  }, [atCollapse, collapseStage]);
+
+  useEffect(() => {
+    const seasonDone = isCollapseDay ? finalGames !== null : midGames !== null;
+    if (currentIndex >= SEASON_LENGTH && seasonDone) {
       const t = setTimeout(() => onComplete(aggregateGames(allGames), currentPicks), 400);
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, postTradeGames, allGames, currentPicks, onComplete]);
+  }, [currentIndex, midGames, finalGames, isCollapseDay, allGames, currentPicks, onComplete]);
 
   function handleSkip() {
     setSkipped(true);
-    // Skipping past an unresolved trade decision defaults to standing pat, so the
+    // Skipping past an unresolved trade decision defaults to standing pat, and an
+    // unresolved collapse defaults to a failed stand (you didn't defend) — so the
     // whole season can still resolve instantly instead of forcing the player through it.
-    const finalGames = postTradeGames ? allGames : [...preTradeGames, ...generatePostTradeGames(currentPicks)];
-    setPostTradeGames(finalGames.slice(preTradeGames.length));
+    const mid = midGames ?? generateMidGames(currentPicks);
+    const final = isCollapseDay ? (finalGames ?? generateFinalGames(false)) : [];
+    const allResolved = [...preTradeGames, ...mid, ...final];
+    setMidGames(mid);
+    if (isCollapseDay) setFinalGames(final);
     setTradeStage('resolved');
-    setCompletedGames(finalGames);
-    setCurrentIndex(finalGames.length);
+    setCollapseStage('resolved');
+    setCompletedGames(allResolved);
+    setCurrentIndex(allResolved.length);
   }
 
   const tally = completedGames.reduce(
@@ -279,6 +337,10 @@ export function SeasonSimScreen({
         onResolved={handleTradeResolved}
       />
     );
+  }
+
+  if (collapseStage === 'active') {
+    return <MarchCollapseFlow onResolved={handleCollapseResolved} />;
   }
 
   const liveGoals = currentGame ? currentGame.goalEvents.filter((e) => e.minute <= currentMinute) : [];
