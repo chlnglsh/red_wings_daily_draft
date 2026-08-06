@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { TEAM_NAME } from '../data/team';
+import collapseOctopusSrc from '../assets/collapse-octopus.png';
 
 // "Defensive Stand": hexagonal pucks come in over a short window and the player
 // clicks/taps to block them before they reach the net. Spawn rate ramps up as the
@@ -12,13 +13,41 @@ const PUCK_LIFESPAN_MS = 2000; // time each puck is on screen before it counts a
 const MAX_MISSES = 3; // more than this and the stand fails
 const TICK_MS = 80;
 
-// Lightning-style strobe: irregular, decelerating flashes (fast and frantic at
-// first, slowing down like a storm passing) rather than an even CSS pulse — then
-// holds on a steady, fully readable frame instead of auto-advancing, so the
-// warning text actually gets read before the player chooses to proceed.
-const FLICKER_COUNT = 10;
-const FLICKER_MIN_GAP_MS = 50;
-const FLICKER_MAX_GAP_MS = 320;
+// Lightning cadence: brief bright strikes (alternating magenta/yellow for an
+// electric look) punched against dark "storm" gaps, in irregular bursts — a rapid
+// stutter, then a pause, then another strike — rather than an even or smoothly
+// decelerating strobe. Each frame is [background class, ms to hold it]; after the
+// last frame it settles onto the steady, fully readable hold screen so the warning
+// text can actually be read before the player chooses to proceed.
+type FlickerClass = 'flash-magenta' | 'flash-yellow' | 'flash-white' | 'dark';
+const LIGHTNING_FRAMES: [FlickerClass, number][] = [
+  ['dark', 140], // beat of dark first — anticipation before the first strike
+  ['flash-magenta', 55],
+  ['dark', 90],
+  ['flash-yellow', 45],
+  ['flash-white', 40], // white-hot peak on the double
+  ['dark', 340], // pause between strikes
+  ['flash-yellow', 50],
+  ['dark', 130],
+  ['flash-magenta', 40],
+  ['flash-white', 45],
+  ['flash-yellow', 40], // stutter with a white peak
+  ['dark', 420], // longer pause
+  ['flash-white', 55],
+  ['dark', 100],
+  ['flash-magenta', 40],
+  ['flash-yellow', 40],
+  ['flash-white', 45], // triple stutter
+  ['dark', 380], // pause
+  ['flash-magenta', 55],
+  ['dark', 150],
+  ['flash-yellow', 55],
+  ['dark', 300], // pause
+  ['flash-magenta', 45],
+  ['flash-yellow', 50],
+  ['dark', 200], // last dark beat before the climax
+  ['flash-white', 150], // CLIMAX: a big, sustained white-hot strike, then the warning hits
+];
 
 interface Puck {
   id: number;
@@ -37,8 +66,13 @@ const RESULT_COPY = {
 };
 
 export function MarchCollapseFlow({ onResolved }: { onResolved: (success: boolean) => void }) {
-  const [stage, setStage] = useState<'flicker' | 'hold' | 'playing' | 'result'>('flicker');
-  const [flashOn, setFlashOn] = useState(true);
+  // Accessibility: a rapid full-screen strobe can trigger photosensitive
+  // seizures, so anyone with prefers-reduced-motion set skips the lightning
+  // intro entirely and lands straight on the steady, readable warning card.
+  const [stage, setStage] = useState<'flicker' | 'hold' | 'playing' | 'result'>(() =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'hold' : 'flicker',
+  );
+  const [flickerClass, setFlickerClass] = useState<FlickerClass>(LIGHTNING_FRAMES[0][0]);
   const [pucks, setPucks] = useState<Puck[]>([]);
   const [blocked, setBlocked] = useState(0);
   const [missed, setMissed] = useState(0);
@@ -53,23 +87,22 @@ export function MarchCollapseFlow({ onResolved }: { onResolved: (success: boolea
   useEffect(() => {
     if (stage !== 'flicker') return;
     let cancelled = false;
-    let count = 0;
-    function nextFlash() {
+    let i = 0;
+    function nextFrame() {
       if (cancelled) return;
-      setFlashOn((on) => !on);
-      count++;
-      if (count >= FLICKER_COUNT) {
-        setStage('hold');
-        return;
-      }
-      // Decelerating gaps — fast/frantic at the start, slowing down like a storm passing.
-      const t = FLICKER_MIN_GAP_MS + (FLICKER_MAX_GAP_MS - FLICKER_MIN_GAP_MS) * (count / FLICKER_COUNT);
-      setTimeout(nextFlash, t);
+      const [cls, ms] = LIGHTNING_FRAMES[i];
+      setFlickerClass(cls);
+      i++;
+      const done = i >= LIGHTNING_FRAMES.length;
+      setTimeout(() => {
+        if (cancelled) return;
+        if (done) setStage('hold');
+        else nextFrame();
+      }, ms);
     }
-    const t = setTimeout(nextFlash, FLICKER_MIN_GAP_MS);
+    nextFrame();
     return () => {
       cancelled = true;
-      clearTimeout(t);
     };
   }, [stage]);
 
@@ -110,28 +143,19 @@ export function MarchCollapseFlow({ onResolved }: { onResolved: (success: boolea
   }
 
   if (stage === 'flicker') {
-    return <div className={`collapse-warning ${flashOn ? 'flash-magenta' : 'flash-yellow'}`} />;
+    return <div className={`collapse-warning ${flickerClass}`} />;
   }
 
   if (stage === 'hold') {
     return (
       <div className="collapse-warning-hold">
-        <svg className="collapse-warning-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M12 2.5 1.5 21h21L12 2.5Z"
-            fill="none"
-            stroke="#0a0a0a"
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-          <rect x="11.1" y="9" width="1.8" height="6" fill="#0a0a0a" />
-          <rect x="11.1" y="16.5" width="1.8" height="1.8" fill="#0a0a0a" />
-        </svg>
-        <p className="collapse-warning-eyebrow">Defensive breakdown incoming</p>
+        <img className="collapse-warning-octopus" src={collapseOctopusSrc} alt="" />
+        <p className="collapse-warning-eyebrow">Defensive breakdown incoming!</p>
         <h2 className="collapse-warning-title">March Collapse</h2>
         <p className="collapse-warning-instructions">
-          A stretch of hard minutes hits the {TEAM_NAME}. Tap the incoming pucks before they beat you clean,
-          block enough of them and the stand holds.
+          A stretch of potential disaster hits the {TEAM_NAME}. Tap the incoming pucks before they make it
+          to the net, block enough of them and the team avoids any March sadness. Otherwise the season looks
+          bleak from here on out.
         </p>
         <button type="button" className="collapse-hold-btn" onClick={() => setStage('playing')}>
           Take the ice →

@@ -1872,11 +1872,23 @@
   background: #d6006e;
 }
 .collapse-warning.flash-yellow {
-  background: #eaff00;
+  background: #d4ff3a;
+}
+/* White-hot peak — the brightest point of a strike, and the sustained climax
+   frame right before the warning card hits (see LIGHTNING_FRAMES). */
+.collapse-warning.flash-white {
+  background: #ffffff;
+}
+/* Dark "storm" gap between lightning strikes — the pauses that make the flicker
+   read as lightning rather than an even strobe (see LIGHTNING_FRAMES). */
+.collapse-warning.dark {
+  background: #0a0a0a;
 }
 .collapse-warning-hold {
   position: fixed;
-  inset: 0;
+  /* Slightly larger than the viewport so the jolt shake below never exposes a
+     gap at the screen edges. */
+  inset: -12px;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -1884,13 +1896,32 @@
   justify-content: center;
   gap: 12px;
   padding: 32px;
-  background: #eaff00;
+  background: #d4ff3a;
   text-align: center;
+  /* The warning slams into place as the final white strike lands — a quick
+     thunderclap jolt, played once. Skipped for reduced-motion users (who never
+     saw the strobe either). */
+  animation: collapse-hold-jolt 460ms ease-out both;
 }
-.collapse-warning-icon {
-  width: 56px;
-  height: 56px;
-  margin-bottom: 4px;
+@keyframes collapse-hold-jolt {
+  0% { transform: translate(0, 0); }
+  12% { transform: translate(-7px, 5px); }
+  26% { transform: translate(6px, -4px); }
+  40% { transform: translate(-5px, 3px); }
+  55% { transform: translate(4px, -3px); }
+  70% { transform: translate(-3px, 2px); }
+  85% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .collapse-warning-hold {
+    animation: none;
+  }
+}
+.collapse-warning-octopus {
+  width: 340px;
+  height: auto;
+  margin-bottom: 8px;
 }
 .collapse-warning-eyebrow {
   font-family: var(--display);
@@ -1898,7 +1929,7 @@
   letter-spacing: 0.03em;
   color: #0a0a0a;
   margin: 0;
-  max-width: 24ch;
+  white-space: nowrap;
 }
 .collapse-warning-title {
   font-family: var(--display);
@@ -1911,7 +1942,7 @@
 .collapse-warning-instructions {
   font-size: 14px;
   color: #0a0a0a;
-  max-width: 34ch;
+  max-width: 46ch;
   margin: 4px 0 8px;
 }
 .collapse-hold-btn {
