@@ -1,6 +1,6 @@
 import type { Player } from '../types';
 
-// The March Collapse "Defensive Stand" holds the player to a target save
+// The March Collapse "The Puck Stops Here" minigame holds the player to a target save
 // percentage: the selected goalie's real save% for that season. Most goalies have
 // it (Player.savePct), but early-era/stub goalies predate save% tracking — they
 // still have a GAA, so approximate from that assuming a typical shots-against

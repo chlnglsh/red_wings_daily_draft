@@ -268,7 +268,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
   }
 
   // Dev-only debug entry point. March Collapse boots straight into the minigame in
-  // isolation — flicker → hold → Defensive Stand → result — with no season sim
+  // isolation — flicker → hold → minigame → result — with no season sim
   // around it, so its visuals/UX can be iterated on directly. Reached via either the
   // ?debug=march-collapse URL or the intro dev button (handleForceMarchCollapseTest).
   // Resolving it remounts a fresh run (via the key) so you can go again.

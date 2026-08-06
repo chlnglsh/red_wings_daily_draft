@@ -1998,7 +1998,7 @@
   color: var(--ink-soft);
   margin: 0;
 }
-/* Hockey-stick cursor, scoped to the Defensive Stand gameplay only (not the
+/* Hockey-stick cursor, scoped to the minigame gameplay only (not the
    warning/rules or result screens). Desktop only; `auto` falls back if a browser
    rejects the image. Hotspot 0 25 is the blade tip. */
 .collapse-playing {

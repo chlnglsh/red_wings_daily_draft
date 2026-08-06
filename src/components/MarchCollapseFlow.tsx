@@ -4,9 +4,9 @@ import { formatSavePct } from '../lib/goalie';
 import collapseOctopusSrc from '../assets/collapse-octopus.png';
 import collapseNetSrc from '../assets/collapse-net.png';
 
-// "Defensive Stand": hexagonal pucks come in over a short window and the player
-// clicks/taps to block them before they reach the net. Spawn rate ramps up as the
-// clock runs down — starts manageable, ends frantic — per spec. Success/failure is
+// "The Puck Stops Here": pucks fall over a short window and the player clicks/taps
+// to block them before they cross the goal line. Spawn rate ramps up as the clock
+// runs down — starts manageable, ends frantic — per spec. Success/failure is
 // never shown as a number; only ever surfaces as narrative flavor (see RESULT_COPY).
 const GAME_DURATION_MS = 40000;
 const START_SPAWN_INTERVAL_MS = 900;
@@ -69,12 +69,12 @@ interface Puck {
 
 const RESULT_COPY = {
   success: {
-    title: '🛡️ Stand held',
-    blurb: "You weathered it. No cracks in the armor — the season rolls on as if nothing happened.",
+    title: 'The team held',
+    blurb: 'You weathered it. No cracks in the armour, the season rolls on as if nothing happened.',
   },
   fail: {
-    title: '📉 Stand broke',
-    blurb: "Pucks got through late. Your form dips from here on — how bad only shows up as the season plays out.",
+    title: 'Misery awaits',
+    blurb: 'Pucks got through. Here we go again, how badly this goes only shows up as the season plays out.',
   },
 };
 
@@ -233,7 +233,7 @@ export function MarchCollapseFlow({
 
   return (
     <div className="march-collapse rink-backdrop collapse-playing">
-      <p className="trade-deadline-eyebrow">Defensive Stand</p>
+      <p className="trade-deadline-eyebrow">The Puck Stops Here</p>
       <p className="collapse-instructions">
         Tap or click the pucks to make a save. Maintain your goalie's save percentage to carry you through the
         rest of the regular season.
