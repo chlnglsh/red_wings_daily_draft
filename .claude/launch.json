@@ -7,6 +7,12 @@
       "runtimeArgs": [],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "march-collapse",
+      "runtimeExecutable": "/Users/chloeenglish/Desktop/claude code/warmup-test/.claude/dev-march-collapse.sh",
+      "runtimeArgs": [],
+      "port": 5175
     }
   ]
 }

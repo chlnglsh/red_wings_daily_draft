@@ -29,6 +29,35 @@
   transform: scale(0.98);
 }
 
+/* Same size/weight as .primary-btn (not .text-btn) for choices that deserve
+   equal visual footing — e.g. "Stand pat" next to "Enter the trade market":
+   a plain underlined text link read as the throwaway option even though
+   it's a fully legitimate, equally-weighted choice. Outlined instead of
+   filled keeps it visually distinct from the primary action while matching
+   its size exactly (padding trimmed 2px to offset the added border, so the
+   two buttons render the same overall height). */
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--wings-red);
+  border: 2px solid var(--wings-red);
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.secondary-btn:hover {
+  background: var(--wings-red);
+  color: #fff;
+}
+.secondary-btn:active {
+  transform: scale(0.98);
+}
+
 .text-btn {
   background: none;
   border: none;
@@ -75,6 +104,14 @@
   max-width: 46ch;
 }
 
+/* Purely a fun decorative touch on the intro/splash screens — a nod to the
+   "spin" mechanic the whole game is built around. Not team branding. */
+.intro-slot-machine {
+  width: 130px;
+  height: auto;
+  object-fit: contain;
+}
+
 /* ---------- Game card backdrop (spin + pick screens only) ---------- */
 
 /* Red-bordered card that follows the page's own theme tokens (black/near-black
@@ -93,12 +130,16 @@
   overflow: hidden;
 }
 
-/* ---------- Round screen (fixed size so the card doesn't resize between rounds) ---------- */
+/* ---------- Round screen (fixed size so the card doesn't resize between rounds,
+   but capped to the viewport so short containers — mobile, Devvit's webview —
+   never force a page-level scroll; the roster list's own internal scroll
+   absorbs whatever doesn't fit instead). ---------- */
 
 .round-screen {
   display: flex;
   flex-direction: column;
   height: 780px;
+  max-height: calc(100svh - 40px);
 }
 .round-content {
   flex: 1;
@@ -154,6 +195,28 @@
 .progress-pill.filled .progress-pill-slot {
   color: #fff;
 }
+
+/* Narrow phones: once a slot is filled the pill needs a second line for the
+   surname, and CSS grid stretches every pill in the row to match the tallest
+   one — so a single filled pill makes the whole row bulk up. Shrink the pills
+   and their text so a filled row stays compact instead of ballooning. */
+@media (max-width: 480px) {
+  .progress-tracker {
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+  .progress-pill {
+    min-height: 34px;
+    padding: 4px 2px;
+    gap: 1px;
+  }
+  .progress-pill-slot {
+    font-size: 12px;
+  }
+  .progress-pill-name {
+    font-size: 8px;
+  }
+}
 /* ---------- Spin reveal ---------- */
 
 .spin-reveal {
@@ -186,6 +249,30 @@
 }
 .spin-reveal-blurb.spinning {
   animation: pulse-fade 0.5s ease-in-out infinite alternate;
+}
+
+/* Reddit's desktop embed gives this widget a lot less vertical room than a
+   phone webview does, so the flavor text and position pills above the roster
+   list eat into space that would otherwise show more players. Shrink them
+   once height gets tight instead of letting the roster list absorb it all. */
+@media (max-height: 760px) {
+  .progress-tracker {
+    margin-bottom: 10px;
+  }
+  .progress-pill {
+    min-height: 32px;
+    padding: 4px 4px;
+  }
+  .progress-pill-slot {
+    font-size: 12px;
+  }
+  .progress-pill-name {
+    font-size: 9px;
+  }
+  .spin-reveal-blurb {
+    font-size: 12px;
+    margin-top: 4px;
+  }
 }
 
 .spin-placeholder {
@@ -290,6 +377,11 @@
   margin-bottom: 12px;
   font-size: 15px;
 }
+/* Matches .roster-row-name's 16px gap between the name and position below it —
+   plain inline text only has a single space's worth of room otherwise. */
+.roster-picker-heading .roster-row-pos {
+  margin-left: 10px;
+}
 .roster-list {
   list-style: none;
   margin: 0;
@@ -320,6 +412,13 @@
 }
 .roster-list::-webkit-scrollbar {
   display: none;
+}
+/* Scouting Report's 3-option list is never scroll-tracked (no ref/onScroll wired
+   up, unlike the draft's RosterPicker), so the base fade mask above would stay
+   stuck on permanently instead of clearing at the edges — just skip it here. */
+.roster-list.scouting-list {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 .roster-row {
   width: 100%;
@@ -354,6 +453,20 @@
   letter-spacing: 0.03em;
   font-size: 11px;
 }
+/* The outgoing player on the scouting report screen — informational, not a
+   pickable option, so no bordered card/button treatment (that read as its own
+   competing choice next to the real candidates). Plain two-line stack instead:
+   rating/name/position, then stats below. flex-start (not stretch) keeps each
+   line shrink-wrapped to its own content instead of stretching full-width,
+   which would make .roster-row-stats's grid-context text-align: right kick in
+   oddly here. */
+.scouting-outgoing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 10px;
+}
 .roster-row-name {
   display: flex;
   align-items: baseline;
@@ -361,6 +474,29 @@
   min-width: 0;
   font-weight: 600;
   color: var(--ink);
+}
+.roster-row-rating {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 6px;
+  padding: 2px 6px;
+  min-width: 26px;
+  text-align: center;
+}
+.roster-row-rating.elite {
+  background: var(--rating-elite);
+}
+.roster-row-rating.great {
+  background: var(--rating-great);
+}
+.roster-row-rating.good {
+  background: var(--rating-good);
+}
+.roster-row-rating.low {
+  background: var(--rating-rest);
 }
 .roster-row-name-text {
   overflow: hidden;
@@ -380,6 +516,25 @@
   white-space: nowrap;
   text-align: right;
   justify-self: end;
+}
+
+/* Narrow phones don't have room for name + position + stats on one line without
+   clipping the name — stack name above stats instead of truncating it, since
+   telling similarly-named players apart is the whole point of this screen. */
+@media (max-width: 480px) {
+  .roster-row {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+  }
+  .roster-row-name-text {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+  }
+  .roster-row-stats {
+    text-align: left;
+    justify-self: start;
+  }
 }
 
 .slot-choice-row {
@@ -433,6 +588,24 @@
   border-radius: 50%;
   background: var(--wings-red);
   border: 2px solid var(--wings-red-dark);
+}
+/* Real trophy art (Stanley Cup champions only) — no red-circle badge like the
+   other tiers' emoji get, since actual artwork doesn't need a colored frame
+   the way a plain emoji glyph did, and cropping it into a small circle would
+   just hide most of the cup. */
+.results-tier-cup {
+  width: 190px;
+  height: 190px;
+  object-fit: contain;
+  margin: 0 auto;
+  /* transform (not width/height) so the image renders larger without growing
+     its layout box — that would push the heading/flavor text below it down. */
+  transform: scale(1.35) translateY(12px);
+  /* The cup's own tones are silver/grey, which reads a bit flat straight
+     against a near-black background — a soft white glow gives it a halo of
+     separation, and a touch more contrast/brightness makes the metal's
+     highlights pop instead of blending into the dark surrounding card. */
+  filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.3)) contrast(1.15) brightness(1.08);
 }
 .results-tier-label {
   font-size: 48px;
@@ -558,6 +731,90 @@
   white-space: nowrap;
 }
 .mock-leaderboard-score {
+  font-family: var(--mono);
+  white-space: nowrap;
+  width: 56px;
+  text-align: right;
+}
+
+.results-standings {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.results-standings-heading {
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.standings-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.standings-group-label {
+  font-family: var(--display);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--wings-red);
+  margin: 0;
+  padding-left: 2px;
+}
+.standings-table {
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.standings-table li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid var(--border);
+}
+.standings-table li:last-child {
+  border-bottom: none;
+}
+.standings-table li.you {
+  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+  font-weight: 700;
+  color: var(--wings-red);
+}
+.standings-table-primary li {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+.standings-table-secondary li {
+  padding: 4px 14px;
+  font-size: 11px;
+}
+.standings-rank {
+  font-family: var(--mono);
+  color: var(--ink-soft);
+  width: 28px;
+}
+.standings-table li.you .standings-rank {
+  color: var(--wings-red);
+}
+.standings-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.standings-points {
   font-family: var(--mono);
   white-space: nowrap;
   width: 56px;
@@ -783,7 +1040,7 @@
 }
 .trade-deadline-eyebrow {
   font-family: var(--display);
-  font-size: 24px;
+  font-size: 32px;
   color: var(--wings-red);
   margin-top: 8px;
 }
@@ -804,6 +1061,13 @@
   gap: 8px;
   margin-top: 8px;
 }
+.trade-deadline-disclaimer {
+  font-size: 11px;
+  color: var(--ink-soft);
+  font-style: italic;
+  max-width: 34ch;
+  margin-top: 4px;
+}
 .trade-swap-card {
   width: 100%;
   max-width: 460px;
@@ -811,35 +1075,45 @@
   flex-direction: column;
   gap: 10px;
 }
-.trade-swap-row {
-  display: grid;
-  grid-template-columns: 32px 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
+.trade-swap-item {
   border: 2px solid var(--border);
   border-radius: 10px;
   padding: 12px 14px;
   background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.trade-swap-slot {
+.trade-swap-position {
   font-family: var(--display);
-  font-size: 15px;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--wings-red);
+  text-align: center;
+  margin: 0;
+}
+.trade-swap-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
 }
 .trade-swap-out,
 .trade-swap-in {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  text-align: left;
+  text-align: center;
 }
-.trade-swap-name {
-  font-weight: 700;
+/* .roster-row-name defaults to justify-content: flex-start with a 16px gap —
+   fine in the roster list's full-width rows, but this sits in a narrow ~1fr
+   column that's centered as a unit (.trade-swap-out/.trade-swap-in are
+   text-align: center), so center it explicitly and tighten the gap to fit. */
+.trade-swap-name-row {
+  justify-content: center;
+  gap: 8px;
   font-size: 13px;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .trade-swap-meta {
   font-family: var(--mono);
@@ -851,12 +1125,10 @@
   font-size: 18px;
 }
 .trade-swap-delta {
-  grid-column: 1 / -1;
   font-size: 12px;
   font-weight: 700;
   text-align: center;
-  border-radius: 999px;
-  padding: 3px 0;
+  margin: 0;
 }
 .trade-swap-delta.up {
   color: var(--good);
@@ -868,7 +1140,13 @@
 /* ---------- Cup Final shootout ceremony (postseason, Final series only) ---------- */
 
 .shootout-ceremony {
+  /* Same overlay treatment as .season-sim-live — see .season-sim-live-feed —
+     so it sits at the same width/position instead of jumping wider. */
   width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -878,7 +1156,6 @@
   border: 3px solid var(--wings-red);
   border-radius: 14px;
   background: var(--paper);
-  margin-bottom: 12px;
 }
 .shootout-eyebrow {
   font-family: var(--display);
@@ -891,7 +1168,12 @@
   width: 100%;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  /* Fixed-width name column, not minmax(0, 1fr): that let the attempts column
+     (auto-sized to however many icons are revealed so far) eat into the name
+     column's share of the row as the shootout progressed, so the name visibly
+     shrank/shifted attempt by attempt. Fixed width keeps it planted; the
+     attempts column takes the flexible space instead. */
+  grid-template-columns: 130px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
 }
@@ -899,7 +1181,7 @@
   font-weight: 700;
   font-size: 14px;
   color: var(--ink);
-  min-width: 0;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -907,19 +1189,24 @@
 .shootout-attempts {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-  max-width: 200px;
+  /* flex-start, not flex-end: with the name column's width fixed, this track's
+     own width is already stable — but flex-end re-anchors the whole icon group
+     from the right edge every time one more is revealed, so every earlier icon
+     shifts left each round instead of staying put. flex-start fixes each shot's
+     position permanently the moment it appears; new ones just append after it,
+     and — critically — shot 1/2/3/... land at the same x position in both rows. */
+  justify-content: flex-start;
+  gap: 5px;
 }
 .shootout-attempt {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 11px;
   color: #fff;
   animation: spin-pop 0.2s ease;
 }
@@ -958,13 +1245,20 @@
   gap: 10px;
   padding-bottom: 24px;
 }
-/* Unlike the 82-game regular season, a best-of-7 series rarely has enough
-   completed games to justify stretching the feed to fill a tall fixed-height
-   card — let it sit at its natural size right under the live panel instead. */
-.postseason-screen .season-sim-feed {
+/* The live card now overlays the feed (see .season-sim-live-feed) instead of
+   sitting in normal flow above it, so unlike before, postseason's feed needs
+   the same flex:1 fill-the-frame behavior regular season's already had —
+   .season-sim-live-feed below gives this frame its fixed height. */
+.postseason-screen .season-sim-live-feed {
+  /* flex: none overrides the base rule's flex: 1 (which implies flex-basis: 0%)
+     entirely — postseason-screen has no explicit height for flex-grow to fill,
+     so flex-basis: 0% was winning over the plain height below and collapsing
+     this to 0px. flex: none lets height set the size directly instead. */
   flex: none;
-  width: 100%;
-  margin-top: 12px;
+  /* Generous enough that a genuinely high-scoring OT/SO game's card (observed
+     up to ~480px) still fits and fades normally instead of getting hard-clipped
+     by overflow: hidden at the wrapper boundary. */
+  height: 540px;
 }
 .postseason-live-header {
   display: flex;
@@ -974,20 +1268,39 @@
   margin-bottom: 4px;
 }
 .postseason-round-title {
-  font-size: 32px;
+  font-size: 36px;
   color: var(--wings-red);
 }
 .postseason-round-label {
   font-family: var(--display);
-  font-size: 16px;
+  font-size: 36px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--wings-red);
   margin-top: 40px;
 }
+.postseason-series-banner {
+  width: 210px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+  /* Raised into place from off-screen, not faded in — reads like the banner is
+     being hoisted up to hang under the round name, then it just stops there. */
+  animation: postseason-banner-raise 2200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes postseason-banner-raise {
+  from {
+    transform: translateY(70vh);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
 .postseason-series-result-title {
-  font-size: 36px;
+  font-size: 26px;
   color: var(--ink);
+  margin: 0;
 }
 .postseason-series-result-score {
   font-family: var(--mono);
@@ -1085,6 +1398,15 @@
   background: #fff;
   color: var(--wings-red);
 }
+/* Narrow phones: shrink the badge so the username column gets more room instead
+   of being squeezed down to a handful of characters before the ellipsis. */
+@media (max-width: 480px) {
+  .hall-of-champions-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 0.02em;
+  }
+}
 
 /* ---------- Season simulation feed ---------- */
 
@@ -1092,16 +1414,21 @@
   display: flex;
   flex-direction: column;
   height: 760px;
+  max-height: calc(100svh - 40px);
 }
 .season-sim-header {
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-bottom: 12px;
 }
 .season-sim-game-count {
-  font-family: var(--display);
+  /* Was var(--display) — Teko is a condensed display font built for big headline
+     sizes, so at 14px next to the plain-sans "Speed up"/"Skip to end" pills it read
+     thin and small even though it's already font-weight 700. Plain sans matches them. */
+  font-family: var(--sans);
   font-size: 14px;
   font-weight: 700;
   color: var(--wings-red-dark);
@@ -1109,6 +1436,7 @@
   border: 2px solid var(--wings-red);
   border-radius: 999px;
   padding: 6px 14px;
+  white-space: nowrap;
 }
 .season-sim-header-actions {
   display: flex;
@@ -1125,17 +1453,74 @@
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
 }
 .sim-action-btn:hover {
   background: var(--wings-red-dark);
 }
+/* Narrow phones: "Game X of 82" + two pill buttons don't fit this row's width at
+   the base sizing — text was wrapping inside each pill instead of the pills
+   just being smaller, which read as oversized and unevenly spaced. */
+@media (max-width: 480px) {
+  .season-sim-header {
+    gap: 6px;
+  }
+  .season-sim-game-count {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+  .season-sim-header-actions {
+    gap: 6px;
+  }
+  .sim-action-btn {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+}
+/* Wraps the feed (normal flow, fills this frame) and the live card/shootout
+   ceremony (absolutely positioned overlays — see below) so the live card can
+   grow with real content, uncapped, without pushing the frame or the feed
+   around. The frame itself stays a fixed size — see .season-sim (regular
+   season) and .postseason-screen .season-sim-live-feed (postseason) — and
+   overflow: hidden clips anything that outgrows it. */
+.season-sim-live-feed {
+  /* Explicit width, not left to shrink-wrap: this sits inside an
+     align-items: center ancestor, and its only normal-flow child
+     (.season-sim-feed) has no explicit width either — without this, the two
+     collapse to whatever the feed's sparse content measures (as little as a
+     few px early in a game with nothing completed yet), and .season-sim-live
+     inherits that collapsed width via its own width: 100%. */
+  width: 100%;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 .season-sim-live {
-  flex-shrink: 0;
+  /* Explicit width, not left to shrink-wrap: without it, this sizes to its
+     content inside a centered flex ancestor — narrow at kickoff (short
+     "Scoreless so far…" text), then visibly widening once real goal lines
+     with longer text appear, and narrower than .season-sim-feed/
+     .shootout-ceremony (both explicit width: 100%) any time it's shown next
+     to them, which read as the card "jumping" size. */
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
   border: 2px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
-  margin-bottom: 12px;
   background: var(--paper);
+  /* Grows downward with real content (no artificial height cap), covering more
+     of the feed underneath as it grows. No self-mask: this card is opaque, so
+     fading its own edge just faded its own border/background away (looked
+     broken) instead of cleanly fading the feed — and where the card's own
+     content and a covered row's text would both sit in that fade zone, it
+     blended the two into an overlapping, cluttered mess. Matches regular
+     season: a clean hard edge here, same as SeasonSimScreen's live card. */
 }
 .season-sim-live-header {
   display: flex;
@@ -1189,17 +1574,38 @@
   margin-bottom: 8px;
   animation: pulse-fade 0.7s ease-in-out infinite alternate;
 }
+/* Always rendered now (see the components) rather than conditionally mounted —
+   toggling presence made the card visibly taller for the ~23% of games that hit
+   OT, then shorter again once it cleared. visibility (not display) keeps this
+   line's height reserved at all times so nothing shifts either way. */
+.season-sim-ot-suspense.hidden {
+  visibility: hidden;
+}
 .season-sim-goals {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px 16px;
-  min-height: 22px;
+  /* No min-height reservation anymore — .season-sim-live now grows freely with
+     real content instead of holding a fixed size (see .season-sim-live-feed),
+     so there's nothing left to reserve room for. align-content: start still
+     matters generally (keeps rows packed at the top rather than spread out by
+     any incidental extra space), just not for this specific reason anymore. */
+  align-content: start;
 }
 .season-sim-goals-col {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Explicit, not left to inherit: .postseason-screen sets text-align: center
+     as an ambient default, and this column never overrode it. Long goal lines
+     nearly filled the column width so it was imperceptible, but short ones
+     (an OT-deciding goal's time label is just "OT") visibly centered instead
+     of sitting flush left like every other line. */
+  text-align: left;
 }
+/* Opponent side reads right-to-left toward the score, mirroring our own
+   left-aligned side. Red Wings stay left-justified everywhere — regular season
+   and playoffs alike. */
 .season-sim-goals-col.opp {
   align-items: flex-end;
   text-align: right;
@@ -1235,25 +1641,53 @@
   scrollbar-width: none;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  /* flex-start, not flex-end: newest game is the first DOM child (closest to the
+     seam), so starting the flow from the top keeps it pinned there with a game
+     or two in the list. flex-end used to shove a short list away from the seam,
+     and — combined with overflow-y: auto — hit a flexbox quirk where content
+     that overflows past the *start* of an end-aligned container gets clipped
+     with no way to scroll to it, so the top fade below never got a chance to
+     apply and rows just vanished with a hard edge instead of fading out. */
+  justify-content: flex-start;
   gap: 8px;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
 }
 .season-sim-feed.at-top {
-  -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 20px), transparent 100%);
-  mask-image: linear-gradient(to bottom, black 0, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0, black calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0, black calc(100% - 16px), transparent 100%);
 }
 .season-sim-feed.at-bottom {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 20px, black 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, black 20px, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 16px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 16px, black 100%);
+}
+/* When a current-game card (live or shootout) is on screen, JS measures its
+   height and sets `top` inline so the feed's top edge tracks the card's
+   bottom edge — see the feedTop effect in PostseasonScreen/SeasonSimScreen.
+   Taken out of normal flow so it can sit at an arbitrary offset instead of
+   wherever flex layout would otherwise place it. */
+.season-sim-feed.sticky-to-card {
+  position: absolute;
+  left: 0;
+  width: 100%;
 }
 .season-sim-feed.at-top.at-bottom {
   -webkit-mask-image: none;
   mask-image: none;
 }
-.season-sim-feed.fast {
-  justify-content: flex-start;
+/* The card overlapping the feed's top by --cover-depth px (set inline by JS —
+   see the feedTop effect) is covered by that opaque card regardless of this
+   mask, so fading everything up to --cover-depth is a no-op visually; the fade
+   ramp placed right after it is what actually shows, right where the row
+   emerges from behind the card. .at-top.at-bottom (mask: none) has 3 classes'
+   worth of specificity too — chaining sticky-to-card here (always present
+   alongside covered-by-card) matches that, so source order decides and this
+   wins. Fades only the covered row's own content — unlike the card-side
+   self-mask this replaced, nothing here blends the card's content with the
+   row's. */
+.season-sim-feed.sticky-to-card.covered-by-card {
+  -webkit-mask-image: linear-gradient(to bottom, transparent var(--cover-depth, 0px), black calc(var(--cover-depth, 0px) + 24px), black 100%);
+  mask-image: linear-gradient(to bottom, transparent var(--cover-depth, 0px), black calc(var(--cover-depth, 0px) + 24px), black 100%);
 }
 .season-sim-feed::-webkit-scrollbar {
   display: none;
@@ -1294,10 +1728,15 @@
   white-space: nowrap;
 }
 .season-sim-tally {
+  width: 100%;
   flex-shrink: 0;
   margin-bottom: 12px;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* GF-GA ("160-176") is much wider than W/L/OTL/PTS ("20") — five equal 1fr
+     tracks left it cramped against its own column edges while the short stats
+     floated in comparatively huge tracks, reading as GF-GA sitting closer to
+     the left margin than the others. Give it a wider share instead. */
+  grid-template-columns: repeat(4, 1fr) 1.6fr;
   gap: 8px;
   border: 2px solid var(--border);
   border-radius: 10px;
@@ -1320,3 +1759,99 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ---------- Legend of the Octopus flyby ---------- */
+
+.octopus-flyby {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+.octopus-flyby-sprite {
+  position: absolute;
+  top: 32%;
+  left: 0;
+  width: 150px;
+  height: 150px;
+  /* Flight-path transform only (translate, no rotation or scale — an arc at a
+     constant size, not a spin or a pulse) lives here, in normal screen
+     coordinates. The image's own left-right mirror is a separate, unanimated
+     transform on the <img> below — combining both in one transform would flip
+     the translate direction too, sending the arc the wrong way. */
+  /* Linear timing, not ease-in-out — combined with the densely-sampled parabola
+     keyframes below (rather than just 0/50/100%), this is what makes the flight
+     an actual smooth arc at constant horizontal speed instead of two straight
+     segments meeting at a corner (which is all a 3-keyframe eased animation
+     can ever produce — a triangle, not a curve). Direction (round 1 = left to
+     right, the Final = right to left) picks which of the two keyframe sets
+     below runs — see the .ltr modifier. */
+  animation: octopus-flyby-rtl 1.8s linear forwards;
+}
+.octopus-flyby-sprite.ltr {
+  animation-name: octopus-flyby-ltr;
+}
+.octopus-flyby-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+/* Source art is drawn facing/leaning for right-to-left motion, so it's only
+   mirrored for the left-to-right flight (round 1) — each direction ends up
+   facing the way it's actually traveling instead of one of them flying
+   backwards. */
+.octopus-flyby-sprite.ltr .octopus-flyby-img {
+  transform: scaleX(-1);
+}
+/* Both directions share the same Y arc (a sampled parabola, peak at 50%) and
+   opacity fade; only the X progression differs, and .ltr's X list is just
+   .rtl's reversed — same waypoints, opposite order. */
+@keyframes octopus-flyby-rtl {
+  0% { transform: translate(110vw, 40px); opacity: 0; }
+  5% { transform: translate(103.5vw, 25px); opacity: 1; }
+  10% { transform: translate(97vw, 11px); }
+  15% { transform: translate(90.5vw, -1px); }
+  20% { transform: translate(84vw, -11px); }
+  25% { transform: translate(77.5vw, -20px); }
+  30% { transform: translate(71vw, -27px); }
+  35% { transform: translate(64.5vw, -33px); }
+  40% { transform: translate(58vw, -37px); }
+  45% { transform: translate(51.5vw, -39px); }
+  50% { transform: translate(45vw, -40px); }
+  55% { transform: translate(38.5vw, -39px); }
+  60% { transform: translate(32vw, -37px); }
+  65% { transform: translate(25.5vw, -33px); }
+  70% { transform: translate(19vw, -27px); }
+  75% { transform: translate(12.5vw, -20px); }
+  80% { transform: translate(6vw, -11px); }
+  85% { transform: translate(-0.5vw, -1px); }
+  90% { transform: translate(-7vw, 11px); opacity: 1; }
+  95% { transform: translate(-13.5vw, 25px); opacity: 0; }
+  100% { transform: translate(-20vw, 40px); opacity: 0; }
+}
+@keyframes octopus-flyby-ltr {
+  0% { transform: translate(-20vw, 40px); opacity: 0; }
+  5% { transform: translate(-13.5vw, 25px); opacity: 1; }
+  10% { transform: translate(-7vw, 11px); }
+  15% { transform: translate(-0.5vw, -1px); }
+  20% { transform: translate(6vw, -11px); }
+  25% { transform: translate(12.5vw, -20px); }
+  30% { transform: translate(19vw, -27px); }
+  35% { transform: translate(25.5vw, -33px); }
+  40% { transform: translate(32vw, -37px); }
+  45% { transform: translate(38.5vw, -39px); }
+  50% { transform: translate(45vw, -40px); }
+  55% { transform: translate(51.5vw, -39px); }
+  60% { transform: translate(58vw, -37px); }
+  65% { transform: translate(64.5vw, -33px); }
+  70% { transform: translate(71vw, -27px); }
+  75% { transform: translate(77.5vw, -20px); }
+  80% { transform: translate(84vw, -11px); }
+  85% { transform: translate(90.5vw, -1px); }
+  90% { transform: translate(97vw, 11px); opacity: 1; }
+  95% { transform: translate(103.5vw, 25px); opacity: 0; }
+  100% { transform: translate(110vw, 40px); opacity: 0; }
+}
+

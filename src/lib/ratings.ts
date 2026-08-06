@@ -12,6 +12,16 @@ export function toRating(rawScore: number): number {
   return Math.round(RATING_MIN + pct * (RATING_MAX - RATING_MIN));
 }
 
+// Matches the .roster-row-rating.elite/.great/.good/.low badge colors in
+// App.css — shared by anywhere a player rating gets that same colored-badge
+// treatment (draft roster list, trade deadline scouting report + swaps).
+export function ratingTier(rating: number): 'elite' | 'great' | 'good' | 'low' {
+  if (rating >= 90) return 'elite';
+  if (rating >= 78) return 'great';
+  if (rating >= 65) return 'good';
+  return 'low';
+}
+
 export interface SquadRatings {
   attack: number;
   defense: number;

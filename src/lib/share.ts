@@ -2,6 +2,7 @@ import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import { pickPercentile } from './scoring';
 import type { Tier } from './tiers';
+import { TEAM_NAME } from '../data/team';
 
 function squareFor(percentile: number): string {
   if (percentile >= 0.75) return '🟩';
@@ -22,10 +23,14 @@ export function buildShareText(options: {
   record: RecordLike;
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
-  rank: number;
-  totalPlayers: number;
+  subreddit: string;
+  // Omitted where there's no real subreddit leaderboard behind the rank (standalone
+  // web/mobile, or Reddit before the leaderboard fetch resolves) — the rank line
+  // is left out of the share text entirely rather than showing a fake number.
+  rank?: number;
+  totalPlayers?: number;
 }): string {
-  const { dateStr, tier, record, picks, seasonsById, rank, totalPlayers } = options;
+  const { dateStr, tier, record, picks, seasonsById, subreddit, rank, totalPlayers } = options;
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
   const squares = SLOT_ORDER.map((slot) => {
     const pick = bySlot.get(slot);
@@ -35,10 +40,13 @@ export function buildShareText(options: {
     return squareFor(pickPercentile(pick.player, season));
   }).join(' ');
 
-  return [
-    `Red Wings Daily Draft — ${dateStr}`,
+  const lines = [
+    `${TEAM_NAME} Daily Draft — ${dateStr}`,
     `${tier.emoji} ${tier.label} — ${record.wins}-${record.losses}-${record.otl} (${record.points} PTS)`,
     squares,
-    `Rank #${rank} of ${totalPlayers} in r/RedWings today`,
-  ].join('\n');
+  ];
+  if (rank !== undefined && totalPlayers !== undefined) {
+    lines.push(`Rank #${rank} of ${totalPlayers} in r/${subreddit} today`);
+  }
+  return lines.join('\n');
 }

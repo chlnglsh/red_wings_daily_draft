@@ -12,7 +12,7 @@ export function RoundScreen({
   canReroll,
   onReroll,
   openSlots,
-  draftedPlayerIds,
+  draftedPlayerNames,
   onPick,
   picks,
 }: {
@@ -22,11 +22,11 @@ export function RoundScreen({
   canReroll: boolean;
   onReroll: () => void;
   openSlots: SlotId[];
-  draftedPlayerIds: Set<string>;
+  draftedPlayerNames: Set<string>;
   onPick: (player: Player, slot: SlotId) => void;
   picks: DraftPick[];
 }) {
-  const { displaySeason, spinning, tick } = useSpinAnimation(season, spinToken, SEASONS);
+  const { displayItem: displaySeason, spinning, tick } = useSpinAnimation(season, spinToken, SEASONS);
 
   return (
     <div className="round-screen rink-backdrop">
@@ -46,7 +46,7 @@ export function RoundScreen({
           <RosterPicker
             season={season}
             openSlots={openSlots}
-            draftedPlayerIds={draftedPlayerIds}
+            draftedPlayerNames={draftedPlayerNames}
             onPick={onPick}
           />
         )}

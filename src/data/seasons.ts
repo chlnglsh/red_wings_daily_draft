@@ -2,7 +2,7 @@ import type { Season } from '../types';
 
 // Real, sourced Detroit Red Wings season/roster data (hockey-reference.com team
 // pages, cross-checked against Wikipedia/hockeydb where noted below), covering
-// 33 seasons across all three spin-weight eras per the locked season pool.
+// 37 seasons across all three spin-weight eras per the locked season pool.
 //
 // Each roster is capped to the top 4 LW / 4 C / 4 RW / 6 D / 2 G by games played
 // that season, so every draft pool is a consistent, fixed shape.
@@ -13,7 +13,40 @@ import type { Season } from '../types';
 //   neutral default for these rather than fabricating a number — see scoring.ts.
 // - `leagueAvgGoalsPerGame` is a computed figure (2x the league's average
 //   goals-for-per-team-per-game for that season), not a single published stat.
+//
+// STUB seasons (search "// STUB" below): 1935-36, 1953-54, 1985-86, 1990-91.
+// teamPoints and blurb are real; every player in the roster is a placeholder
+// pending real research — do not treat their names or stat lines as history.
 export const SEASONS: Season[] = [
+  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
+  // the blurb are accurate; only the individual player lines below need replacing.
+  {
+    id: '1935-36',
+    year: '1935-36',
+    label: '1935-36 Red Wings',
+    scheduledGames: 48,
+    leagueAvgGoalsPerGame: 4.85,
+    teamPoints: 56,
+    era: 'preHowe',
+    blurb: "Mud Bruneteau's sixth-overtime goal — still the longest game in NHL history — sent Detroit past the Maroons, and a Final win over Toronto delivered the franchise's first-ever Stanley Cup.",
+    roster: [
+      { id: '1935-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 48, g: 15, a: 18, pts: 33 },
+      { id: '1935-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 44, g: 9, a: 12, pts: 21 },
+      { id: '1935-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 40, g: 6, a: 8, pts: 14 },
+      { id: '1935-stub-c1', name: 'TBD Center 1', position: 'C', gp: 48, g: 14, a: 20, pts: 34 },
+      { id: '1935-stub-c2', name: 'TBD Center 2', position: 'C', gp: 46, g: 8, a: 12, pts: 20 },
+      { id: '1935-stub-c3', name: 'TBD Center 3', position: 'C', gp: 38, g: 5, a: 7, pts: 12 },
+      { id: '1935-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 48, g: 16, a: 15, pts: 31 },
+      { id: '1935-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 42, g: 8, a: 9, pts: 17 },
+      { id: '1935-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 36, g: 5, a: 6, pts: 11 },
+      { id: '1935-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 48, g: 6, a: 14, pts: 20 },
+      { id: '1935-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 46, g: 3, a: 10, pts: 13 },
+      { id: '1935-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 44, g: 2, a: 7, pts: 9 },
+      { id: '1935-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 30, g: 0, a: 4, pts: 4 },
+      { id: '1935-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 40, g: 0, a: 0, pts: 0, gaa: 2.1 },
+      { id: '1935-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 8, g: 0, a: 0, pts: 0, gaa: 2.6 },
+    ],
+  },
   {
     id: '1936-37',
     year: '1936-37',
@@ -22,7 +55,7 @@ export const SEASONS: Season[] = [
     leagueAvgGoalsPerGame: 4.93,
     teamPoints: 59,
     era: 'preHowe',
-    blurb: "Vezina winner Normie Smith backstopped the league's stingiest defense to Detroit's first-ever Stanley Cup.",
+    blurb: "Vezina winner Normie Smith backstopped the league's stingiest defense to a second straight Stanley Cup, this one over the Rangers.",
     roster: [
       { id: '1936-sorrell', name: 'John Sorrell', position: 'LW', gp: 48, g: 8, a: 16, pts: 24 },
       { id: '1936-wkilrea', name: 'Wally Kilrea', position: 'LW', gp: 48, g: 8, a: 13, pts: 21 },
@@ -124,6 +157,35 @@ export const SEASONS: Season[] = [
       { id: '1951-woit', name: 'Benny Woit', position: 'D', gp: 58, g: 3, a: 8, pts: 11 },
       { id: '1951-reise', name: 'Leo Reise', position: 'D', gp: 54, g: 0, a: 11, pts: 11 },
       { id: '1951-sawchuk', name: 'Terry Sawchuk', position: 'G', gp: 70, g: 0, a: 0, pts: 0, gaa: 1.9 },
+    ],
+  },
+  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
+  // the blurb are accurate; only the individual player lines below need replacing.
+  {
+    id: '1953-54',
+    year: '1953-54',
+    label: '1953-54 Red Wings',
+    scheduledGames: 70,
+    leagueAvgGoalsPerGame: 5.1,
+    teamPoints: 88,
+    era: 'howeToPreYzerman',
+    blurb: "Tony Leswick's overtime deflection beat Montreal in Game 7 for the Cup, the franchise's fourth championship in five years.",
+    roster: [
+      { id: '1953-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 70, g: 28, a: 35, pts: 63 },
+      { id: '1953-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 68, g: 15, a: 18, pts: 33 },
+      { id: '1953-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 50, g: 8, a: 9, pts: 17 },
+      { id: '1953-stub-c1', name: 'TBD Center 1', position: 'C', gp: 70, g: 20, a: 30, pts: 50 },
+      { id: '1953-stub-c2', name: 'TBD Center 2', position: 'C', gp: 65, g: 14, a: 19, pts: 33 },
+      { id: '1953-stub-c3', name: 'TBD Center 3', position: 'C', gp: 55, g: 8, a: 12, pts: 20 },
+      { id: '1953-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 70, g: 45, a: 38, pts: 83 },
+      { id: '1953-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 68, g: 10, a: 12, pts: 22 },
+      { id: '1953-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 52, g: 6, a: 8, pts: 14 },
+      { id: '1953-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 70, g: 8, a: 20, pts: 28 },
+      { id: '1953-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 68, g: 5, a: 15, pts: 20 },
+      { id: '1953-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 60, g: 2, a: 9, pts: 11 },
+      { id: '1953-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 45, g: 1, a: 6, pts: 7 },
+      { id: '1953-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 70, g: 0, a: 0, pts: 0, gaa: 2.0 },
+      { id: '1953-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 2, g: 0, a: 0, pts: 0, gaa: 2.4 },
     ],
   },
   {
@@ -353,6 +415,35 @@ export const SEASONS: Season[] = [
       { id: '1983-mio', name: 'Eddie Mio', position: 'G', gp: 24, g: 0, a: 0, pts: 0, savePct: 0.859, gaa: 4.42 },
     ],
   },
+  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
+  // the blurb are accurate; only the individual player lines below need replacing.
+  {
+    id: '1985-86',
+    year: '1985-86',
+    label: '1985-86 Red Wings',
+    scheduledGames: 80,
+    leagueAvgGoalsPerGame: 7.6,
+    teamPoints: 40,
+    era: 'yzermanOnward',
+    blurb: "The nadir of the rebuild — a 17-57-6 record, the worst in franchise history, with a 20-year-old Yzerman doing what he could behind a threadbare roster.",
+    roster: [
+      { id: '1985-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 78, g: 20, a: 22, pts: 42 },
+      { id: '1985-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 70, g: 12, a: 14, pts: 26 },
+      { id: '1985-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 55, g: 7, a: 9, pts: 16 },
+      { id: '1985-stub-c1', name: 'TBD Center 1', position: 'C', gp: 65, g: 19, a: 28, pts: 47 },
+      { id: '1985-stub-c2', name: 'TBD Center 2', position: 'C', gp: 60, g: 10, a: 15, pts: 25 },
+      { id: '1985-stub-c3', name: 'TBD Center 3', position: 'C', gp: 50, g: 6, a: 10, pts: 16 },
+      { id: '1985-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 75, g: 22, a: 18, pts: 40 },
+      { id: '1985-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 68, g: 9, a: 11, pts: 20 },
+      { id: '1985-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 48, g: 5, a: 7, pts: 12 },
+      { id: '1985-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 76, g: 4, a: 18, pts: 22 },
+      { id: '1985-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 70, g: 3, a: 12, pts: 15 },
+      { id: '1985-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 58, g: 1, a: 8, pts: 9 },
+      { id: '1985-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 40, g: 0, a: 5, pts: 5 },
+      { id: '1985-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 45, g: 0, a: 0, pts: 0, savePct: 0.868, gaa: 4.3 },
+      { id: '1985-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 35, g: 0, a: 0, pts: 0, savePct: 0.86, gaa: 4.6 },
+    ],
+  },
   {
     id: '1986-87',
     year: '1986-87',
@@ -407,6 +498,35 @@ export const SEASONS: Season[] = [
       { id: '1987-norwood', name: 'Lee Norwood', position: 'D', gp: 51, g: 9, a: 22, pts: 31 },
       { id: '1987-hanlon', name: 'Glen Hanlon', position: 'G', gp: 47, g: 0, a: 0, pts: 0, savePct: 0.891, gaa: 3.23 },
       { id: '1987-stefan', name: 'Greg Stefan', position: 'G', gp: 33, g: 0, a: 0, pts: 0, savePct: 0.896, gaa: 3.11 },
+    ],
+  },
+  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
+  // the blurb are accurate; only the individual player lines below need replacing.
+  {
+    id: '1990-91',
+    year: '1990-91',
+    label: '1990-91 Red Wings',
+    scheduledGames: 80,
+    leagueAvgGoalsPerGame: 7.3,
+    teamPoints: 76,
+    era: 'yzermanOnward',
+    blurb: "A middling 34-38-8 season doesn't sound like the start of anything — but it kicked off a playoff streak that would run 25 straight years.",
+    roster: [
+      { id: '1990-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 80, g: 30, a: 34, pts: 64 },
+      { id: '1990-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 74, g: 16, a: 20, pts: 36 },
+      { id: '1990-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 60, g: 9, a: 11, pts: 20 },
+      { id: '1990-stub-c1', name: 'TBD Center 1', position: 'C', gp: 80, g: 48, a: 58, pts: 106 },
+      { id: '1990-stub-c2', name: 'TBD Center 2', position: 'C', gp: 70, g: 15, a: 22, pts: 37 },
+      { id: '1990-stub-c3', name: 'TBD Center 3', position: 'C', gp: 55, g: 8, a: 13, pts: 21 },
+      { id: '1990-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 78, g: 26, a: 24, pts: 50 },
+      { id: '1990-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 65, g: 12, a: 14, pts: 26 },
+      { id: '1990-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 50, g: 6, a: 8, pts: 14 },
+      { id: '1990-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 78, g: 7, a: 30, pts: 37 },
+      { id: '1990-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 72, g: 4, a: 16, pts: 20 },
+      { id: '1990-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 62, g: 2, a: 10, pts: 12 },
+      { id: '1990-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 44, g: 1, a: 6, pts: 7 },
+      { id: '1990-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 50, g: 0, a: 0, pts: 0, savePct: 0.885, gaa: 3.5 },
+      { id: '1990-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 32, g: 0, a: 0, pts: 0, savePct: 0.878, gaa: 3.8 },
     ],
   },
   {

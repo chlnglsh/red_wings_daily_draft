@@ -1,4 +1,5 @@
 import type { SeasonEra } from '../types';
+import { FLAVOR } from '../data/flavorText';
 
 // Real game-by-game season simulation. Hockey has no draws — every game is decided
 // in regulation, overtime, or a shootout — so each game here is a plain win or loss,
@@ -35,15 +36,9 @@ export function deriveOpponentWinPct(pointsA: number, pointsB: number): number {
 
 // Flavor opponents only — not real schedules or opposing rosters. One rotating pool
 // per era so old seasons face period-appropriate rivals instead of expansion teams
-// that didn't exist yet.
-const ORIGINAL_SIX_RIVALS = ['Toronto Maple Leafs', 'Montreal Canadiens', 'Boston Bruins', 'Chicago Black Hawks', 'New York Rangers'];
-const MODERN_RIVALS = [
-  'Toronto Maple Leafs', 'Chicago Blackhawks', 'Boston Bruins', 'Pittsburgh Penguins',
-  'Colorado Avalanche', 'Tampa Bay Lightning', 'Edmonton Oilers', 'New York Rangers',
-  'Nashville Predators', 'Carolina Hurricanes', 'Vegas Golden Knights', 'Dallas Stars',
-  'Florida Panthers', 'Los Angeles Kings', 'St. Louis Blues', 'Minnesota Wild',
-  'Winnipeg Jets', 'New Jersey Devils', 'Washington Capitals', 'Vancouver Canucks',
-];
+// that didn't exist yet. See data/flavorText.ts for the reskin-swappable source.
+const ORIGINAL_SIX_RIVALS = FLAVOR.rivalPools.originalSix;
+const MODERN_RIVALS = FLAVOR.rivalPools.modern;
 
 // Regulation is minute 0-60 (three 20-min periods). OT/SO games carry one extra
 // marker past 60 for the deciding moment, so the live reveal can show "OT"/"SO"

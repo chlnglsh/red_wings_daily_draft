@@ -11,6 +11,15 @@
   --mid: #b8860b;
   --low: #9aa0aa;
 
+  /* Rating badge tiers only (.roster-row-rating.*) — deliberately separate
+     from --good/--mid/--low above, which are shared by other UI (strength
+     meters, trade-swap deltas) that shouldn't change color just because the
+     rating badge scheme does. */
+  --rating-elite: #ce1126;
+  --rating-great: #d9660b;
+  --rating-good: #c99700;
+  --rating-rest: #3568d4;
+
   --sans: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --display: 'Teko', var(--sans);
   --mono: ui-monospace, 'SF Mono', Consolas, monospace;

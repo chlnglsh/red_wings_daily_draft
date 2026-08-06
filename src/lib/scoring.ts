@@ -64,3 +64,13 @@ export function pickPercentile(player: Player, season: Season): number {
   const below = rates.filter((r) => r <= playerRate).length;
   return below / rates.length;
 }
+
+/** Human-readable stat line for a player card — GP/G/A/P for skaters, SV%/GAA for goalies. */
+export function statLine(player: Player): string {
+  if (player.position === 'G') {
+    const svPct = player.savePct == null ? 'N/A% (not yet tracked)' : `${player.savePct.toFixed(3).replace(/^0/, '')} SV%`;
+    const gaa = player.gaa == null ? 'N/A GAA' : `${player.gaa.toFixed(2)} GAA`;
+    return `${svPct} · ${gaa}`;
+  }
+  return `${player.gp} GP · ${player.g}G ${player.a}A ${player.pts}P`;
+}

@@ -44,5 +44,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"
+  },
+  "dev": {
+    "subreddit": "red_wings_daily_dev"
   }
 }

@@ -1,29 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Player, Season, SlotId } from '../types';
 import { eligiblePosition } from '../types';
+import { playerScore, statLine } from '../lib/scoring';
+import { toRating, ratingTier } from '../lib/ratings';
 
 function slotsForPosition(position: Player['position'], openSlots: SlotId[]): SlotId[] {
   return openSlots.filter((slot) => eligiblePosition(slot) === position);
 }
 
-function statLine(player: Player): string {
-  if (player.position === 'G') {
-    const svPct = player.savePct == null ? 'N/A% (not yet tracked)' : `${player.savePct.toFixed(3).replace(/^0/, '')} SV%`;
-    const gaa = player.gaa == null ? 'N/A GAA' : `${player.gaa.toFixed(2)} GAA`;
-    return `${svPct} · ${gaa}`;
-  }
-  return `${player.gp} GP · ${player.g}G ${player.a}A ${player.pts}P`;
-}
-
 export function RosterPicker({
   season,
   openSlots,
-  draftedPlayerIds,
+  draftedPlayerNames,
   onPick,
 }: {
   season: Season;
   openSlots: SlotId[];
-  draftedPlayerIds: Set<string>;
+  draftedPlayerNames: Set<string>;
   onPick: (player: Player, slot: SlotId) => void;
 }) {
   const [pendingPlayer, setPendingPlayer] = useState<Player | null>(null);
@@ -42,7 +35,7 @@ export function RosterPicker({
     updateEdgeClasses(listRef.current);
   });
 
-  const availableRoster = season.roster.filter((p) => !draftedPlayerIds.has(p.id));
+  const availableRoster = season.roster.filter((p) => !draftedPlayerNames.has(p.name));
 
   // Pick anyone whose real position still has an open slot. If that position only
   // maps to one open slot, assign it immediately — the extra "which slot?" step
@@ -76,6 +69,9 @@ export function RosterPicker({
                   }}
                 >
                   <span className="roster-row-name">
+                    <span className={`roster-row-rating ${ratingTier(toRating(playerScore(player, season)))}`}>
+                      {toRating(playerScore(player, season))}
+                    </span>
                     <span className="roster-row-name-text">{player.name}</span>
                     <span className="roster-row-pos">{player.position}</span>
                   </span>

@@ -57,29 +57,75 @@ function randomPick(rng: () => number, picks: DraftPick[]): DraftPick {
   return picks[Math.floor(rng() * picks.length)];
 }
 
-/** Spins one season and returns the best- or worst-rated player at the given slot's position from it. */
+/**
+ * Spins one season and returns a player at the given slot's position from it.
+ * 'random' is a genuine coin flip (Fire Sale, Blockbuster — could be an upgrade or a
+ * disaster). 'weightedBest' biases toward the top of that season's pool without
+ * guaranteeing it (Rental Deal — better odds of a good player, not a sure thing).
+ */
 function sourceFromOneSpin(
   rng: () => number,
   slot: SlotId,
   seasons: Season[],
-  direction: 'best' | 'worst' | 'random',
+  direction: 'weightedBest' | 'random',
+  excludeNames: Set<string>,
 ): IncomingPlayer {
   const position = eligiblePosition(slot);
   // Reroll seasons that happen not to carry the needed position (rare, but every
   // season is capped to a handful of players per slot so it's not guaranteed).
   for (let attempt = 0; attempt < 20; attempt++) {
     const season = weightedPick(seasons, rng);
-    const pool = season.roster.filter((p) => p.position === position);
+    // Excludes by name, not id: the same real player has a different, season-scoped
+    // id in every season's roster entry, so an id-only check would let a trade hand
+    // back a player you already have under a different season.
+    const pool = season.roster.filter((p) => p.position === position && !excludeNames.has(p.name));
     if (pool.length === 0) continue;
+    if (direction === 'random') {
+      return { slot, seasonId: season.id, player: pool[Math.floor(rng() * pool.length)] };
+    }
+    // weightedBest: multiplying two uniform randoms skews the index toward 0 (the
+    // top of the rating-sorted pool) without always landing there.
     const ranked = [...pool].sort((a, b) => playerRating(b, season) - playerRating(a, season));
-    const player =
-      direction === 'best' ? ranked[0] : direction === 'worst' ? ranked[ranked.length - 1] : pool[Math.floor(rng() * pool.length)];
-    return { slot, seasonId: season.id, player };
+    const index = Math.floor(rng() * rng() * ranked.length);
+    return { slot, seasonId: season.id, player: ranked[index] };
   }
   // Pathological fallback — shouldn't hit given the data set covers every position.
   const season = seasons[0];
   const pool = season.roster.filter((p) => p.position === position);
   return { slot, seasonId: season.id, player: pool[0] ?? season.roster[0] };
+}
+
+/**
+ * Keeps spinning seasons until it finds a player at the slot's position whose
+ * rating is at least `floorRating` — used where a flavor promises a real (not just
+ * likely) upgrade. Falls back to the best candidate seen if the floor is never
+ * reached within the attempt cap (rare — only when the outgoing player is already
+ * elite), so this always terminates and always returns something reasonable.
+ */
+function sourceGuaranteedAtLeast(
+  rng: () => number,
+  slot: SlotId,
+  seasons: Season[],
+  floorRating: number,
+  excludeNames: Set<string>,
+): IncomingPlayer {
+  const position = eligiblePosition(slot);
+  let best: IncomingPlayer | null = null;
+  let bestRating = -Infinity;
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const season = weightedPick(seasons, rng);
+    const pool = season.roster.filter((p) => p.position === position && !excludeNames.has(p.name));
+    if (pool.length === 0) continue;
+    const ranked = [...pool].sort((a, b) => playerRating(b, season) - playerRating(a, season));
+    const candidate = ranked[0];
+    const rating = playerRating(candidate, season);
+    if (rating > bestRating) {
+      bestRating = rating;
+      best = { slot, seasonId: season.id, player: candidate };
+    }
+    if (rating >= floorRating) return best!;
+  }
+  return best!;
 }
 
 function buildSwap(outgoing: DraftPick, incoming: IncomingPlayer): TradeSwap {
@@ -98,45 +144,68 @@ export function resolveTrade(
   seasonsById: Map<string, Season>,
   seasons: Season[],
 ): TradeResult {
+  // A trade should never hand back a player you already have under a different
+  // season's roster entry — same fix as the draft screen, applied here so it
+  // can't reintroduce the duplicate via the trade market instead.
+  const rosterNames = new Set(picks.map((p) => p.player.name));
+
   switch (flavor) {
     case 'dealFallsThrough':
       return { flavor, swaps: [] };
 
     case 'fireSale': {
+      // A panic move, not a plan — genuinely could be an upgrade or a disaster.
       const outgoing = randomPick(rng, picks);
-      const incoming = sourceFromOneSpin(rng, outgoing.slot, seasons, 'worst');
+      const incoming = sourceFromOneSpin(rng, outgoing.slot, seasons, 'random', rosterNames);
       return { flavor, swaps: [buildSwap(outgoing, incoming)] };
     }
 
     case 'bargainBuy': {
+      // Promised an upgrade — the incoming player is guaranteed to rate higher
+      // than whoever they're replacing, not just "best of whatever season spun."
       const outgoing = weakestPick(picks, seasonsById);
-      const incoming = sourceFromOneSpin(rng, outgoing.slot, seasons, 'best');
+      const outgoingRating = playerRating(outgoing.player, seasonsById.get(outgoing.seasonId)!);
+      const incoming = sourceGuaranteedAtLeast(rng, outgoing.slot, seasons, outgoingRating + 1, rosterNames);
       return { flavor, swaps: [buildSwap(outgoing, incoming)] };
     }
 
     case 'rentalDeal': {
+      // Similar risk profile to Fire Sale, but the odds are stacked toward a good
+      // outcome instead of a pure coin flip.
       const outgoing = randomPick(rng, picks);
-      const incoming = sourceFromOneSpin(rng, outgoing.slot, seasons, 'best');
+      const incoming = sourceFromOneSpin(rng, outgoing.slot, seasons, 'weightedBest', rosterNames);
       return { flavor, swaps: [buildSwap(outgoing, incoming)] };
     }
 
     case 'blockbuster': {
+      // Two swaps, both genuinely chancy — no quality bias on either side. Each
+      // incoming player also gets excluded before sourcing the next one, so the
+      // two swaps can't both hand back the same player.
       const shuffled = [...SLOT_ORDER].sort(() => rng() - 0.5);
       const slotsToSwap = shuffled.slice(0, 2);
+      const excluded = new Set(rosterNames);
       const swaps = slotsToSwap.map((slot) => {
         const outgoing = picks.find((p) => p.slot === slot)!;
-        const incoming = sourceFromOneSpin(rng, slot, seasons, 'random');
+        const incoming = sourceFromOneSpin(rng, slot, seasons, 'random', excluded);
+        excluded.add(incoming.player.name);
         return buildSwap(outgoing, incoming);
       });
       return { flavor, swaps };
     }
 
     case 'scoutingReport': {
+      // Two real options with real risk, plus one guaranteed-safe pick — so there's
+      // always at least one candidate that's a same-or-better upgrade. Each candidate
+      // also excludes the ones already drawn so the three options are never duplicates.
       const outgoing = weakestPick(picks, seasonsById);
-      const candidates: IncomingPlayer[] = [];
-      for (let i = 0; i < 3; i++) {
-        candidates.push(sourceFromOneSpin(rng, outgoing.slot, seasons, 'best'));
-      }
+      const outgoingRating = playerRating(outgoing.player, seasonsById.get(outgoing.seasonId)!);
+      const excluded = new Set(rosterNames);
+      const first = sourceFromOneSpin(rng, outgoing.slot, seasons, 'random', excluded);
+      excluded.add(first.player.name);
+      const second = sourceFromOneSpin(rng, outgoing.slot, seasons, 'random', excluded);
+      excluded.add(second.player.name);
+      const third = sourceGuaranteedAtLeast(rng, outgoing.slot, seasons, outgoingRating, excluded);
+      const candidates: IncomingPlayer[] = [first, second, third].sort(() => rng() - 0.5);
       return { flavor, swaps: [], scoutingPick: { outgoing, candidates } };
     }
   }

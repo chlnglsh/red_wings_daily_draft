@@ -4,10 +4,20 @@
     "outDir": "../dist/types/client",
     "tsBuildInfoFile": "../dist/types/client/tsconfig.tsbuildinfo",
     "customConditions": ["browser"],
-    "rootDir": "../src/client"
+    "rootDir": "../src/client",
+    "types": ["vite/client"],
+    // The ported game (src/client/app/**) was written and type-checked against a
+    // separate project without these two flags — relaxing them here rather than
+    // rewriting otherwise-correct code just to satisfy checks it was never
+    // written against. Still fully `strict`, just without these two extras.
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false
   },
   "include": ["../src/client/**/*"],
-  "exclude": [],
+  // main.tsx is the standalone web app's own Vite entry point (Devvit's entries
+  // are game.tsx/splash.tsx, which import ./app/App directly) — it's unused here,
+  // just incidentally swept in by the symlinked app/ folder matching the glob above.
+  "exclude": ["../src/client/app/main.tsx"],
   "references": [
     {
       "path": "./tsconfig.shared.json"

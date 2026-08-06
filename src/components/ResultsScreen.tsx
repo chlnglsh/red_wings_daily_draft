@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import { rosterScore, pickPercentile } from '../lib/scoring';
 import { getTierFromPoints, getTierFromRosterScore } from '../lib/tiers';
 import { simulateRecord } from '../lib/simulate';
 import { SEASON_LENGTH, type SeasonSimResult } from '../lib/gameSim';
-import { generateMockLeaderboard, rankAmong } from '../lib/leaderboard';
+import { rankAmong, type LeaderboardEntry, type Platform } from '../lib/platform';
 import { buildShareText } from '../lib/share';
 import type { PostseasonResult } from '../lib/postseason';
+import { TEAM_NAME } from '../data/team';
 
 function squareClass(percentile: number): string {
   if (percentile >= 0.75) return 'pick-square good';
@@ -18,23 +19,40 @@ function squareClass(percentile: number): string {
 export function ResultsScreen({
   dateStr,
   dateSeed,
+  subreddit,
   picks,
   seasonsById,
   simResult,
   postseason,
   onStartPostseason,
   onPlayAgainDev,
+  platform,
 }: {
   dateStr: string;
   dateSeed: number;
+  subreddit: string;
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
   postseason: PostseasonResult;
   onStartPostseason: () => void;
   onPlayAgainDev: () => void;
+  platform: Platform;
 }) {
   const [copied, setCopied] = useState(false);
+  // null = not shown (no leaderboard on this platform) or still loading.
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[] | null>(null);
+
+  useEffect(() => {
+    if (!platform.showsLeaderboard) return;
+    let cancelled = false;
+    platform.getLeaderboard(dateSeed).then((entries) => {
+      if (!cancelled) setLeaderboard(entries);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [platform, dateSeed]);
 
   const score = useMemo(() => rosterScore(picks, seasonsById), [picks, seasonsById]);
   const predicted = useMemo(() => simulateRecord(score), [score]);
@@ -42,19 +60,23 @@ export function ResultsScreen({
   const tier = useMemo(() => getTierFromPoints(pointsPct), [pointsPct]);
   const predictedTier = useMemo(() => getTierFromRosterScore(score), [score]);
 
-  const leaderboard = useMemo(() => generateMockLeaderboard(dateSeed), [dateSeed]);
-  const { rank, total } = useMemo(() => rankAmong(simResult.points, leaderboard), [simResult.points, leaderboard]);
+  const rankInfo = useMemo(
+    () => (leaderboard ? rankAmong(simResult.points, leaderboard) : null),
+    [simResult.points, leaderboard],
+  );
 
   const shareText = useMemo(
-    () => buildShareText({ dateStr, tier, record: simResult, picks, seasonsById, rank, totalPlayers: total }),
-    [dateStr, tier, simResult, picks, seasonsById, rank, total],
+    () =>
+      buildShareText({
+        dateStr, tier, record: simResult, picks, seasonsById, subreddit,
+        rank: rankInfo?.rank, totalPlayers: rankInfo?.total,
+      }),
+    [dateStr, tier, simResult, picks, seasonsById, subreddit, rankInfo],
   );
 
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
-  const rankedLeaderboard = leaderboard
-    .map((entry) => ({ ...entry, record: simulateRecord(entry.score) }))
-    .sort((a, b) => b.record.points - a.record.points);
-  const nearby = rankedLeaderboard.slice(Math.max(0, rank - 4), rank + 2);
+  const rankedLeaderboard = (leaderboard ?? []).slice().sort((a, b) => b.points - a.points);
+  const nearby = rankInfo ? rankedLeaderboard.slice(Math.max(0, rankInfo.rank - 4), rankInfo.rank + 2) : [];
 
   async function handleCopy() {
     try {
@@ -68,10 +90,11 @@ export function ResultsScreen({
 
   const pointsDiff = simResult.points - predicted.points;
   const atlanticRank = postseason.atlanticStandings.findIndex((t) => t.isPlayer) + 1;
+  const metroStandings = postseason.eastStandings.filter((t) => t.division === 'Metropolitan');
 
   return (
     <div className="results-screen rink-backdrop">
-      <p className="results-eyebrow">r/RedWings · {dateStr}</p>
+      <p className="results-eyebrow">r/{subreddit} · {dateStr}</p>
       <div className="results-tier">
         <span className="results-tier-emoji">{tier.emoji}</span>
         <h1 className="results-tier-label">{tier.label}</h1>
@@ -110,6 +133,36 @@ export function ResultsScreen({
         </div>
       )}
 
+      {postseason.qualified && (
+        <div className="results-standings">
+          <p className="results-standings-heading">Eastern Conference standings</p>
+          <div className="standings-group">
+            <p className="standings-group-label">Atlantic</p>
+            <ol className="standings-table standings-table-primary">
+              {postseason.atlanticStandings.map((team, i) => (
+                <li key={team.name} className={team.isPlayer ? 'you' : ''}>
+                  <span className="standings-rank">#{i + 1}</span>
+                  <span className="standings-name">{team.isPlayer ? `You (${TEAM_NAME})` : team.name}</span>
+                  <span className="standings-points">{team.points} pts</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="standings-group">
+            <p className="standings-group-label">Metropolitan</p>
+            <ol className="standings-table standings-table-secondary">
+              {metroStandings.map((team, i) => (
+                <li key={team.name}>
+                  <span className="standings-rank">#{i + 1}</span>
+                  <span className="standings-name">{team.name}</span>
+                  <span className="standings-points">{team.points} pts</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+
       <div className="results-roster">
         {SLOT_ORDER.map((slot) => {
           const pick = bySlot.get(slot);
@@ -127,27 +180,31 @@ export function ResultsScreen({
         })}
       </div>
 
-      <div className="results-rank">
-        Rank <strong>#{rank}</strong> of {total} in r/RedWings today (simulated leaderboard — Phase 1 prototype)
-      </div>
+      {rankInfo && (
+        <>
+          <div className="results-rank">
+            Rank <strong>#{rankInfo.rank}</strong> of {rankInfo.total} in r/{subreddit} today
+          </div>
 
-      <ol className="mock-leaderboard">
-        {nearby.map((entry, i) => {
-          const entryRank = Math.max(0, rank - 4) + i + 1;
-          const isYou = entryRank === rank;
-          const entryRecord = isYou ? simResult : entry.record;
-          return (
-            <li key={entry.username + i} className={isYou ? 'you' : ''}>
-              <span className="mock-leaderboard-rank">#{entryRank}</span>
-              <span className="mock-leaderboard-name">{isYou ? 'You' : entry.username}</span>
-              <span className="mock-leaderboard-record">
-                {entryRecord.wins}-{entryRecord.losses}-{entryRecord.otl}
-              </span>
-              <span className="mock-leaderboard-score">{entryRecord.points} pts</span>
-            </li>
-          );
-        })}
-      </ol>
+          <ol className="mock-leaderboard">
+            {nearby.map((entry, i) => {
+              const entryRank = Math.max(0, rankInfo.rank - 4) + i + 1;
+              const isYou = entryRank === rankInfo.rank;
+              const entryRecord = isYou ? simResult : entry;
+              return (
+                <li key={entry.username + i} className={isYou ? 'you' : ''}>
+                  <span className="mock-leaderboard-rank">#{entryRank}</span>
+                  <span className="mock-leaderboard-name">{isYou ? 'You' : entry.username}</span>
+                  <span className="mock-leaderboard-record">
+                    {entryRecord.wins}-{entryRecord.losses}-{entryRecord.otl}
+                  </span>
+                  <span className="mock-leaderboard-score">{entryRecord.points} pts</span>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      )}
 
       <div className="share-block">
         <pre className="share-text">{shareText}</pre>
@@ -158,9 +215,11 @@ export function ResultsScreen({
 
       <p className="results-daily-note">🗓️ One play per day — come back tomorrow for a fresh draft.</p>
 
-      <button type="button" className="text-btn dev-reset" onClick={onPlayAgainDev}>
-        ↺ Replay (dev only — real game is once per day)
-      </button>
+      {import.meta.env.DEV && (
+        <button type="button" className="text-btn dev-reset" onClick={onPlayAgainDev}>
+          ↺ Replay (dev only — real game is once per day)
+        </button>
+      )}
     </div>
   );
 }

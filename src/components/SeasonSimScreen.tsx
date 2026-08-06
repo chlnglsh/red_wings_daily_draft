@@ -11,10 +11,11 @@ import {
   type GameResult,
   type SeasonSimResult,
 } from '../lib/gameSim';
+import { TEAM_NAME } from '../data/team';
+import { mascotOnly } from '../data/nhlAlignment';
 import { TradeDeadlineFlow } from './TradeDeadlineFlow';
 
 const TICKS_PER_GAME = 14;
-const VISIBLE_COMPLETED_NORMAL = 6;
 const VISIBLE_COMPLETED_FAST = 14;
 const FAST_GAME_MS = 150; // how long each game sits in the fast-scroll feed before the next one lands
 
@@ -41,12 +42,15 @@ export function SeasonSimScreen({
   seasonsById,
   seasons,
   runSeed,
+  devSkipToDeadline = false,
   onComplete,
 }: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   seasons: Season[];
   runSeed: number;
+  // Dev-only: skip straight to the trade deadline gate instead of playing games 1-60.
+  devSkipToDeadline?: boolean;
   onComplete: (result: SeasonSimResult, finalPicks: DraftPick[]) => void;
 }) {
   // One persistent RNG for the whole day's sim — shared across the pre-trade and
@@ -79,22 +83,72 @@ export function SeasonSimScreen({
 
   const allGames = useMemo(() => (postTradeGames ? [...preTradeGames, ...postTradeGames] : preTradeGames), [preTradeGames, postTradeGames]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(devSkipToDeadline ? preTradeGames.length : 0);
   const [currentMinute, setCurrentMinute] = useState(0);
   const [otSuspense, setOtSuspense] = useState(false);
-  const [completedGames, setCompletedGames] = useState<GameResult[]>([]);
+  const [completedGames, setCompletedGames] = useState<GameResult[]>(devSkipToDeadline ? preTradeGames : []);
   const [skipped, setSkipped] = useState(false);
   const [fast, setFast] = useState(false);
   const feedRef = useRef<HTMLDivElement | null>(null);
 
   const currentGame = allGames[currentIndex] ?? null;
   const atDeadline = currentIndex >= preTradeGames.length && !postTradeGames;
+  const liveFeedWrapRef = useRef<HTMLDivElement | null>(null);
+  const [feedTop, setFeedTop] = useState(0);
+  // Explicit height (not auto) once sticky: constrains the feed to whatever
+  // room is actually left below the card, so overflow-y: auto (already on the
+  // base rule) can genuinely engage and the user can scroll to reach past
+  // games the card would otherwise just sit on top of and hide — scrolling
+  // can't reveal content that's covered by a separate opaque sibling, only
+  // content clipped by the feed's own overflow.
+  const [feedHeight, setFeedHeight] = useState<number | undefined>(undefined);
+  // No live card in fast mode (see the !fast && currentGame render check below),
+  // so the feed has nothing to stick to there — normal flow instead.
+  const stickyToCard = !fast && !!currentGame;
 
   // Reset the live clock whenever we move to a new game, regardless of which mode got us here.
   useEffect(() => {
     setCurrentMinute(0);
     setOtSuspense(false);
   }, [currentIndex]);
+
+  // Keeps the completed-games feed pinned just below the live card's bottom
+  // edge as it grows, and constrains it to whatever room is actually left in
+  // the fixed-height frame — so instead of spilling up behind the card (which
+  // scrolling can't reach, since it's a separate opaque sibling, not clipped
+  // overflow), it scrolls internally within that space. Measured (not
+  // guessed) because the card's height depends on real game content (goal
+  // count, OT) that changes live.
+  useEffect(() => {
+    const wrapEl = liveFeedWrapRef.current;
+    const feedEl = feedRef.current;
+    if (!stickyToCard || !wrapEl || !feedEl) {
+      setFeedTop(0);
+      setFeedHeight(undefined);
+      return;
+    }
+    const cardEl = wrapEl.querySelector<HTMLElement>('.season-sim-live');
+    if (!cardEl) {
+      setFeedTop(0);
+      setFeedHeight(undefined);
+      return;
+    }
+    const recompute = () => {
+      const wrapH = wrapEl.clientHeight;
+      const cardH = cardEl.offsetHeight;
+      // Match the feed's own row-to-row gap so the card-to-first-game gap looks
+      // the same as the gap between any two games, rather than sitting flush.
+      const rowGap = parseFloat(getComputedStyle(feedEl).rowGap) || 0;
+      const top = Math.min(cardH + rowGap, wrapH);
+      setFeedTop(top);
+      setFeedHeight(Math.max(0, wrapH - top));
+    };
+    recompute();
+    const observer = new ResizeObserver(recompute);
+    observer.observe(cardEl);
+    observer.observe(wrapEl);
+    return () => observer.disconnect();
+  }, [stickyToCard, currentGame]);
 
   // Only fade the feed's top/bottom edge when there's more content to scroll
   // past it — otherwise the gradient permanently obscures whichever game is
@@ -158,7 +212,7 @@ export function SeasonSimScreen({
       setCompletedGames((prev) => [...prev, currentGame!]);
       setCurrentIndex((i) => i + 1);
     }
-    play();
+    void play();
     return () => {
       cancelled = true;
     };
@@ -231,9 +285,12 @@ export function SeasonSimScreen({
   const liveOppGoals = currentGame ? currentGame.oppGoalEvents.filter((e) => e.minute <= currentMinute) : [];
   const progressPct = currentGame ? (currentMinute / currentGame.endMinute) * 100 : 100;
   const goesToExtra = currentGame ? currentGame.endMinute > REGULATION_END : false;
-  const visibleCompleted = fast ? VISIBLE_COMPLETED_FAST : VISIBLE_COMPLETED_NORMAL;
-  const recentCompleted = completedGames.slice(-visibleCompleted).reverse();
-  const totalGames = postTradeGames ? SEASON_LENGTH : Math.max(SEASON_LENGTH, preTradeGames.length);
+  // Fast mode's ticker still caps at a recent window (it's a scrolling feed with
+  // no live card to dock a genuinely scrollable list under). The normal/live-card
+  // feed is now real-scroll (see the feedHeight effect below), so there's no
+  // reason to cap it — show the whole season's history, scrollable.
+  const recentCompleted = fast ? completedGames.slice(-VISIBLE_COMPLETED_FAST).reverse() : [...completedGames].reverse();
+  const totalGames = SEASON_LENGTH;
 
   return (
     <div className="season-sim rink-backdrop">
@@ -278,66 +335,69 @@ export function SeasonSimScreen({
         </div>
       </div>
 
-      {!fast && currentGame && (
-        <div className="season-sim-live">
-          <div className="season-sim-live-header">
-            <span>
-              vs {currentGame.opponent} {currentGame.home ? '(H)' : '(A)'}
-            </span>
-            <span className="season-sim-live-score">
-              {liveGoals.length}-{liveOppGoals.length}
-            </span>
-          </div>
-          <div className="season-sim-progress-track">
-            <div className="season-sim-progress-fill" style={{ width: `${progressPct}%` }} />
-            <div className="season-sim-progress-tick" style={{ left: '33.333%' }} />
-            <div className="season-sim-progress-tick" style={{ left: '66.667%' }} />
-          </div>
-          <div className="season-sim-progress-labels">
-            <span>0'</span>
-            <span>20'</span>
-            <span>40'</span>
-            <span>{goesToExtra ? 'OT' : "60'"}</span>
-          </div>
-          {otSuspense && <div className="season-sim-ot-suspense">⏳ Overtime… anybody's game</div>}
-          <div className="season-sim-goals">
-            {liveGoals.length === 0 && liveOppGoals.length === 0 && (
-              <span className="season-sim-goals-empty">Scoreless so far…</span>
-            )}
-            <div className="season-sim-goals-col">
-              <span className="season-sim-goals-col-header">Red Wings</span>
-              {liveGoals.map((g, i) => (
-                <div key={i} className="season-sim-goal-line">
-                  🚨 {g.scorer ?? 'Red Wings'} <span className="season-sim-goal-time">{g.label}</span>
-                </div>
-              ))}
+      <div className="season-sim-live-feed" ref={liveFeedWrapRef}>
+        <div
+          className={`season-sim-feed${fast ? ' fast' : ''}${stickyToCard ? ' sticky-to-card' : ''}`}
+          ref={feedRef}
+          style={stickyToCard ? { top: feedTop, height: feedHeight } : undefined}
+          onScroll={(e) => updateEdgeClasses(e.currentTarget)}
+        >
+          {recentCompleted.map((g) => (
+            <div key={g.gameNumber} className="season-sim-game">
+              <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
+              <span className="season-sim-opponent">
+                G{g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
+              </span>
+              <span className="season-sim-score">{gameLine(g)}</span>
             </div>
-            <div className="season-sim-goals-col opp">
-              <span className="season-sim-goals-col-header">{currentGame.opponent}</span>
-              {liveOppGoals.map((g, i) => (
-                <div key={i} className="season-sim-goal-line">
-                  <span className="season-sim-goal-time">{g.label}</span> 🥅
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
-      )}
 
-      <div
-        className={`season-sim-feed${fast ? ' fast' : ''}`}
-        ref={feedRef}
-        onScroll={(e) => updateEdgeClasses(e.currentTarget)}
-      >
-        {recentCompleted.map((g) => (
-          <div key={g.gameNumber} className="season-sim-game">
-            <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
-            <span className="season-sim-opponent">
-              G{g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
-            </span>
-            <span className="season-sim-score">{gameLine(g)}</span>
+        {!fast && currentGame && (
+          <div className="season-sim-live">
+            <div className="season-sim-live-header">
+              <span>
+                vs {currentGame.opponent} {currentGame.home ? '(H)' : '(A)'}
+              </span>
+              <span className="season-sim-live-score">
+                {liveGoals.length}-{liveOppGoals.length}
+              </span>
+            </div>
+            <div className="season-sim-progress-track">
+              <div className="season-sim-progress-fill" style={{ width: `${progressPct}%` }} />
+              <div className="season-sim-progress-tick" style={{ left: '33.333%' }} />
+              <div className="season-sim-progress-tick" style={{ left: '66.667%' }} />
+            </div>
+            <div className="season-sim-progress-labels">
+              <span>0'</span>
+              <span>20'</span>
+              <span>40'</span>
+              <span>{goesToExtra ? 'OT' : "60'"}</span>
+            </div>
+            <div className={`season-sim-ot-suspense${otSuspense ? '' : ' hidden'}`}>⏳ Overtime… anybody's game</div>
+            <div className="season-sim-goals">
+              {liveGoals.length === 0 && liveOppGoals.length === 0 && (
+                <span className="season-sim-goals-empty">Scoreless so far…</span>
+              )}
+              <div className="season-sim-goals-col">
+                <span className="season-sim-goals-col-header">{TEAM_NAME}</span>
+                {liveGoals.map((g, i) => (
+                  <div key={i} className="season-sim-goal-line">
+                    🚨 {g.scorer ?? TEAM_NAME} <span className="season-sim-goal-time">{g.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="season-sim-goals-col opp">
+                <span className="season-sim-goals-col-header">{mascotOnly(currentGame.opponent)}</span>
+                {liveOppGoals.map((g, i) => (
+                  <div key={i} className="season-sim-goal-line">
+                    <span className="season-sim-goal-time">{g.label}</span> 🥅
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

@@ -13,6 +13,7 @@
 import { mulberry32, hashStringToInt } from './prng';
 import { DIVISIONS, LEAGUE_TEAMS, type Conference, type Division } from '../data/nhlAlignment';
 import { deriveOpponentWinPct, simulateGame, buildScorerPicker, type GameResult, type WeightedSkater } from './gameSim';
+import { TEAM_FULL_NAME } from '../data/team';
 
 export interface TeamStanding {
   name: string;
@@ -58,6 +59,7 @@ export interface PostseasonResult {
   qualified: boolean;
   playerSeedLabel: string | null;
   atlanticStandings: TeamStanding[]; // sorted by points, for the qualification/standings display
+  eastStandings: TeamStanding[]; // both East divisions combined, sorted by points
   eastBracket: ConferenceBracket;
   westBracket: ConferenceBracket;
   finalSeries: Series;
@@ -86,7 +88,7 @@ function sampleLeagueStandings(runSeed: number, playerPoints: number): TeamStand
     };
   });
   standings.push({
-    name: 'Detroit Red Wings',
+    name: TEAM_FULL_NAME,
     division: 'Atlantic',
     conference: 'East',
     points: playerPoints,
@@ -238,8 +240,15 @@ function resolveSeries(
 }
 
 function advance(a: Series, b: Series, id: string, round: Round, conference: Conference | null): Series {
-  const home = a.winner!;
-  const away = b.winner!;
+  // Home-ice goes to whichever winner actually has the better regular-season
+  // points, same as Round 1's seeding — NOT just "whichever series was passed
+  // in as `a`". That was the real bug behind a team looking like the wrong
+  // one had home ice in the shootout: `a` was always the East side (or the
+  // divA-slot winner), so its team got "home" regardless of real standings.
+  const winnerA = a.winner!;
+  const winnerB = b.winner!;
+  const home = winnerA.team.points >= winnerB.team.points ? winnerA : winnerB;
+  const away = home === winnerA ? winnerB : winnerA;
   return {
     id,
     round,
@@ -297,6 +306,7 @@ export function simulatePostseason(
   const rng = mulberry32(hashStringToInt(`${runSeed}:postseason:bracket`));
 
   const atlanticStandings = standings.filter((t) => t.division === 'Atlantic').sort((a, b) => b.points - a.points);
+  const eastStandings = standings.filter((t) => t.conference === 'East').sort((a, b) => b.points - a.points);
   const { divATop3, wc1, wc2 } = seedConference(standings, 'East');
   const playerQualified = divATop3.some((t) => t.isPlayer) || wc1.isPlayer || wc2.isPlayer;
   const playerSeedEntry = playerQualified
@@ -343,6 +353,7 @@ export function simulatePostseason(
     qualified: playerQualified,
     playerSeedLabel,
     atlanticStandings,
+    eastStandings,
     eastBracket,
     westBracket,
     finalSeries,
@@ -355,8 +366,10 @@ export function simulatePostseason(
 }
 
 // Dev-only test helper — real games, no fabricated data. Searches seeds until it
-// finds one that actually plays out to a Final-series shootout, so the ceremony can
-// be eyeballed without waiting on the ~5%-per-game odds in a normal playthrough.
+// finds one where Game 1 of the Final specifically goes to a shootout, so the
+// ceremony can be eyeballed immediately (paired with startAtRound=4) rather than
+// waiting on the ~5%-per-game odds in a normal playthrough, or on some later,
+// unpredictable game within the Final series.
 export function findCupFinalShootoutSeed(
   playerPoints: number,
   skaters: WeightedSkater[],
@@ -364,7 +377,25 @@ export function findCupFinalShootoutSeed(
 ): { seed: number; result: PostseasonResult } | null {
   for (let seed = 1; seed <= maxAttempts; seed++) {
     const result = simulatePostseason(seed, playerPoints, skaters);
-    if (result.qualified && result.finalSeries.games.some((g) => g.decidedIn === 'SO')) {
+    if (result.qualified && result.finalSeries.games[0]?.decidedIn === 'SO') {
+      return { seed, result };
+    }
+  }
+  return null;
+}
+
+// Dev-only test helper — same idea as findCupFinalShootoutSeed, but only requires
+// the player to have actually reached the Stanley Cup Final (win or lose, no
+// shootout requirement), so it's a much quicker hit for testing the Final round
+// generally rather than the shootout ceremony specifically.
+export function findSeedReachingFinal(
+  playerPoints: number,
+  skaters: WeightedSkater[],
+  maxAttempts = 5000,
+): { seed: number; result: PostseasonResult } | null {
+  for (let seed = 1; seed <= maxAttempts; seed++) {
+    const result = simulatePostseason(seed, playerPoints, skaters);
+    if (result.qualified && result.finalSeries.isPlayerSeries) {
       return { seed, result };
     }
   }
