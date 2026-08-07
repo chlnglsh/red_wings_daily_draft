@@ -4,6 +4,7 @@ import type { Platform } from './app/lib/platform';
 // the symlinked app/ tree so it can never leak into the standalone web/mobile build.
 export const redditPlatform: Platform = {
   showsLeaderboard: true,
+  sharedDailyEvents: true, // real subreddit: March Collapse is a shared daily event
 
   async getLeaderboard() {
     const res = await fetch('/api/results/leaderboard');

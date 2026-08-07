@@ -5,7 +5,8 @@ import type { PostseasonResult } from './postseason';
 export interface SavedRun {
   picks: DraftPick[];
   simResult: SeasonSimResult;
-  postseason: PostseasonResult;
+  // null in a regular-season-only build (HAS_POSTSEASON off) — no bracket is simulated.
+  postseason: PostseasonResult | null;
 }
 
 export interface LeaderboardEntry {
@@ -30,6 +31,14 @@ export interface Platform {
   // no real subreddit behind them, so the leaderboard/Hall of Champions UI is
   // skipped entirely rather than showing fake usernames to real end users.
   readonly showsLeaderboard: boolean;
+  // True only for a real community build (Reddit): in-season events like March
+  // Collapse fire on a shared *daily* roll (same day for the whole subreddit).
+  // False for standalone builds (web/mobile, and dev), where there's no shared
+  // community — those roll per *playthrough* instead, so a player who keeps
+  // playing eventually hits the event rather than depending on the calendar day.
+  // Distinct from showsLeaderboard on purpose: mockPlatform shows a dev
+  // leaderboard yet is still a standalone build for event-cadence purposes.
+  readonly sharedDailyEvents: boolean;
   getLeaderboard(dateSeed: number): Promise<LeaderboardEntry[]>;
   getHallOfChampions(dateSeed: number): Promise<ChampionEntry[]>;
   submitScore(result: { points: number; wins: number; losses: number; otl: number }): Promise<void>;

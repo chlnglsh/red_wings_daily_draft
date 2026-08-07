@@ -34,7 +34,9 @@ export function ResultsScreen({
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
-  postseason: PostseasonResult;
+  // null in a regular-season-only build (HAS_POSTSEASON off): the playoff callout
+  // and divisional standings below are hidden and this screen is the final one.
+  postseason: PostseasonResult | null;
   onStartPostseason: () => void;
   onPlayAgainDev: () => void;
   platform: Platform;
@@ -89,8 +91,8 @@ export function ResultsScreen({
   }
 
   const pointsDiff = simResult.points - predicted.points;
-  const atlanticRank = postseason.atlanticStandings.findIndex((t) => t.isPlayer) + 1;
-  const metroStandings = postseason.eastStandings.filter((t) => t.division === 'Metropolitan');
+  const atlanticRank = postseason ? postseason.atlanticStandings.findIndex((t) => t.isPlayer) + 1 : 0;
+  const metroStandings = postseason ? postseason.eastStandings.filter((t) => t.division === 'Metropolitan') : [];
 
   return (
     <div className="results-screen rink-backdrop">
@@ -116,24 +118,25 @@ export function ResultsScreen({
         Predicted standing: {predictedTier.emoji} {predictedTier.label} ({predicted.wins}-{predicted.losses}-{predicted.otl})
       </p>
 
-      {postseason.qualified ? (
-        <div className="postseason-callout qualified">
-          <p className="postseason-callout-label">🏒 Playoff berth clinched — {postseason.playerSeedLabel} seed</p>
-          <p className="postseason-callout-detail">The postseason starts now. Every game from here counts.</p>
-          <button type="button" className="primary-btn" onClick={onStartPostseason}>
-            Enter the Playoffs
-          </button>
-        </div>
-      ) : (
-        <div className="postseason-callout missed">
-          <p className="postseason-callout-label">Missed the playoffs this time</p>
-          <p className="postseason-callout-detail">
-            {atlanticRank}th in the Atlantic wasn't enough to qualify — see how the division shook out below.
-          </p>
-        </div>
-      )}
+      {postseason &&
+        (postseason.qualified ? (
+          <div className="postseason-callout qualified">
+            <p className="postseason-callout-label">🏒 Playoff berth clinched — {postseason.playerSeedLabel} seed</p>
+            <p className="postseason-callout-detail">The postseason starts now. Every game from here counts.</p>
+            <button type="button" className="primary-btn" onClick={onStartPostseason}>
+              Enter the Playoffs
+            </button>
+          </div>
+        ) : (
+          <div className="postseason-callout missed">
+            <p className="postseason-callout-label">Missed the playoffs this time</p>
+            <p className="postseason-callout-detail">
+              {atlanticRank}th in the Atlantic wasn't enough to qualify — see how the division shook out below.
+            </p>
+          </div>
+        ))}
 
-      {postseason.qualified && (
+      {postseason?.qualified && (
         <div className="results-standings">
           <p className="results-standings-heading">Eastern Conference standings</p>
           <div className="standings-group">

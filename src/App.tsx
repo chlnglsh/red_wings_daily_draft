@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Season, SlotId } from './types';
 import { SLOT_ORDER, eligiblePosition } from './types';
 import { SEASONS } from './data/seasons';
-import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE } from './data/team';
+import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTSEASON } from './data/team';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
 import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
@@ -135,7 +135,12 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     const finalSkaters: WeightedSkater[] = finalPicks
       .filter((p) => p.player.position !== 'G')
       .map((p) => ({ name: p.player.name, weight: p.player.g }));
-    const postseasonResult = simulatePostseason(runSeed, result.points, finalSkaters);
+    // Regular-season-only builds skip the bracket entirely; the results screen is
+    // the final screen. The postseason engine also computes the divisional
+    // standings shown on the results screen, so with it off those are hidden too.
+    const postseasonResult = HAS_POSTSEASON
+      ? simulatePostseason(runSeed, result.points, finalSkaters)
+      : null;
 
     setSimResult(result);
     setPicks(finalPicks); // may differ from the drafted roster if a trade happened
@@ -308,18 +313,24 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
           </button>
           {import.meta.env.DEV && (
             <>
-              <button type="button" className="text-btn dev-reset" onClick={handleForceFirstSeriesTest}>
-                🧪 Force First Series (dev test)
-              </button>
-              <button type="button" className="text-btn dev-reset" onClick={handleForceShootoutTest}>
-                🧪 Force Cup Final shootout (dev test)
-              </button>
-              <button type="button" className="text-btn dev-reset" onClick={handleForceStanleyCupFinalTest}>
-                🧪 Force Stanley Cup Final (dev test)
-              </button>
-              <button type="button" className="text-btn dev-reset" onClick={handleForceTradeDeadlineTest}>
-                🧪 Force Trade Deadline (dev test)
-              </button>
+              {HAS_POSTSEASON && (
+                <>
+                  <button type="button" className="text-btn dev-reset" onClick={handleForceFirstSeriesTest}>
+                    🧪 Force First Series (dev test)
+                  </button>
+                  <button type="button" className="text-btn dev-reset" onClick={handleForceShootoutTest}>
+                    🧪 Force Cup Final shootout (dev test)
+                  </button>
+                  <button type="button" className="text-btn dev-reset" onClick={handleForceStanleyCupFinalTest}>
+                    🧪 Force Stanley Cup Final (dev test)
+                  </button>
+                </>
+              )}
+              {HAS_TRADE_DEADLINE && (
+                <button type="button" className="text-btn dev-reset" onClick={handleForceTradeDeadlineTest}>
+                  🧪 Force Trade Deadline (dev test)
+                </button>
+              )}
               <button type="button" className="text-btn dev-reset" onClick={handleForceRegularSeasonTest}>
                 🧪 Force Regular Season (dev test)
               </button>
@@ -370,6 +381,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
           seasons={SEASONS}
           runSeed={runSeed}
           dateSeed={dateSeed}
+          sharedDailyCollapse={platform.sharedDailyEvents}
           devSkipToDeadline={devSkipToDeadline}
           onComplete={handleSimComplete}
         />
@@ -402,7 +414,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
         picks={picks}
         seasonsById={seasonsById}
         simResult={simResult!}
-        postseason={postseason!}
+        postseason={postseason}
         onStartPostseason={handleStartPostseason}
         onPlayAgainDev={handlePlayAgainDev}
         platform={platform}

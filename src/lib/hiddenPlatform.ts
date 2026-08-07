@@ -6,6 +6,7 @@ import { SUBREDDIT } from '../data/team';
 // entirely rather than show fake usernames to real end users.
 export const hiddenPlatform: Platform = {
   showsLeaderboard: false,
+  sharedDailyEvents: false, // standalone web/mobile: March Collapse rolls per playthrough
   async getLeaderboard() {
     return [];
   },

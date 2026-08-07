@@ -20,3 +20,17 @@ export const HAS_OCTOPUS_TRADITION = true;
 // the season sim runs as if it never existed. See lib/marchCollapse.ts,
 // MarchCollapseFlow.tsx, and the isCollapseDay gate in SeasonSimScreen.tsx.
 export const HAS_MARCH_COLLAPSE = true;
+
+// Trade Deadline: a mid-season interactive gate (swap a drafted player for a
+// different season's version before the stretch run). Not team-specific folklore,
+// but a pared-back or reskinned build can turn it off here — the season sim then
+// runs as one continuous stretch with no gate, keeping the drafted roster. See the
+// trade-stage machine in SeasonSimScreen.tsx.
+export const HAS_TRADE_DEADLINE = true;
+
+// Postseason: the playoff bracket that follows a qualifying regular season
+// (seeding, series, shootout ceremony, Hall of Champions). Turn off for a
+// regular-season-only build — the results screen becomes the final screen and the
+// "Enter the Playoffs" gate never appears. See handleSimComplete in App.tsx (the
+// postseason sim is skipped) and the gated blocks in ResultsScreen.tsx.
+export const HAS_POSTSEASON = true;

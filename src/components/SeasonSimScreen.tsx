@@ -11,9 +11,9 @@ import {
   type GameResult,
   type SeasonSimResult,
 } from '../lib/gameSim';
-import { MARCH_COLLAPSE_GAME, isMarchCollapseDay, buildCollapsePenaltyModifier } from '../lib/marchCollapse';
+import { MARCH_COLLAPSE_GAME, isMarchCollapseDay, isMarchCollapsePlay, buildCollapsePenaltyModifier } from '../lib/marchCollapse';
 import { goalieTargetSavePct } from '../lib/goalie';
-import { TEAM_NAME, HAS_MARCH_COLLAPSE } from '../data/team';
+import { TEAM_NAME, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE } from '../data/team';
 import { mascotOnly } from '../data/nhlAlignment';
 import { TradeDeadlineFlow } from './TradeDeadlineFlow';
 import { MarchCollapseFlow } from './MarchCollapseFlow';
@@ -46,6 +46,7 @@ export function SeasonSimScreen({
   seasons,
   runSeed,
   dateSeed,
+  sharedDailyCollapse = false,
   forceMarchCollapse = false,
   devSkipToDeadline = false,
   onComplete,
@@ -55,7 +56,10 @@ export function SeasonSimScreen({
   seasons: Season[];
   runSeed: number;
   dateSeed: number;
-  // Dev-only: force the March Collapse event to fire this run regardless of the daily roll.
+  // Which March Collapse cadence to use: true = shared daily roll (Reddit build),
+  // false = per-playthrough roll (standalone). Mirrors Platform.sharedDailyEvents.
+  sharedDailyCollapse?: boolean;
+  // Dev-only: force the March Collapse event to fire this run regardless of the roll.
   forceMarchCollapse?: boolean;
   // Dev-only: skip straight to the trade deadline gate instead of playing games 1-60.
   devSkipToDeadline?: boolean;
@@ -69,13 +73,18 @@ export function SeasonSimScreen({
     rngRef.current = mulberry32(hashStringToInt(`${runSeed}:simseason:${picks.map((p) => p.player.id + p.slot).join(',')}`));
   }
 
-  // March Collapse is a subreddit-wide daily roll (tied to dateSeed, not the
-  // per-playthrough runSeed) — same day for everyone, not a per-user random. Gated
+  // Does March Collapse fire this run? Cadence depends on the build: a Reddit
+  // build uses a subreddit-wide daily roll (dateSeed — same day for everyone),
+  // while a standalone build rolls per playthrough (runSeed — fresh each play), so
+  // a repeat player hits it ~1 in 8 runs instead of waiting on the calendar. Gated
   // on HAS_MARCH_COLLAPSE so a reskinned build never fires it; when off, this stays
   // false and every collapse-aware branch below falls back to the plain two-segment sim.
   const isCollapseDay = useMemo(
-    () => HAS_MARCH_COLLAPSE && (forceMarchCollapse || isMarchCollapseDay(dateSeed)),
-    [forceMarchCollapse, dateSeed],
+    () =>
+      HAS_MARCH_COLLAPSE &&
+      (forceMarchCollapse ||
+        (sharedDailyCollapse ? isMarchCollapseDay(dateSeed) : isMarchCollapsePlay(runSeed))),
+    [forceMarchCollapse, sharedDailyCollapse, dateSeed, runSeed],
   );
 
   const initialRosterState = useMemo(() => deriveRosterGameState(picks, seasonsById), [picks, seasonsById]);
@@ -275,11 +284,19 @@ export function SeasonSimScreen({
   }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse]);
 
   // Reaching the end of the pre-trade half pauses for the deadline gate instead of
-  // trying to animate a game that doesn't exist yet.
+  // trying to animate a game that doesn't exist yet. When the Trade Deadline is
+  // turned off for this build, there's no gate to show — auto-resolve with the
+  // drafted roster so the stretch run generates and play continues uninterrupted,
+  // exactly as if the player had stood pat.
   useEffect(() => {
     if (atDeadline && tradeStage === 'pending') {
-      setTradeStage('active');
+      if (HAS_TRADE_DEADLINE) {
+        setTradeStage('active');
+      } else {
+        handleTradeResolved(currentPicks);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [atDeadline, tradeStage]);
 
   // Same pattern for the collapse pause point, on days it's scheduled to fire.

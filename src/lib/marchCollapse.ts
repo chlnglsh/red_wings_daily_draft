@@ -1,15 +1,33 @@
-// March Collapse: a regular-season-only mid-season event. Fires on 1-in-8 days,
-// tied to the day's dateSeed (not the per-playthrough runSeed) so it's the same day
-// for the whole subreddit, not a per-user roll. Doesn't touch the roster like Trade
-// Deadline does — it's purely a win% modifier hook (see modifierForGame in gameSim.ts),
-// triggered by a live skill minigame instead of a random resolution.
+// March Collapse: a regular-season-only mid-season event that fires 1-in-8, in one
+// of two cadences depending on the build (see Platform.sharedDailyEvents):
+//   - Community build (Reddit): a shared *daily* roll keyed to the day's dateSeed,
+//     so the whole subreddit gets it on the same day — isMarchCollapseDay.
+//   - Standalone build (web/mobile, dev): a per-*playthrough* roll keyed to the
+//     run's runSeed, so a player who keeps playing hits it ~1 in 8 runs rather than
+//     depending on the calendar day — isMarchCollapsePlay.
+// Either way it doesn't touch the roster like Trade Deadline does — it's purely a
+// win% modifier hook (see modifierForGame in gameSim.ts), triggered by a live skill
+// minigame instead of a random resolution.
 import { hashStringToInt } from './prng';
 
 // Matches the real Red Wings' typical March/April games-remaining count.
 export const MARCH_COLLAPSE_GAME = 66;
 
+// 1-in-8 odds, shared by both cadences — only the seed differs (date vs playthrough).
+const COLLAPSE_ODDS = 8;
+
+function rollsCollapse(seed: number): boolean {
+  return hashStringToInt(`${seed}:marchCollapse`) % COLLAPSE_ODDS === 0;
+}
+
+// Community (Reddit) cadence: same result for everyone on a given day.
 export function isMarchCollapseDay(dateSeed: number): boolean {
-  return hashStringToInt(`${dateSeed}:marchCollapse`) % 8 === 0;
+  return rollsCollapse(dateSeed);
+}
+
+// Standalone cadence: fresh roll each playthrough (runSeed changes every play).
+export function isMarchCollapsePlay(runSeed: number): boolean {
+  return rollsCollapse(runSeed);
 }
 
 // A soft downward drag, not a cliff — starts small right after the collapse and

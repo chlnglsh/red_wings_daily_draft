@@ -47,6 +47,7 @@ function generateHallOfChampions(dailySeed: number, poolSize = 400): ChampionEnt
 
 export const mockPlatform: Platform = {
   showsLeaderboard: true,
+  sharedDailyEvents: false, // standalone (dev): March Collapse rolls per playthrough
   async getLeaderboard(dateSeed) {
     return generateLeaderboard(dateSeed);
   },
