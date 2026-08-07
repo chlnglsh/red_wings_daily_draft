@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { type MouseEvent, useEffect, useRef, useState } from 'react';
 import { TEAM_NAME } from '../data/team';
 import { formatSavePct } from '../lib/goalie';
 import collapseOctopusSrc from '../assets/collapse-octopus.png';
 import collapseNetSrc from '../assets/collapse-net.png';
+import puckBoom0 from '../assets/puck-boom-0.png';
+import puckBoom1 from '../assets/puck-boom-1.png';
+import puckBoom2 from '../assets/puck-boom-2.png';
+import puckBoom3 from '../assets/puck-boom-3.png';
 
 // "The Puck Stops Here": pucks fall over a short window and the player clicks/taps
 // to block them before they cross the goal line. Spawn rate ramps up as the clock
@@ -24,6 +28,23 @@ const TICK_MS = 80;
 const DISSOLVE_DELAY_MIN_MS = 200;
 const DISSOLVE_DELAY_MAX_MS = 400;
 const DISSOLVE_FADE_MS = 120;
+
+// Block explosion: on a save, one of four puck-explosion frames pops for BOOM_MS.
+// Each frame is [src, anchorX, anchorY, displayWidthPx] — the anchor (puck center in
+// the art's 256x237 space) is both where it's placed (on the blocked puck) and the
+// rotation pivot; displayWidthPx is the on-screen width. Frames 0-2 have a
+// directional tail, so they only tilt +/-BOOM_TILT_MAX off vertical (the tail stays
+// pointing away from the net); frame 3 has no tail and spins any way.
+const BOOM_NAT_W = 256;
+const BOOM_NAT_H = 237;
+const BOOM_FRAMES: [string, number, number, number][] = [
+  [puckBoom0, 131, 105, 140],
+  [puckBoom1, 129, 118, 105],
+  [puckBoom2, 152, 95, 95],
+  [puckBoom3, 129, 129, 110],
+];
+const BOOM_MS = 250; // how long the explosion flashes on screen
+const BOOM_TILT_MAX = 60; // frames 0-2: random rotation within +/- this, in degrees
 
 // Lightning cadence: brief bright strikes (alternating magenta/yellow for an
 // electric look) punched against dark "storm" gaps, in irregular bursts — a rapid
@@ -67,6 +88,14 @@ interface Puck {
   exiting?: boolean; // true once the post-crossing delay elapses — plays the fast fade, then removed
 }
 
+interface Boom {
+  id: number;
+  x: number; // arena px — where the frame's anchor (puck center) is placed
+  y: number;
+  frame: number; // index into BOOM_FRAMES
+  angle: number; // rotation in degrees
+}
+
 const RESULT_COPY = {
   success: {
     title: 'The team held',
@@ -95,6 +124,7 @@ export function MarchCollapseFlow({
   );
   const [flickerClass, setFlickerClass] = useState<FlickerClass>(LIGHTNING_FRAMES[0][0]);
   const [pucks, setPucks] = useState<Puck[]>([]);
+  const [booms, setBooms] = useState<Boom[]>([]);
   const [blocked, setBlocked] = useState(0);
   const [missed, setMissed] = useState(0);
   const [timeLeftMs, setTimeLeftMs] = useState(GAME_DURATION_MS);
@@ -105,6 +135,8 @@ export function MarchCollapseFlow({
   const missedRef = useRef(0);
   const doneRef = useRef(false);
   const resolvedRef = useRef<Set<number>>(new Set()); // puck ids already counted (block or miss)
+  const boomIdRef = useRef(0);
+  const arenaRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (stage !== 'flicker') return;
@@ -160,10 +192,24 @@ export function MarchCollapseFlow({
 
   // A blocked (clicked) puck is removed at once — no dissolve. Guarded so a block
   // on the same frame as the line-crossing can't double-count.
-  function handleBlock(id: number) {
+  function handleBlock(id: number, e: MouseEvent<HTMLButtonElement>) {
     if (doneRef.current || resolvedRef.current.has(id)) return;
     resolvedRef.current.add(id);
     setBlocked((b) => b + 1);
+    // Pop an explosion where the puck was, anchored + pivoted on its puck center.
+    // Frames 0-2 have a tail so they only tilt off vertical; frame 3 spins freely.
+    const arena = arenaRef.current;
+    if (arena) {
+      const ar = arena.getBoundingClientRect();
+      const pr = e.currentTarget.getBoundingClientRect();
+      const bx = pr.left + pr.width / 2 - ar.left;
+      const by = pr.top + pr.height / 2 - ar.top;
+      const frame = Math.floor(Math.random() * BOOM_FRAMES.length);
+      const angle = frame === 3 ? Math.random() * 360 : (Math.random() * 2 - 1) * BOOM_TILT_MAX;
+      const bid = boomIdRef.current++;
+      setBooms((prev) => [...prev, { id: bid, x: bx, y: by, frame, angle }]);
+      setTimeout(() => setBooms((prev) => prev.filter((b) => b.id !== bid)), BOOM_MS);
+    }
     setPucks((prev) => prev.filter((p) => p.id !== id));
   }
 
@@ -243,7 +289,7 @@ export function MarchCollapseFlow({
         <span className={belowTarget ? 'collapse-sv-below' : ''}>SV% {formatSavePct(savePct)}</span>
         <span>Target {formatSavePct(targetSavePct)}</span>
       </div>
-      <div className="collapse-arena">
+      <div className="collapse-arena" ref={arenaRef}>
         <div className="collapse-goal">
           <div className="collapse-goal-line" />
           <img className="collapse-net-img" src={collapseNetSrc} alt="" />
@@ -257,10 +303,31 @@ export function MarchCollapseFlow({
               left: `${p.x}%`,
               animationDuration: `${PUCK_FALL_MS}ms`,
             }}
-            onClick={() => handleBlock(p.id)}
+            onClick={(e) => handleBlock(p.id, e)}
             aria-label="Block puck"
           />
         ))}
+        {booms.map((bm) => {
+          const [src, ax, ay, w] = BOOM_FRAMES[bm.frame];
+          const s = w / BOOM_NAT_W;
+          return (
+            <img
+              key={bm.id}
+              className="collapse-boom"
+              src={src}
+              alt=""
+              style={{
+                left: `${bm.x}px`,
+                top: `${bm.y}px`,
+                width: `${w}px`,
+                marginLeft: `${-ax * s}px`,
+                marginTop: `${-ay * s}px`,
+                transformOrigin: `${(ax / BOOM_NAT_W) * 100}% ${(ay / BOOM_NAT_H) * 100}%`,
+                transform: `rotate(${bm.angle}deg)`,
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

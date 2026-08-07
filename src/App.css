@@ -2049,13 +2049,21 @@
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
+/* Block explosion frame: placed and rotated in JS (inline styles) about its puck
+   center, sits above the pucks, and never intercepts clicks. */
+.collapse-boom {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+  z-index: 5;
+}
 /* Forgiving hit zone: a transparent area extending ~16px beyond the puck on all
    sides, so taps near the puck still count. It's part of the button, so clicks on
    it fire the same handler; a dissolving puck's pointer-events: none disables it. */
 .collapse-puck::before {
   content: '';
   position: absolute;
-  inset: -16px;
+  inset: -22px;
 }
 .collapse-puck:active {
   filter: brightness(1.4);
