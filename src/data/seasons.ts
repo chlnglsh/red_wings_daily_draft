@@ -14,12 +14,13 @@ import type { Season } from '../types';
 // - `leagueAvgGoalsPerGame` is a computed figure (2x the league's average
 //   goals-for-per-team-per-game for that season), not a single published stat.
 //
-// STUB seasons (search "// STUB" below): 1935-36, 1953-54, 1985-86, 1990-91.
-// teamPoints and blurb are real; every player in the roster is a placeholder
-// pending real research — do not treat their names or stat lines as history.
+// Formerly-stub seasons (1935-36, 1953-54, 1985-86, 1990-91) now carry real rosters
+// sourced from their Wikipedia season pages (hockey-reference blocks automated
+// access). Wikipedia lists 1935-36 forwards without a wing/centre split, so those
+// forward positions were assigned from each player's known position; all GP/G/A/PTS
+// and goalie GAA are from the source. 1935-36 and 1953-54 goalies omit savePct (not
+// tracked before 1955-56), consistent with the goalie-save-% note above.
 export const SEASONS: Season[] = [
-  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
-  // the blurb are accurate; only the individual player lines below need replacing.
   {
     id: '1935-36',
     year: '1935-36',
@@ -30,21 +31,21 @@ export const SEASONS: Season[] = [
     era: 'preHowe',
     blurb: "Mud Bruneteau's sixth-overtime goal — still the longest game in NHL history — sent Detroit past the Maroons, and a Final win over Toronto delivered the franchise's first-ever Stanley Cup.",
     roster: [
-      { id: '1935-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 48, g: 15, a: 18, pts: 33 },
-      { id: '1935-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 44, g: 9, a: 12, pts: 21 },
-      { id: '1935-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 40, g: 6, a: 8, pts: 14 },
-      { id: '1935-stub-c1', name: 'TBD Center 1', position: 'C', gp: 48, g: 14, a: 20, pts: 34 },
-      { id: '1935-stub-c2', name: 'TBD Center 2', position: 'C', gp: 46, g: 8, a: 12, pts: 20 },
-      { id: '1935-stub-c3', name: 'TBD Center 3', position: 'C', gp: 38, g: 5, a: 7, pts: 12 },
-      { id: '1935-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 48, g: 16, a: 15, pts: 31 },
-      { id: '1935-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 42, g: 8, a: 9, pts: 17 },
-      { id: '1935-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 36, g: 5, a: 6, pts: 11 },
-      { id: '1935-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 48, g: 6, a: 14, pts: 20 },
-      { id: '1935-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 46, g: 3, a: 10, pts: 13 },
-      { id: '1935-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 44, g: 2, a: 7, pts: 9 },
-      { id: '1935-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 30, g: 0, a: 4, pts: 4 },
-      { id: '1935-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 40, g: 0, a: 0, pts: 0, gaa: 2.1 },
-      { id: '1935-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 8, g: 0, a: 0, pts: 0, gaa: 2.6 },
+      { id: '1935-howe-syd', name: 'Syd Howe', position: 'LW', gp: 48, g: 16, a: 14, pts: 30 },
+      { id: '1935-sorrell', name: 'John Sorrell', position: 'LW', gp: 48, g: 13, a: 15, pts: 28 },
+      { id: '1935-kilrea-hec', name: 'Hec Kilrea', position: 'LW', gp: 48, g: 6, a: 17, pts: 23 },
+      { id: '1935-lewis', name: 'Herbie Lewis', position: 'LW', gp: 45, g: 14, a: 23, pts: 37 },
+      { id: '1935-barry', name: 'Marty Barry', position: 'C', gp: 48, g: 21, a: 19, pts: 40 },
+      { id: '1935-kilrea-wally', name: 'Wally Kilrea', position: 'C', gp: 44, g: 4, a: 10, pts: 14 },
+      { id: '1935-pettinger', name: 'Gordon Pettinger', position: 'C', gp: 33, g: 8, a: 7, pts: 15 },
+      { id: '1935-aurie', name: 'Larry Aurie', position: 'RW', gp: 44, g: 16, a: 18, pts: 34 },
+      { id: '1935-kelly-pete', name: 'Pete Kelly', position: 'RW', gp: 48, g: 6, a: 8, pts: 14 },
+      { id: '1935-bruneteau', name: 'Mud Bruneteau', position: 'RW', gp: 24, g: 2, a: 0, pts: 2 },
+      { id: '1935-goodfellow', name: 'Ebbie Goodfellow', position: 'D', gp: 48, g: 5, a: 18, pts: 23 },
+      { id: '1935-young', name: 'Doug Young', position: 'D', gp: 48, g: 5, a: 12, pts: 17 },
+      { id: '1935-mcdonald', name: 'Bucko McDonald', position: 'D', gp: 48, g: 4, a: 6, pts: 10 },
+      { id: '1935-bowman', name: 'Ralph Bowman', position: 'D', gp: 48, g: 3, a: 2, pts: 5 },
+      { id: '1935-smith', name: 'Normie Smith', position: 'G', gp: 48, g: 0, a: 0, pts: 0, gaa: 2.04 },
     ],
   },
   {
@@ -159,8 +160,6 @@ export const SEASONS: Season[] = [
       { id: '1951-sawchuk', name: 'Terry Sawchuk', position: 'G', gp: 70, g: 0, a: 0, pts: 0, gaa: 1.9 },
     ],
   },
-  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
-  // the blurb are accurate; only the individual player lines below need replacing.
   {
     id: '1953-54',
     year: '1953-54',
@@ -171,21 +170,24 @@ export const SEASONS: Season[] = [
     era: 'howeToPreYzerman',
     blurb: "Tony Leswick's overtime deflection beat Montreal in Game 7 for the Cup, the franchise's fourth championship in five years.",
     roster: [
-      { id: '1953-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 70, g: 28, a: 35, pts: 63 },
-      { id: '1953-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 68, g: 15, a: 18, pts: 33 },
-      { id: '1953-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 50, g: 8, a: 9, pts: 17 },
-      { id: '1953-stub-c1', name: 'TBD Center 1', position: 'C', gp: 70, g: 20, a: 30, pts: 50 },
-      { id: '1953-stub-c2', name: 'TBD Center 2', position: 'C', gp: 65, g: 14, a: 19, pts: 33 },
-      { id: '1953-stub-c3', name: 'TBD Center 3', position: 'C', gp: 55, g: 8, a: 12, pts: 20 },
-      { id: '1953-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 70, g: 45, a: 38, pts: 83 },
-      { id: '1953-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 68, g: 10, a: 12, pts: 22 },
-      { id: '1953-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 52, g: 6, a: 8, pts: 14 },
-      { id: '1953-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 70, g: 8, a: 20, pts: 28 },
-      { id: '1953-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 68, g: 5, a: 15, pts: 20 },
-      { id: '1953-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 60, g: 2, a: 9, pts: 11 },
-      { id: '1953-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 45, g: 1, a: 6, pts: 7 },
-      { id: '1953-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 70, g: 0, a: 0, pts: 0, gaa: 2.0 },
-      { id: '1953-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 2, g: 0, a: 0, pts: 0, gaa: 2.4 },
+      { id: '1953-lindsay', name: 'Ted Lindsay', position: 'LW', gp: 70, g: 26, a: 36, pts: 62 },
+      { id: '1953-wilson-johnny', name: 'Johnny Wilson', position: 'LW', gp: 70, g: 17, a: 17, pts: 34 },
+      { id: '1953-pavelich', name: 'Marty Pavelich', position: 'LW', gp: 65, g: 9, a: 20, pts: 29 },
+      { id: '1953-stasiuk', name: 'Vic Stasiuk', position: 'LW', gp: 42, g: 5, a: 2, pts: 7 },
+      { id: '1953-reibel', name: 'Dutch Reibel', position: 'C', gp: 69, g: 15, a: 33, pts: 48 },
+      { id: '1953-skov', name: 'Glen Skov', position: 'C', gp: 70, g: 17, a: 10, pts: 27 },
+      { id: '1953-prystai', name: 'Metro Prystai', position: 'C', gp: 70, g: 12, a: 15, pts: 27 },
+      { id: '1953-delvecchio', name: 'Alex Delvecchio', position: 'C', gp: 69, g: 11, a: 18, pts: 29 },
+      { id: '1953-howe', name: 'Gordie Howe', position: 'RW', gp: 70, g: 33, a: 48, pts: 81 },
+      { id: '1953-dineen', name: 'Bill Dineen', position: 'RW', gp: 70, g: 17, a: 8, pts: 25 },
+      { id: '1953-leswick', name: 'Tony Leswick', position: 'RW', gp: 70, g: 6, a: 18, pts: 24 },
+      { id: '1953-kelly-red', name: 'Red Kelly', position: 'D', gp: 62, g: 16, a: 33, pts: 49 },
+      { id: '1953-goldham', name: 'Bob Goldham', position: 'D', gp: 69, g: 1, a: 15, pts: 16 },
+      { id: '1953-pronovost', name: 'Marcel Pronovost', position: 'D', gp: 57, g: 6, a: 12, pts: 18 },
+      { id: '1953-woit', name: 'Benny Woit', position: 'D', gp: 70, g: 0, a: 2, pts: 2 },
+      { id: '1953-arbour', name: 'Al Arbour', position: 'D', gp: 36, g: 0, a: 1, pts: 1 },
+      { id: '1953-sawchuk', name: 'Terry Sawchuk', position: 'G', gp: 67, g: 0, a: 0, pts: 0, gaa: 1.93 },
+      { id: '1953-gatherum', name: 'Dave Gatherum', position: 'G', gp: 3, g: 0, a: 0, pts: 0, gaa: 1.0 },
     ],
   },
   {
@@ -415,8 +417,6 @@ export const SEASONS: Season[] = [
       { id: '1983-mio', name: 'Eddie Mio', position: 'G', gp: 24, g: 0, a: 0, pts: 0, savePct: 0.859, gaa: 4.42 },
     ],
   },
-  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
-  // the blurb are accurate; only the individual player lines below need replacing.
   {
     id: '1985-86',
     year: '1985-86',
@@ -427,21 +427,26 @@ export const SEASONS: Season[] = [
     era: 'yzermanOnward',
     blurb: "The nadir of the rebuild — a 17-57-6 record, the worst in franchise history, with a 20-year-old Yzerman doing what he could behind a threadbare roster.",
     roster: [
-      { id: '1985-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 78, g: 20, a: 22, pts: 42 },
-      { id: '1985-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 70, g: 12, a: 14, pts: 26 },
-      { id: '1985-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 55, g: 7, a: 9, pts: 16 },
-      { id: '1985-stub-c1', name: 'TBD Center 1', position: 'C', gp: 65, g: 19, a: 28, pts: 47 },
-      { id: '1985-stub-c2', name: 'TBD Center 2', position: 'C', gp: 60, g: 10, a: 15, pts: 25 },
-      { id: '1985-stub-c3', name: 'TBD Center 3', position: 'C', gp: 50, g: 6, a: 10, pts: 16 },
-      { id: '1985-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 75, g: 22, a: 18, pts: 40 },
-      { id: '1985-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 68, g: 9, a: 11, pts: 20 },
-      { id: '1985-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 48, g: 5, a: 7, pts: 12 },
-      { id: '1985-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 76, g: 4, a: 18, pts: 22 },
-      { id: '1985-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 70, g: 3, a: 12, pts: 15 },
-      { id: '1985-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 58, g: 1, a: 8, pts: 9 },
-      { id: '1985-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 40, g: 0, a: 5, pts: 5 },
-      { id: '1985-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 45, g: 0, a: 0, pts: 0, savePct: 0.868, gaa: 4.3 },
-      { id: '1985-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 35, g: 0, a: 0, pts: 0, savePct: 0.86, gaa: 4.6 },
+      { id: '1985-ogrodnick', name: 'John Ogrodnick', position: 'LW', gp: 76, g: 38, a: 32, pts: 70 },
+      { id: '1985-klima', name: 'Petr Klima', position: 'LW', gp: 74, g: 32, a: 24, pts: 56 },
+      { id: '1985-gallant', name: 'Gerard Gallant', position: 'LW', gp: 52, g: 20, a: 19, pts: 39 },
+      { id: '1985-probert', name: 'Bob Probert', position: 'LW', gp: 44, g: 8, a: 13, pts: 21 },
+      { id: '1985-young-warren', name: 'Warren Young', position: 'C', gp: 79, g: 22, a: 24, pts: 46 },
+      { id: '1985-kisio', name: 'Kelly Kisio', position: 'C', gp: 76, g: 21, a: 48, pts: 69 },
+      { id: '1985-duguay', name: 'Ron Duguay', position: 'C', gp: 67, g: 19, a: 29, pts: 48 },
+      { id: '1985-yzerman', name: 'Steve Yzerman', position: 'C', gp: 51, g: 14, a: 28, pts: 42 },
+      { id: '1985-cichocki', name: 'Chris Cichocki', position: 'RW', gp: 59, g: 10, a: 11, pts: 21 },
+      { id: '1985-kocur', name: 'Joe Kocur', position: 'RW', gp: 59, g: 9, a: 6, pts: 15 },
+      { id: '1985-gare', name: 'Danny Gare', position: 'RW', gp: 57, g: 7, a: 9, pts: 16 },
+      { id: '1985-foster', name: 'Dwight Foster', position: 'RW', gp: 55, g: 6, a: 12, pts: 18 },
+      { id: '1985-ladouceur', name: 'Randy Ladouceur', position: 'D', gp: 78, g: 5, a: 13, pts: 18 },
+      { id: '1985-larson', name: 'Reed Larson', position: 'D', gp: 67, g: 19, a: 41, pts: 60 },
+      { id: '1985-barrett', name: 'John Barrett', position: 'D', gp: 65, g: 2, a: 12, pts: 14 },
+      { id: '1985-smith-greg', name: 'Greg Smith', position: 'D', gp: 62, g: 5, a: 19, pts: 24 },
+      { id: '1985-leavins', name: 'Jim Leavins', position: 'D', gp: 37, g: 2, a: 11, pts: 13 },
+      { id: '1985-snepsts', name: 'Harold Snepsts', position: 'D', gp: 35, g: 0, a: 6, pts: 6 },
+      { id: '1985-stefan', name: 'Greg Stefan', position: 'G', gp: 37, g: 0, a: 0, pts: 0, savePct: 0.856, gaa: 4.5 },
+      { id: '1985-laforest', name: 'Mark LaForest', position: 'G', gp: 28, g: 0, a: 0, pts: 0, savePct: 0.846, gaa: 4.95 },
     ],
   },
   {
@@ -500,8 +505,6 @@ export const SEASONS: Season[] = [
       { id: '1987-stefan', name: 'Greg Stefan', position: 'G', gp: 33, g: 0, a: 0, pts: 0, savePct: 0.896, gaa: 3.11 },
     ],
   },
-  // STUB — placeholder roster, real names/stats not yet researched. teamPoints and
-  // the blurb are accurate; only the individual player lines below need replacing.
   {
     id: '1990-91',
     year: '1990-91',
@@ -512,21 +515,26 @@ export const SEASONS: Season[] = [
     era: 'yzermanOnward',
     blurb: "A middling 34-38-8 season doesn't sound like the start of anything — but it kicked off a playoff streak that would run 25 straight years.",
     roster: [
-      { id: '1990-stub-lw1', name: 'TBD Left Wing 1', position: 'LW', gp: 80, g: 30, a: 34, pts: 64 },
-      { id: '1990-stub-lw2', name: 'TBD Left Wing 2', position: 'LW', gp: 74, g: 16, a: 20, pts: 36 },
-      { id: '1990-stub-lw3', name: 'TBD Left Wing 3', position: 'LW', gp: 60, g: 9, a: 11, pts: 20 },
-      { id: '1990-stub-c1', name: 'TBD Center 1', position: 'C', gp: 80, g: 48, a: 58, pts: 106 },
-      { id: '1990-stub-c2', name: 'TBD Center 2', position: 'C', gp: 70, g: 15, a: 22, pts: 37 },
-      { id: '1990-stub-c3', name: 'TBD Center 3', position: 'C', gp: 55, g: 8, a: 13, pts: 21 },
-      { id: '1990-stub-rw1', name: 'TBD Right Wing 1', position: 'RW', gp: 78, g: 26, a: 24, pts: 50 },
-      { id: '1990-stub-rw2', name: 'TBD Right Wing 2', position: 'RW', gp: 65, g: 12, a: 14, pts: 26 },
-      { id: '1990-stub-rw3', name: 'TBD Right Wing 3', position: 'RW', gp: 50, g: 6, a: 8, pts: 14 },
-      { id: '1990-stub-d1', name: 'TBD Defenseman 1', position: 'D', gp: 78, g: 7, a: 30, pts: 37 },
-      { id: '1990-stub-d2', name: 'TBD Defenseman 2', position: 'D', gp: 72, g: 4, a: 16, pts: 20 },
-      { id: '1990-stub-d3', name: 'TBD Defenseman 3', position: 'D', gp: 62, g: 2, a: 10, pts: 12 },
-      { id: '1990-stub-d4', name: 'TBD Defenseman 4', position: 'D', gp: 44, g: 1, a: 6, pts: 7 },
-      { id: '1990-stub-g1', name: 'TBD Goaltender 1', position: 'G', gp: 50, g: 0, a: 0, pts: 0, savePct: 0.885, gaa: 3.5 },
-      { id: '1990-stub-g2', name: 'TBD Goaltender 2', position: 'G', gp: 32, g: 0, a: 0, pts: 0, savePct: 0.878, gaa: 3.8 },
+      { id: '1990-burr', name: 'Shawn Burr', position: 'LW', gp: 80, g: 20, a: 30, pts: 50 },
+      { id: '1990-garpenlov', name: 'Johan Garpenlov', position: 'LW', gp: 71, g: 18, a: 22, pts: 40 },
+      { id: '1990-fedyk', name: 'Brent Fedyk', position: 'LW', gp: 67, g: 16, a: 19, pts: 35 },
+      { id: '1990-probert', name: 'Bob Probert', position: 'LW', gp: 55, g: 16, a: 23, pts: 39 },
+      { id: '1990-yzerman', name: 'Steve Yzerman', position: 'C', gp: 80, g: 51, a: 57, pts: 108 },
+      { id: '1990-fedorov', name: 'Sergei Fedorov', position: 'C', gp: 77, g: 31, a: 48, pts: 79 },
+      { id: '1990-carson', name: 'Jimmy Carson', position: 'C', gp: 64, g: 21, a: 25, pts: 46 },
+      { id: '1990-primeau', name: 'Keith Primeau', position: 'C', gp: 58, g: 3, a: 12, pts: 15 },
+      { id: '1990-barr', name: 'Dave Barr', position: 'RW', gp: 70, g: 18, a: 22, pts: 40 },
+      { id: '1990-kocur', name: 'Joe Kocur', position: 'RW', gp: 52, g: 5, a: 4, pts: 9 },
+      { id: '1990-mckay', name: 'Randy McKay', position: 'RW', gp: 47, g: 1, a: 7, pts: 8 },
+      { id: '1990-habscheid', name: 'Marc Habscheid', position: 'RW', gp: 46, g: 9, a: 8, pts: 17 },
+      { id: '1990-zombo', name: 'Rick Zombo', position: 'D', gp: 77, g: 4, a: 19, pts: 23 },
+      { id: '1990-green', name: 'Rick Green', position: 'D', gp: 65, g: 2, a: 14, pts: 16 },
+      { id: '1990-mccrimmon', name: 'Brad McCrimmon', position: 'D', gp: 64, g: 0, a: 13, pts: 13 },
+      { id: '1990-racine', name: 'Yves Racine', position: 'D', gp: 62, g: 7, a: 40, pts: 47 },
+      { id: '1990-dollas', name: 'Bobby Dollas', position: 'D', gp: 56, g: 3, a: 5, pts: 8 },
+      { id: '1990-chiasson', name: 'Steve Chiasson', position: 'D', gp: 42, g: 3, a: 17, pts: 20 },
+      { id: '1990-cheveldae', name: 'Tim Cheveldae', position: 'G', gp: 65, g: 0, a: 0, pts: 0, savePct: 0.875, gaa: 3.55 },
+      { id: '1990-hanlon', name: 'Glen Hanlon', position: 'G', gp: 19, g: 0, a: 0, pts: 0, savePct: 0.895, gaa: 3.2 },
     ],
   },
   {
