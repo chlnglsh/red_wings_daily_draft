@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useRef, useState } from 'react';
+import { type PointerEvent, useEffect, useRef, useState } from 'react';
 import { TEAM_NAME } from '../data/team';
 import { formatSavePct } from '../lib/goalie';
 import collapseOctopusSrc from '../assets/collapse-octopus.png';
@@ -190,9 +190,12 @@ export function MarchCollapseFlow({
     return () => clearInterval(tick);
   }, [stage]);
 
-  // A blocked (clicked) puck is removed at once — no dissolve. Guarded so a block
-  // on the same frame as the line-crossing can't double-count.
-  function handleBlock(id: number, e: MouseEvent<HTMLButtonElement>) {
+  // A blocked puck is removed at once — no dissolve. Guarded so a block on the same
+  // frame as the line-crossing can't double-count. Fired on pointerDOWN (not click):
+  // the puck falls ~200px/s, so waiting for a synthesized click (touchend hit-test,
+  // ~100-300ms later on touch) let the puck slide out from under the finger and the
+  // tap missed on mobile. pointerdown resolves it at the instant of contact.
+  function handleBlock(id: number, e: PointerEvent<HTMLButtonElement>) {
     if (doneRef.current || resolvedRef.current.has(id)) return;
     resolvedRef.current.add(id);
     setBlocked((b) => b + 1);
@@ -303,7 +306,7 @@ export function MarchCollapseFlow({
               left: `${p.x}%`,
               animationDuration: `${PUCK_FALL_MS}ms`,
             }}
-            onClick={(e) => handleBlock(p.id, e)}
+            onPointerDown={(e) => handleBlock(p.id, e)}
             aria-label="Block puck"
           />
         ))}

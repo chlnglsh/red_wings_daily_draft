@@ -2045,6 +2045,9 @@
   /* Inherit the hockey-stick cursor from .collapse-playing so it stays the stick
      over the pucks too, rather than reverting to the pointer hand. */
   cursor: inherit;
+  /* Kill the mobile tap delay and stop a tap on a falling puck being interpreted
+     as a scroll/zoom gesture — the block must register the instant a finger lands. */
+  touch-action: manipulation;
   animation-name: collapse-puck-fall;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
@@ -2057,13 +2060,14 @@
   pointer-events: none;
   z-index: 5;
 }
-/* Forgiving hit zone: a transparent area extending ~16px beyond the puck on all
-   sides, so taps near the puck still count. It's part of the button, so clicks on
-   it fire the same handler; a dissolving puck's pointer-events: none disables it. */
+/* Forgiving hit zone: a transparent area extending beyond the puck so taps near it
+   still count. It's part of the button, so taps on it fire the same handler; a
+   dissolving puck's pointer-events: none disables it. Extra vertical padding because
+   the puck is a fast vertical mover, so a fingertip a bit above/below still lands. */
 .collapse-puck::before {
   content: '';
   position: absolute;
-  inset: -22px;
+  inset: -34px -26px;
 }
 .collapse-puck:active {
   filter: brightness(1.4);
@@ -2087,6 +2091,65 @@
      marks the crossing as a miss, and the puck keeps sliding to here through the
      post-crossing delay and the fast fade. Matches PUCK_FALL_END_Y. */
   to { transform: translateY(550px); }
+}
+
+/* A touch more breathing room above the champion screen's "Draft again" button
+   than the .postseason-screen flex gap (10px) alone gives, so it doesn't crowd the
+   result flavor line right above it. */
+.draft-again-btn {
+  margin-top: 16px;
+}
+
+/* Pull the recap link up toward the "Draft again" button on the results screen —
+   the .results-screen flex gap (18px) is more than this paired set of actions
+   wants between them. */
+.results-screen .recap-btn {
+  margin-top: -10px;
+}
+
+/* Season Recap screen. Container, roster, and game rows reuse .results-screen,
+   .results-roster, and .season-sim-game; only the title, record line, section
+   headings, and the scrollable full-season log need their own rules. */
+.season-recap-title {
+  font-family: var(--display);
+  font-size: 30px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0;
+  text-align: center;
+}
+.season-recap-record {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+  text-align: center;
+}
+.season-recap-heading {
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  width: 100%;
+  text-align: left;
+  margin: 8px 0 0;
+}
+.season-recap-log {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.season-recap-footer {
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: 0;
 }
 .collapse-net-img {
   width: 88%;

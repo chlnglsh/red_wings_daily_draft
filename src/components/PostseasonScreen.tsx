@@ -67,7 +67,8 @@ export function PostseasonScreen({
   dateSeed,
   subreddit,
   startAtRound,
-  onPlayAgainDev,
+  onPlayAgain,
+  onShowRecap,
   platform,
 }: {
   postseason: PostseasonResult;
@@ -77,7 +78,8 @@ export function PostseasonScreen({
   // Dev-only: skip straight to a given round (e.g. 4 for the Stanley Cup Final)
   // instead of always starting from Round 1.
   startAtRound?: number;
-  onPlayAgainDev: () => void;
+  onPlayAgain: () => void;
+  onShowRecap: () => void;
   platform: Platform;
 }) {
   const playerSeries = useMemo(() => getPlayerSeries(postseason), [postseason]);
@@ -372,6 +374,16 @@ export function PostseasonScreen({
           </>
         )}
 
+        {!platform.showsLeaderboard && (
+          <button type="button" className="primary-btn draft-again-btn" onClick={onPlayAgain}>
+            Draft again
+          </button>
+        )}
+
+        <button type="button" className="text-btn recap-btn" onClick={onShowRecap}>
+          View full season recap
+        </button>
+
         {platform.showsLeaderboard && championsPool && (
           <>
             {(postseason.playerWonCup || postseason.playerWonConference) && (
@@ -394,9 +406,14 @@ export function PostseasonScreen({
           </>
         )}
 
-        <p className="results-daily-note">🗓️ One play per day — come back tomorrow for a fresh draft.</p>
+        {platform.showsLeaderboard && (
+          <p className="results-daily-note">
+            One play per day. Come back tomorrow for a fresh draft and leaderboard.
+          </p>
+        )}
+
         {import.meta.env.DEV && (
-          <button type="button" className="text-btn dev-reset" onClick={onPlayAgainDev}>
+          <button type="button" className="text-btn dev-reset" onClick={onPlayAgain}>
             ↺ Replay (dev only — real game is once per day)
           </button>
         )}

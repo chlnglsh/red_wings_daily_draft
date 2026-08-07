@@ -16,10 +16,11 @@ import { SeasonSimScreen } from './components/SeasonSimScreen';
 import { MarchCollapseFlow } from './components/MarchCollapseFlow';
 import { ResultsScreen } from './components/ResultsScreen';
 import { PostseasonScreen } from './components/PostseasonScreen';
+import { SeasonRecapScreen } from './components/SeasonRecapScreen';
 import slotMachineSrc from './assets/lucky-red-slot-machine.png';
 import './App.css';
 
-type Screen = 'intro' | 'round' | 'squadSummary' | 'simulating' | 'results' | 'postseason';
+type Screen = 'intro' | 'round' | 'squadSummary' | 'simulating' | 'results' | 'postseason' | 'recap';
 
 const seasonsById = new Map(SEASONS.map((s) => [s.id, s] as [string, Season]));
 
@@ -28,7 +29,7 @@ const seasonsById = new Map(SEASONS.map((s) => [s.id, s] as [string, Season]));
 // behind it). A Reddit build always passes its own real `platform` explicitly.
 const defaultPlatform = import.meta.env.DEV ? mockPlatform : hiddenPlatform;
 
-export default function App({ platform = defaultPlatform }: { platform?: Platform } = {}) {
+export default function App({ platform: platformProp = defaultPlatform }: { platform?: Platform } = {}) {
   const dateStr = useMemo(() => getUtcDateString(), []);
   const dateSeed = useMemo(() => getDateSeed(), []);
 
@@ -38,6 +39,11 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
   const debugScreen = useMemo(() => new URLSearchParams(window.location.search).get('debug'), []);
   const [debugReplayToken, setDebugReplayToken] = useState(0);
   const [showDebugCollapse, setShowDebugCollapse] = useState(false);
+  // Dev-only: debug shortcuts can launch a flow under either the Reddit-style mock
+  // platform (leaderboard shown) or the standalone hidden platform, so both versions
+  // of a screen can be checked. null = use the real passed-in platform.
+  const [devPlatform, setDevPlatform] = useState<Platform | null>(null);
+  const platform = devPlatform ?? platformProp;
 
   const [screen, setScreen] = useState<Screen>('intro');
   const [runSeed, setRunSeed] = useState(() => getRandomSeed());
@@ -50,6 +56,8 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
   const [simResult, setSimResult] = useState<SeasonSimResult | null>(null);
   const [devSkipToDeadline, setDevSkipToDeadline] = useState(false);
   const [postseasonStartRound, setPostseasonStartRound] = useState<number | undefined>(undefined);
+  // Which final screen the Season Recap was opened from, so Back returns there.
+  const [recapReturn, setRecapReturn] = useState<'results' | 'postseason'>('results');
 
   const primaryRounds = useMemo(() => generateRoundSeasons(runSeed, SEASONS), [runSeed]);
 
@@ -102,6 +110,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     rerolledRoundIndex === roundIndex && rerollAlternate ? rerollAlternate : primaryRounds[roundIndex];
 
   function handleStart() {
+    setDevPlatform(null); // normal play always uses the real platform, never a dev override
     setRunSeed(getRandomSeed()); // fresh randomness every playthrough — any season, any time
     setScreen('round');
   }
@@ -154,6 +163,17 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setScreen('postseason');
   }
 
+  // Season Recap is reachable from both final screens; remember which one so Back
+  // can return there (read the current screen at click time).
+  function handleShowRecap() {
+    setRecapReturn(screen === 'postseason' ? 'postseason' : 'results');
+    setScreen('recap');
+  }
+
+  function handleBackFromRecap() {
+    setScreen(recapReturn);
+  }
+
   // Dev-only: jumps straight to Round 1 (First Series) of a real postseason —
   // no seed search needed since any qualifying seed already starts there
   // (postseasonStartRound left unset, so PostseasonScreen defaults to index 0).
@@ -202,9 +222,11 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setScreen('postseason');
   }
 
-  function handlePlayAgainDev() {
-    // Dev-only reset so we can exercise the loop repeatedly while prototyping.
-    // Real game is one play per day per user — this button won't exist post-Phase-1.
+  function handlePlayAgain() {
+    // Resets to a fresh draft. On the standalone build this backs a real
+    // "Play again" button (there's no one-play-per-day gate there); in dev it
+    // also backs the replay button. On the Reddit build the daily gate means the
+    // results screen offers no replay, so players never reach this.
     setScreen('intro');
     setRoundIndex(0);
     setPicks([]);
@@ -217,6 +239,7 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setDevSkipToDeadline(false);
     setShowDebugCollapse(false);
     setPostseasonStartRound(undefined);
+    setDevPlatform(null);
   }
 
   // Dev-only: fabricates a valid 6-player roster (one per slot, from a single
@@ -272,6 +295,22 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
     setShowDebugCollapse(true);
   }
 
+  // Dev-only: renders a shortcut as two buttons — one that runs the flow under the
+  // Reddit-style mock platform (leaderboard shown, Reddit copy) and one under the
+  // standalone hidden platform (no leaderboard, standalone copy) — so both versions
+  // of the destination screen can be eyeballed. The platform override batches with
+  // the flow's own state updates, so it's in effect by the time the screen renders.
+  const devShortcut = (label: string, run: () => void) => (
+    <>
+      <button type="button" className="text-btn dev-reset" onClick={() => { setDevPlatform(mockPlatform); run(); }}>
+        🧪 {label} — Reddit
+      </button>
+      <button type="button" className="text-btn dev-reset" onClick={() => { setDevPlatform(hiddenPlatform); run(); }}>
+        🧪 {label} — standalone
+      </button>
+    </>
+  );
+
   // Dev-only debug entry point. March Collapse boots straight into the minigame in
   // isolation — flicker → hold → minigame → result — with no season sim
   // around it, so its visuals/UX can be iterated on directly. Reached via either the
@@ -309,34 +348,22 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
           </p>
           <img className="intro-slot-machine" src={slotMachineSrc} alt="" />
           <button type="button" className="primary-btn" onClick={handleStart}>
-            Start today's draft
+            {platform.showsLeaderboard ? "Start today's draft" : 'Start draft'}
           </button>
           {import.meta.env.DEV && (
             <>
               {HAS_POSTSEASON && (
                 <>
-                  <button type="button" className="text-btn dev-reset" onClick={handleForceFirstSeriesTest}>
-                    🧪 Force First Series (dev test)
-                  </button>
-                  <button type="button" className="text-btn dev-reset" onClick={handleForceShootoutTest}>
-                    🧪 Force Cup Final shootout (dev test)
-                  </button>
-                  <button type="button" className="text-btn dev-reset" onClick={handleForceStanleyCupFinalTest}>
-                    🧪 Force Stanley Cup Final (dev test)
-                  </button>
+                  {devShortcut('Force First Series', handleForceFirstSeriesTest)}
+                  {devShortcut('Force Cup Final shootout', handleForceShootoutTest)}
+                  {devShortcut('Force Stanley Cup Final', handleForceStanleyCupFinalTest)}
                 </>
               )}
-              {HAS_TRADE_DEADLINE && (
-                <button type="button" className="text-btn dev-reset" onClick={handleForceTradeDeadlineTest}>
-                  🧪 Force Trade Deadline (dev test)
-                </button>
-              )}
-              <button type="button" className="text-btn dev-reset" onClick={handleForceRegularSeasonTest}>
-                🧪 Force Regular Season (dev test)
-              </button>
+              {HAS_TRADE_DEADLINE && devShortcut('Force Trade Deadline', handleForceTradeDeadlineTest)}
+              {devShortcut('Force Regular Season', handleForceRegularSeasonTest)}
               {HAS_MARCH_COLLAPSE && (
                 <button type="button" className="text-btn dev-reset" onClick={handleForceMarchCollapseTest}>
-                  🧪 Force March Collapse (dev test)
+                  🧪 Force March Collapse (isolated minigame — platform-independent)
                 </button>
               )}
             </>
@@ -398,8 +425,22 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
           dateSeed={dateSeed}
           subreddit={subreddit}
           startAtRound={postseasonStartRound}
-          onPlayAgainDev={handlePlayAgainDev}
+          onPlayAgain={handlePlayAgain}
+          onShowRecap={handleShowRecap}
           platform={platform}
+        />
+      </div>
+    );
+  }
+
+  if (screen === 'recap') {
+    return (
+      <div className="app-shell">
+        <SeasonRecapScreen
+          picks={picks}
+          seasonsById={seasonsById}
+          simResult={simResult!}
+          onBack={handleBackFromRecap}
         />
       </div>
     );
@@ -416,7 +457,8 @@ export default function App({ platform = defaultPlatform }: { platform?: Platfor
         simResult={simResult!}
         postseason={postseason}
         onStartPostseason={handleStartPostseason}
-        onPlayAgainDev={handlePlayAgainDev}
+        onPlayAgain={handlePlayAgain}
+        onShowRecap={handleShowRecap}
         platform={platform}
       />
     </div>

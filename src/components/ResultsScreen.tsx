@@ -25,7 +25,8 @@ export function ResultsScreen({
   simResult,
   postseason,
   onStartPostseason,
-  onPlayAgainDev,
+  onPlayAgain,
+  onShowRecap,
   platform,
 }: {
   dateStr: string;
@@ -38,7 +39,8 @@ export function ResultsScreen({
   // and divisional standings below are hidden and this screen is the final one.
   postseason: PostseasonResult | null;
   onStartPostseason: () => void;
-  onPlayAgainDev: () => void;
+  onPlayAgain: () => void;
+  onShowRecap: () => void;
   platform: Platform;
 }) {
   const [copied, setCopied] = useState(false);
@@ -136,6 +138,22 @@ export function ResultsScreen({
           </div>
         ))}
 
+      {/* End-of-run actions sit right under the outcome callout for a non-qualifier
+          (or a regular-season-only build with no bracket) — this is where their run
+          ends. Standalone gets a "Draft again" (no daily gate); qualifiers instead
+          finish after the postseason, so both actions live on the champion screen. */}
+      {!platform.showsLeaderboard && !postseason?.qualified && (
+        <button type="button" className="primary-btn" onClick={onPlayAgain}>
+          Draft again
+        </button>
+      )}
+
+      {!postseason?.qualified && (
+        <button type="button" className="text-btn recap-btn" onClick={onShowRecap}>
+          View full season recap
+        </button>
+      )}
+
       {postseason?.qualified && (
         <div className="results-standings">
           <p className="results-standings-heading">Eastern Conference standings</p>
@@ -216,10 +234,14 @@ export function ResultsScreen({
         </button>
       </div>
 
-      <p className="results-daily-note">🗓️ One play per day — come back tomorrow for a fresh draft.</p>
+      {platform.showsLeaderboard && (
+        <p className="results-daily-note">
+          One play per day. Come back tomorrow for a fresh draft and leaderboard.
+        </p>
+      )}
 
       {import.meta.env.DEV && (
-        <button type="button" className="text-btn dev-reset" onClick={onPlayAgainDev}>
+        <button type="button" className="text-btn dev-reset" onClick={onPlayAgain}>
           ↺ Replay (dev only — real game is once per day)
         </button>
       )}
