@@ -51,35 +51,39 @@ const BOOM_TILT_MAX = 60; // frames 0-2: random rotation within +/- this, in deg
 // stutter, then a pause, then another strike — rather than an even or smoothly
 // decelerating strobe. Each frame is [background class, ms to hold it]; after the
 // last frame it settles onto the steady, fully readable hold screen so the warning
-// text can actually be read before the player chooses to proceed.
+// text can actually be read before the player chooses to proceed. Only ever plays
+// for players who haven't opted out of flashing (reduceFlashing) — see the stage
+// init below, which sends opt-outs straight to the steady hold card.
 type FlickerClass = 'flash-magenta' | 'flash-yellow' | 'flash-white' | 'dark';
+// Durations scaled from the original cadence by ~0.484 so the whole strobe runs
+// 1.5s (was 3.1s) while keeping the same burst/pause rhythm.
 const LIGHTNING_FRAMES: [FlickerClass, number][] = [
-  ['dark', 140], // beat of dark first — anticipation before the first strike
-  ['flash-magenta', 55],
-  ['dark', 90],
-  ['flash-yellow', 45],
-  ['flash-white', 40], // white-hot peak on the double
-  ['dark', 340], // pause between strikes
-  ['flash-yellow', 50],
-  ['dark', 130],
-  ['flash-magenta', 40],
-  ['flash-white', 45],
-  ['flash-yellow', 40], // stutter with a white peak
-  ['dark', 420], // longer pause
-  ['flash-white', 55],
-  ['dark', 100],
-  ['flash-magenta', 40],
-  ['flash-yellow', 40],
-  ['flash-white', 45], // triple stutter
-  ['dark', 380], // pause
-  ['flash-magenta', 55],
-  ['dark', 150],
-  ['flash-yellow', 55],
-  ['dark', 300], // pause
-  ['flash-magenta', 45],
-  ['flash-yellow', 50],
-  ['dark', 200], // last dark beat before the climax
-  ['flash-white', 150], // CLIMAX: a big, sustained white-hot strike, then the warning hits
+  ['dark', 68], // beat of dark first — anticipation before the first strike
+  ['flash-magenta', 26],
+  ['dark', 44],
+  ['flash-yellow', 22],
+  ['flash-white', 19], // white-hot peak on the double
+  ['dark', 164], // pause between strikes
+  ['flash-yellow', 24],
+  ['dark', 63],
+  ['flash-magenta', 19],
+  ['flash-white', 22],
+  ['flash-yellow', 19], // stutter with a white peak
+  ['dark', 203], // longer pause
+  ['flash-white', 26],
+  ['dark', 49],
+  ['flash-magenta', 19],
+  ['flash-yellow', 19],
+  ['flash-white', 22], // triple stutter
+  ['dark', 184], // pause
+  ['flash-magenta', 26],
+  ['dark', 73],
+  ['flash-yellow', 26],
+  ['dark', 145], // pause
+  ['flash-magenta', 22],
+  ['flash-yellow', 24],
+  ['dark', 97], // last dark beat before the climax
+  ['flash-white', 75], // CLIMAX: a big, sustained white-hot strike, then the warning hits
 ];
 
 interface Puck {
@@ -110,17 +114,24 @@ const RESULT_COPY = {
 export function MarchCollapseFlow({
   onResolved,
   targetSavePct = 0.905,
+  reduceFlashing = false,
 }: {
   onResolved: (success: boolean) => void;
   // The save% the player must hold — the selected goalie's, from goalieTargetSavePct.
   // Defaults to a league-ish value for the isolated dev harness (no roster).
   targetSavePct?: number;
+  // Player opted out of flashing on the splash screen — skip the lightning intro,
+  // same as the OS prefers-reduced-motion path below.
+  reduceFlashing?: boolean;
 }) {
-  // Accessibility: a rapid full-screen strobe can trigger photosensitive
-  // seizures, so anyone with prefers-reduced-motion set skips the lightning
-  // intro entirely and lands straight on the steady, readable warning card.
+  // Accessibility: a full-screen flashing intro can trigger photosensitive
+  // seizures, so anyone who opted out on the splash screen (reduceFlashing) OR has
+  // prefers-reduced-motion set skips the lightning intro entirely and lands straight
+  // on the steady, readable warning card.
   const [stage, setStage] = useState<'flicker' | 'hold' | 'playing' | 'result'>(() =>
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'hold' : 'flicker',
+    reduceFlashing || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      ? 'hold'
+      : 'flicker',
   );
   const [flickerClass, setFlickerClass] = useState<FlickerClass>(LIGHTNING_FRAMES[0][0]);
   const [pucks, setPucks] = useState<Puck[]>([]);
@@ -237,8 +248,11 @@ export function MarchCollapseFlow({
   }
 
   if (stage === 'hold') {
+    // Opting out of flashing also drops the thunderclap jolt (the card slamming +
+    // shaking into place) — a flashing opt-out should land on a fully still card, not
+    // just skip the strobe. prefers-reduced-motion users get the same via CSS below.
     return (
-      <div className="collapse-warning-hold">
+      <div className={`collapse-warning-hold${reduceFlashing ? ' no-jolt' : ''}`}>
         <img className="collapse-warning-octopus" src={collapseOctopusSrc} alt="" />
         <p className="collapse-warning-eyebrow">Defensive breakdown incoming!</p>
         <h2 className="collapse-warning-title">March Collapse</h2>

@@ -150,7 +150,7 @@ export function ResultsScreen({
 
       {!postseason?.qualified && (
         <button type="button" className="text-btn recap-btn" onClick={onShowRecap}>
-          View full season recap
+          View regular season recap
         </button>
       )}
 

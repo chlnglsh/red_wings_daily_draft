@@ -49,6 +49,7 @@ export function SeasonSimScreen({
   sharedDailyCollapse = false,
   forceMarchCollapse = false,
   devSkipToDeadline = false,
+  reduceFlashing = false,
   onComplete,
 }: {
   picks: DraftPick[];
@@ -63,6 +64,9 @@ export function SeasonSimScreen({
   forceMarchCollapse?: boolean;
   // Dev-only: skip straight to the trade deadline gate instead of playing games 1-60.
   devSkipToDeadline?: boolean;
+  // Player opted out of flashing on the splash screen — forwarded to the March
+  // Collapse intro so it skips the lightning flicker.
+  reduceFlashing?: boolean;
   onComplete: (result: SeasonSimResult, finalPicks: DraftPick[]) => void;
 }) {
   // One persistent RNG for the whole day's sim — shared across every segment
@@ -360,7 +364,13 @@ export function SeasonSimScreen({
   if (collapseStage === 'active') {
     const goalie = currentPicks.find((p) => p.player.position === 'G');
     const targetSavePct = goalie ? goalieTargetSavePct(goalie.player) : undefined;
-    return <MarchCollapseFlow targetSavePct={targetSavePct} onResolved={handleCollapseResolved} />;
+    return (
+      <MarchCollapseFlow
+        targetSavePct={targetSavePct}
+        reduceFlashing={reduceFlashing}
+        onResolved={handleCollapseResolved}
+      />
+    );
   }
 
   const liveGoals = currentGame ? currentGame.goalEvents.filter((e) => e.minute <= currentMinute) : [];

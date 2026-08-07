@@ -6,6 +6,9 @@ import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTS
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
 import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
+import { simulateGamesInRange, aggregateGames, buildScorerPicker, SEASON_LENGTH } from './lib/gameSim';
+import { deriveRosterGameState } from './lib/rosterState';
+import { mulberry32, hashStringToInt } from './lib/prng';
 import { simulatePostseason, findCupFinalShootoutSeed, findSeedReachingFinal, type PostseasonResult } from './lib/postseason';
 import type { Platform } from './lib/platform';
 import { mockPlatform } from './lib/mockPlatform';
@@ -58,6 +61,24 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   const [postseasonStartRound, setPostseasonStartRound] = useState<number | undefined>(undefined);
   // Which final screen the Season Recap was opened from, so Back returns there.
   const [recapReturn, setRecapReturn] = useState<'results' | 'postseason'>('results');
+
+  // Accessibility opt-out for the March Collapse lightning intro, toggled on the
+  // splash screen and remembered across visits. Defaults to on when the OS already
+  // asks for reduced motion, so those players never have to find the toggle.
+  const [reduceFlashing, setReduceFlashing] = useState<boolean>(() => {
+    const saved = localStorage.getItem('reduceFlashing');
+    if (saved !== null) return saved === 'true';
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  });
+  function handleToggleReduceFlashing(next: boolean) {
+    setReduceFlashing(next);
+    try {
+      localStorage.setItem('reduceFlashing', String(next));
+    } catch {
+      // localStorage can throw in private mode — the in-memory state still applies
+      // for this session, we just can't persist it.
+    }
+  }
 
   const primaryRounds = useMemo(() => generateRoundSeasons(runSeed, SEASONS), [runSeed]);
 
@@ -179,9 +200,12 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   // (postseasonStartRound left unset, so PostseasonScreen defaults to index 0).
   function handleForceFirstSeriesTest() {
     const seed = getRandomSeed();
+    const fabricatedPicks = fabricateRosterPicks();
+    if (!fabricatedPicks) return;
     setRunSeed(seed);
+    setPicks(fabricatedPicks);
     setPostseasonStartRound(undefined);
-    setSimResult({ games: [], wins: 0, losses: 0, otl: 0, points: 140, goalsFor: 0, goalsAgainst: 0 });
+    setSimResult(fabricateRegularSeasonSim(seed, fabricatedPicks));
     setPostseason(simulatePostseason(seed, 140, []));
     setScreen('postseason');
   }
@@ -199,9 +223,12 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
       alert('No shootout scenario found in range — try again.');
       return;
     }
+    const fabricatedPicks = fabricateRosterPicks();
+    if (!fabricatedPicks) return;
     setRunSeed(found.seed);
+    setPicks(fabricatedPicks);
     setPostseasonStartRound(4);
-    setSimResult({ games: [], wins: 0, losses: 0, otl: 0, points: 140, goalsFor: 0, goalsAgainst: 0 });
+    setSimResult(fabricateRegularSeasonSim(found.seed, fabricatedPicks));
     setPostseason(simulatePostseason(found.seed, 140, []));
     setScreen('postseason');
   }
@@ -215,9 +242,12 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
       alert('No Stanley Cup Final scenario found in range — try again.');
       return;
     }
+    const fabricatedPicks = fabricateRosterPicks();
+    if (!fabricatedPicks) return;
     setRunSeed(found.seed);
+    setPicks(fabricatedPicks);
     setPostseasonStartRound(4);
-    setSimResult({ games: [], wins: 0, losses: 0, otl: 0, points: 140, goalsFor: 0, goalsAgainst: 0 });
+    setSimResult(fabricateRegularSeasonSim(found.seed, fabricatedPicks));
     setPostseason(simulatePostseason(found.seed, 140, []));
     setScreen('postseason');
   }
@@ -263,6 +293,25 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
       fabricatedPicks.push({ slot, seasonId: season.id, player });
     }
     return fabricatedPicks;
+  }
+
+  // Dev-only: simulate a full, real 82-game regular season for a fabricated roster,
+  // so the postseason-jump shortcuts below land with a populated Season Recap
+  // (lineup + regular-season log) instead of empty stubs. Display-only — the forced
+  // postseason itself is still built from its own searched seed, not this result.
+  function fabricateRegularSeasonSim(seed: number, seasonPicks: DraftPick[]): SeasonSimResult {
+    const rosterState = deriveRosterGameState(seasonPicks, seasonsById);
+    const rng = mulberry32(hashStringToInt(`${seed}:dev-regular-season`));
+    const pickScorer = buildScorerPicker(rosterState.skaters, rng);
+    const games = simulateGamesInRange({
+      rng,
+      pickScorer,
+      startGame: 1,
+      endGame: SEASON_LENGTH,
+      baseWinPct: rosterState.winPct,
+      era: rosterState.era,
+    });
+    return aggregateGames(games);
   }
 
   // Dev-only: skips the whole draft UI (fabricated roster) and games 1-60 of
@@ -319,7 +368,11 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   if (import.meta.env.DEV && (debugScreen === 'march-collapse' || showDebugCollapse)) {
     return (
       <div className="app-shell">
-        <MarchCollapseFlow key={debugReplayToken} onResolved={() => setDebugReplayToken((t) => t + 1)} />
+        <MarchCollapseFlow
+          key={debugReplayToken}
+          reduceFlashing={reduceFlashing}
+          onResolved={() => setDebugReplayToken((t) => t + 1)}
+        />
       </div>
     );
   }
@@ -350,6 +403,16 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           <button type="button" className="primary-btn" onClick={handleStart}>
             {platform.showsLeaderboard ? "Start today's draft" : 'Start draft'}
           </button>
+          {HAS_MARCH_COLLAPSE && (
+            <label className="flash-optout">
+              <input
+                type="checkbox"
+                checked={reduceFlashing}
+                onChange={(e) => handleToggleReduceFlashing(e.target.checked)}
+              />
+              Remove flashing effects
+            </label>
+          )}
           {import.meta.env.DEV && (
             <>
               {HAS_POSTSEASON && (
@@ -410,6 +473,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           dateSeed={dateSeed}
           sharedDailyCollapse={platform.sharedDailyEvents}
           devSkipToDeadline={devSkipToDeadline}
+          reduceFlashing={reduceFlashing}
           onComplete={handleSimComplete}
         />
       </div>
@@ -426,7 +490,9 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           subreddit={subreddit}
           startAtRound={postseasonStartRound}
           onPlayAgain={handlePlayAgain}
-          onShowRecap={handleShowRecap}
+          picks={picks}
+          seasonsById={seasonsById}
+          simResult={simResult!}
           platform={platform}
         />
       </div>
@@ -445,6 +511,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
       </div>
     );
   }
+
 
   return (
     <div className="app-shell">

@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { GameResult } from '../lib/gameSim';
+import type { GameResult, SeasonSimResult } from '../lib/gameSim';
 import { REGULATION_END } from '../lib/gameSim';
 import type { PostseasonResult, Series } from '../lib/postseason';
 import type { ChampionEntry, Platform } from '../lib/platform';
+import type { DraftPick, Season } from '../types';
 import { TEAM_NAME, HAS_OCTOPUS_TRADITION } from '../data/team';
 import { mascotOnly } from '../data/nhlAlignment';
 import { ShootoutCeremony } from './ShootoutCeremony';
 import { OctopusFlyby } from './OctopusFlyby';
+import { PostseasonRecapScreen } from './PostseasonRecapScreen';
 import stanleyCupSrc from '../assets/stanley-cup.png';
 import divisionBannerSrc from '../assets/division-champions-banner.png';
 import conferenceBannerSrc from '../assets/conference-champions-banner.png';
@@ -68,7 +70,9 @@ export function PostseasonScreen({
   subreddit,
   startAtRound,
   onPlayAgain,
-  onShowRecap,
+  picks,
+  seasonsById,
+  simResult,
   platform,
 }: {
   postseason: PostseasonResult;
@@ -79,7 +83,11 @@ export function PostseasonScreen({
   // instead of always starting from Round 1.
   startAtRound?: number;
   onPlayAgain: () => void;
-  onShowRecap: () => void;
+  // Passed straight through to the post-season recap sub-view (playoff run + lineup
+  // + regular-season log) that the finished screen can open.
+  picks: DraftPick[];
+  seasonsById: Map<string, Season>;
+  simResult: SeasonSimResult;
   platform: Platform;
 }) {
   const playerSeries = useMemo(() => getPlayerSeries(postseason), [postseason]);
@@ -127,6 +135,10 @@ export function PostseasonScreen({
   const [completedGames, setCompletedGames] = useState<GameResult[]>([]);
   const [skipped, setSkipped] = useState(false);
   const [stage, setStage] = useState<'playing' | 'seriesComplete' | 'finished'>('playing');
+  // Post-season recap is a sub-view of the finished screen, not a separate top-level
+  // screen — kept here so opening/closing it never unmounts PostseasonScreen and
+  // Back returns to the finished view instantly instead of replaying the whole run.
+  const [showRecap, setShowRecap] = useState(false);
   const feedRef = useRef<HTMLDivElement | null>(null);
   const liveFeedWrapRef = useRef<HTMLDivElement | null>(null);
   const [feedTop, setFeedTop] = useState(0);
@@ -319,6 +331,21 @@ export function PostseasonScreen({
     return <div className="postseason-screen rink-backdrop">No postseason series to show.</div>;
   }
 
+  // Recap sub-view — only ever opened from the finished screen. Rendering it here
+  // (rather than navigating away) keeps all of PostseasonScreen's state alive, so
+  // closing it drops straight back onto the finished screen with no replay.
+  if (showRecap) {
+    return (
+      <PostseasonRecapScreen
+        picks={picks}
+        seasonsById={seasonsById}
+        simResult={simResult}
+        postseason={postseason}
+        onBack={() => setShowRecap(false)}
+      />
+    );
+  }
+
   // ---- Series complete / finished stages ----
   if (stage === 'seriesComplete' || stage === 'finished') {
     const playerWinsCount = playerIsHome ? currentSeries.homeWins : currentSeries.awayWins;
@@ -380,7 +407,7 @@ export function PostseasonScreen({
           </button>
         )}
 
-        <button type="button" className="text-btn recap-btn" onClick={onShowRecap}>
+        <button type="button" className="text-btn recap-btn" onClick={() => setShowRecap(true)}>
           View full season recap
         </button>
 

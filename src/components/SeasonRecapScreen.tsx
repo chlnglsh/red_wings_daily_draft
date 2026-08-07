@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
@@ -26,6 +27,19 @@ export function SeasonRecapScreen({
 }) {
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
 
+  // Only fade the game log's top/bottom edge when there's more to scroll past it in
+  // that direction — so a full scroll up drops the top fade, and a full scroll down
+  // drops the bottom one, instead of the gradient permanently covering the end rows.
+  const logRef = useRef<HTMLDivElement | null>(null);
+  function updateEdgeClasses(el: HTMLDivElement | null) {
+    if (!el) return;
+    el.classList.toggle('at-top', el.scrollTop <= 1);
+    el.classList.toggle('at-bottom', el.scrollTop + el.clientHeight >= el.scrollHeight - 1);
+  }
+  useEffect(() => {
+    updateEdgeClasses(logRef.current);
+  });
+
   return (
     <div className="results-screen season-recap rink-backdrop">
       <h1 className="season-recap-title">Season Recap</h1>
@@ -50,8 +64,8 @@ export function SeasonRecapScreen({
         })}
       </div>
 
-      <p className="season-recap-heading">Every game ({simResult.games.length})</p>
-      <div className="season-recap-log">
+      <p className="season-recap-heading">Regular season games</p>
+      <div className="season-recap-log" ref={logRef} onScroll={(e) => updateEdgeClasses(e.currentTarget)}>
         {simResult.games.map((g) => (
           <div key={g.gameNumber} className="season-sim-game">
             <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
