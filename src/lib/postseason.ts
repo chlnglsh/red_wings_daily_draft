@@ -384,6 +384,26 @@ export function findCupFinalShootoutSeed(
   return null;
 }
 
+// Dev-only test helper — searches for a seed where the player qualifies but is
+// eliminated in a specific round (1 = First Series … 3 = Conference Final), so the
+// "Eliminated in the {Round} by {Team}" recap header can be eyeballed for a given
+// round without replaying until the outcome happens to land there. Round 4 is a
+// Cup Final loss; a Cup win never sets playerEliminatedRound.
+export function findSeedEliminatedInRound(
+  round: Round,
+  playerPoints: number,
+  skaters: WeightedSkater[],
+  maxAttempts = 5000,
+): { seed: number; result: PostseasonResult } | null {
+  for (let seed = 1; seed <= maxAttempts; seed++) {
+    const result = simulatePostseason(seed, playerPoints, skaters);
+    if (result.qualified && result.playerEliminatedRound === round) {
+      return { seed, result };
+    }
+  }
+  return null;
+}
+
 // Dev-only test helper — same idea as findCupFinalShootoutSeed, but only requires
 // the player to have actually reached the Stanley Cup Final (win or lose, no
 // shootout requirement), so it's a much quicker hit for testing the Final round

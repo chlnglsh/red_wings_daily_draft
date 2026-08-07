@@ -83,16 +83,19 @@ export function PostseasonRecapScreen({
   if (highestRoundWon >= 3) banners.push(conferenceBannerSrc);
   if (highestRoundWon >= 4) banners.push(stanleyCupBannerSrc);
 
-  // The eliminated header is derived from the last series the player played: if
-  // they didn't win the Cup, that series is the one they lost, and its winner is
-  // who knocked them out.
-  const lastSeries = playerSeries[playerSeries.length - 1];
-  const eliminator = wonCup ? null : (lastSeries?.winner ?? null);
-  const outcomeTitle = wonCup
-    ? 'Stanley Cup Champions'
-    : lastSeries
-      ? `Eliminated in the ${ROUND_NAMES[lastSeries.round]} by ${eliminator?.team.name ?? 'the opponent'}`
-      : 'Playoff Recap';
+  // The header names the highest title the player actually WON, never the
+  // elimination — a season with a banner shouldn't be topped by "Eliminated".
+  // Won the Cup → Stanley Cup Champions; won the Conference (lost the Cup Final)
+  // → Conference Champions; won the Division (lost the Conference Final) →
+  // Division Champions; out in the first two rounds (no title) → Full Season Recap.
+  const outcomeTitle =
+    highestRoundWon >= 4
+      ? 'Stanley Cup Champions'
+      : highestRoundWon === 3
+        ? 'Conference Champions'
+        : highestRoundWon === 2
+          ? 'Division Champions'
+          : 'Full Season Recap';
 
   // Same edge-aware fade as the regular-season recap log — drop the fade on an edge
   // once you've scrolled fully to it (no more content that way to hint at).
@@ -121,14 +124,17 @@ export function PostseasonRecapScreen({
 
       <p className="season-recap-heading">Post-season series</p>
       <div className="postseason-recap-run">
-        {playerSeries.map((s) => {
+        {/* Most recent series first (Cup Final at top → First Series at bottom).
+            Reverse a copy so playerSeries stays in bracket order for the header. */}
+        {[...playerSeries].reverse().map((s) => {
           const { won, playerWins, oppWins, oppName } = seriesSummary(s);
           return (
             <div key={s.id} className="postseason-recap-series">
               <p className="postseason-recap-series-line">
                 <span className="postseason-recap-round">{ROUND_NAMES[s.round]}</span>
                 <span className={`postseason-recap-series-result ${won ? 'win' : 'loss'}`}>
-                  {won ? 'Won' : 'Lost'} {playerWins}-{oppWins} vs {oppName}
+                  {/* A loss is only ever the elimination series, so label it as such. */}
+                  {won ? 'Won' : 'Eliminated'} {playerWins}-{oppWins} vs {oppName}
                 </span>
               </p>
               <div className="postseason-recap-series-games">

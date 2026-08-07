@@ -9,7 +9,7 @@ import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
 import { simulateGamesInRange, aggregateGames, buildScorerPicker, SEASON_LENGTH } from './lib/gameSim';
 import { deriveRosterGameState } from './lib/rosterState';
 import { mulberry32, hashStringToInt } from './lib/prng';
-import { simulatePostseason, findCupFinalShootoutSeed, findSeedReachingFinal, type PostseasonResult } from './lib/postseason';
+import { simulatePostseason, findCupFinalShootoutSeed, findSeedReachingFinal, findSeedEliminatedInRound, type PostseasonResult } from './lib/postseason';
 import type { Platform } from './lib/platform';
 import { mockPlatform } from './lib/mockPlatform';
 import { hiddenPlatform } from './lib/hiddenPlatform';
@@ -252,6 +252,26 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     setScreen('postseason');
   }
 
+  // Dev-only: jumps straight to the Conference Final (Round 3) of a real postseason
+  // that the player LOSES, so the "Eliminated in the Conference Final by {Team}"
+  // recap header + championship-banner combo can be eyeballed without replaying
+  // until an elimination happens to land in that round.
+  function handleForceConfFinalLossTest() {
+    const found = findSeedEliminatedInRound(3, 140, []);
+    if (!found) {
+      alert('No Conference Final loss scenario found in range — try again.');
+      return;
+    }
+    const fabricatedPicks = fabricateRosterPicks();
+    if (!fabricatedPicks) return;
+    setRunSeed(found.seed);
+    setPicks(fabricatedPicks);
+    setPostseasonStartRound(3);
+    setSimResult(fabricateRegularSeasonSim(found.seed, fabricatedPicks));
+    setPostseason(simulatePostseason(found.seed, 140, []));
+    setScreen('postseason');
+  }
+
   function handlePlayAgain() {
     // Resets to a fresh draft. On the standalone build this backs a real
     // "Play again" button (there's no one-play-per-day gate there); in dev it
@@ -420,6 +440,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
                   {devShortcut('Force First Series', handleForceFirstSeriesTest)}
                   {devShortcut('Force Cup Final shootout', handleForceShootoutTest)}
                   {devShortcut('Force Stanley Cup Final', handleForceStanleyCupFinalTest)}
+                  {devShortcut('Force Conference Final loss', handleForceConfFinalLossTest)}
                 </>
               )}
               {HAS_TRADE_DEADLINE && devShortcut('Force Trade Deadline', handleForceTradeDeadlineTest)}
