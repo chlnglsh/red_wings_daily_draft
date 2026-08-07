@@ -412,12 +412,12 @@ export function SeasonSimScreen({
           Game {Math.min(currentIndex + 1, totalGames)} of {SEASON_LENGTH}
         </span>
         <div className="season-sim-header-actions">
-          {!skipped && (
-            <button type="button" className="sim-action-btn" onClick={() => setFast((f) => !f)}>
-              {fast ? '🐢 Normal speed' : '⏩ Speed up'}
-            </button>
-          )}
-          <button type="button" className="sim-action-btn" onClick={requestSkip}>
+          {/* After a skip both controls stay in place but go inert (faded/disabled)
+              — nothing left to speed up or skip while the finished list holds. */}
+          <button type="button" className="sim-action-btn" onClick={() => setFast((f) => !f)} disabled={skipped}>
+            {fast ? 'Normal speed' : 'Speed up'}
+          </button>
+          <button type="button" className="sim-action-btn" onClick={requestSkip} disabled={skipped}>
             Skip to end
           </button>
         </div>
@@ -522,11 +522,11 @@ export function SeasonSimScreen({
                 : 'Skip the rest? You may forfeit other season events. We recommend speeding up if you don\'t want to skip possible content'}
             </p>
             <div className="skip-confirm-actions">
-              <button type="button" className="text-btn" onClick={() => setSkipDialog(null)}>
-                Keep watching
-              </button>
-              <button type="button" className="primary-btn skip-confirm-go" onClick={handleSkip}>
+              <button type="button" className="primary-btn" onClick={handleSkip}>
                 Skip to end
+              </button>
+              <button type="button" className="secondary-btn" onClick={() => setSkipDialog(null)}>
+                Continue season
               </button>
             </div>
           </div>

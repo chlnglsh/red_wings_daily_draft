@@ -28,9 +28,16 @@
 .primary-btn:active {
   transform: scale(0.98);
 }
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.primary-btn:disabled:hover {
+  background: var(--wings-red);
+}
 
 /* Same size/weight as .primary-btn (not .text-btn) for choices that deserve
-   equal visual footing — e.g. "Stand pat" next to "Enter the trade market":
+   equal visual footing — e.g. "Continue without trade" next to "Enter the trade market":
    a plain underlined text link read as the throwaway option even though
    it's a fully legitimate, equally-weighted choice. Outlined instead of
    filled keeps it visually distinct from the primary action while matching
@@ -102,6 +109,8 @@
   color: var(--ink-soft);
   font-size: 16px;
   max-width: 46ch;
+  /* Even out wrapped lines so a short last word never strands on its own line. */
+  text-wrap: balance;
 }
 
 /* Purely a fun decorative touch on the intro/splash screens — a nod to the
@@ -265,6 +274,7 @@
   font-size: 14px;
   margin: 8px auto 0;
   max-width: 42ch;
+  text-wrap: balance;
 }
 .spin-reveal-blurb.spinning {
   animation: pulse-fade 0.5s ease-in-out infinite alternate;
@@ -636,6 +646,7 @@
   color: var(--ink-soft);
   font-size: 14px;
   margin-top: 4px;
+  text-wrap: balance;
 }
 .results-record {
   font-family: var(--mono);
@@ -1098,6 +1109,7 @@
   font-size: 14px;
   color: var(--ink-soft);
   max-width: 42ch;
+  text-wrap: balance;
 }
 .trade-deadline-actions {
   display: flex;
@@ -1111,6 +1123,7 @@
   color: var(--ink-soft);
   font-style: italic;
   max-width: 34ch;
+  text-wrap: balance;
   margin-top: 4px;
 }
 .trade-swap-card {
@@ -1180,6 +1193,39 @@
 }
 .trade-swap-delta.down {
   color: var(--low);
+}
+.trade-swap-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* A declined Blockbuster swap fades out — the only cue that it's dropped. */
+.trade-swap-body.declined {
+  opacity: 0.4;
+}
+/* The Blockbuster's swaps are whole-card toggles (a real button so keyboard and
+   screen readers work): reset the button chrome, keep the .trade-swap-item box,
+   and add hover/focus affordances so it reads as tappable. */
+.trade-swap-toggle {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: inherit;
+  transition: border-color 0.12s ease;
+}
+.trade-swap-toggle:hover {
+  border-color: var(--wings-red);
+}
+.trade-swap-toggle:focus-visible {
+  outline: 2px solid var(--wings-red);
+  outline-offset: 2px;
+}
+.trade-swap-min-note {
+  font-size: 13px;
+  color: var(--wings-red);
+  text-align: center;
+  margin: 0;
 }
 
 /* ---------- Cup Final shootout ceremony (postseason, Final series only) ---------- */
@@ -1505,6 +1551,13 @@
 .sim-action-btn:hover {
   background: var(--wings-red-dark);
 }
+.sim-action-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.sim-action-btn:disabled:hover {
+  background: var(--wings-red);
+}
 /* Narrow phones: "Game X of 82" + two pill buttons don't fit this row's width at
    the base sizing — text was wrapping inside each pill instead of the pills
    just being smaller, which read as oversized and unevenly spaced. */
@@ -1554,9 +1607,9 @@
 }
 .skip-confirm-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
 }
 /* Wraps the feed (normal flow, fills this frame) and the live card/shootout
    ceremony (absolutely positioned overlays — see below) so the live card can
@@ -1868,7 +1921,7 @@
      can ever produce — a triangle, not a curve). Direction (round 1 = left to
      right, the Final = right to left) picks which of the two keyframe sets
      below runs — see the .ltr modifier. */
-  animation: octopus-flyby-rtl 1.8s linear forwards;
+  animation: octopus-flyby-rtl 3.6s linear forwards;
 }
 .octopus-flyby-sprite.ltr {
   animation-name: octopus-flyby-ltr;

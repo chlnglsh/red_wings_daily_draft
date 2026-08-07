@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { DraftPick, Season, SlotId } from '../types';
 import {
   rollTradeFlavor,
@@ -19,7 +19,7 @@ const FLAVOR_COPY: Record<TradeFlavor, { title: string; blurb: string }> = {
   bargainBuy: { title: '💰 Bargain Buy', blurb: 'Your scouts find a genuine upgrade for your weakest spot.' },
   scoutingReport: { title: '🔍 Scouting Report', blurb: 'Your scouts flag three options for your weakest spot, and at least one is a safe upgrade.' },
   rentalDeal: { title: '⏳ Rental Deal', blurb: 'A short-term rental comes in for the stretch run. The odds favor an upgrade, but nothing is promised.' },
-  blockbuster: { title: '💥 Blockbuster', blurb: 'A two-for-two swap reshapes the roster, pure chance on both sides.' },
+  blockbuster: { title: '💥 Blockbuster', blurb: 'A two-for-two swap reshapes the roster, either take one or both. Time to really shake things up.' },
   dealFallsThrough: { title: '🚫 Deal Falls Through', blurb: "The deal fell through at the deadline. Roster's unchanged." },
 };
 
@@ -32,15 +32,32 @@ const SLOT_LABELS: Record<SlotId, string> = {
   G: 'Goalie',
 };
 
-function SwapRow({ outgoing, incoming, seasonsById }: { outgoing: DraftPick; incoming: IncomingPlayer; seasonsById: Map<string, Season> }) {
+function SwapRow({
+  outgoing,
+  incoming,
+  seasonsById,
+  selectable = false,
+  accepted = true,
+  onToggle,
+}: {
+  outgoing: DraftPick;
+  incoming: IncomingPlayer;
+  seasonsById: Map<string, Season>;
+  // When selectable (the Blockbuster's two swaps), the whole card is a toggle: tap
+  // to accept/decline, and a declined swap fades out. No checkbox — the fade is the
+  // only state cue. Otherwise the swap is fixed (a plain, non-interactive card).
+  selectable?: boolean;
+  accepted?: boolean;
+  onToggle?: () => void;
+}) {
   const outSeason = seasonsById.get(outgoing.seasonId)!;
   const inSeason = seasonsById.get(incoming.seasonId)!;
   const outRating = playerRating(outgoing.player, outSeason);
   const inRating = playerRating(incoming.player, inSeason);
   const delta = inRating - outRating;
 
-  return (
-    <div className="trade-swap-item">
+  const body = (
+    <div className={`trade-swap-body${selectable && !accepted ? ' declined' : ''}`}>
       <p className="trade-swap-position">{SLOT_LABELS[outgoing.slot]}</p>
       <div className="trade-swap-row">
         <div className="trade-swap-out">
@@ -66,6 +83,20 @@ function SwapRow({ outgoing, incoming, seasonsById }: { outgoing: DraftPick; inc
       </p>
     </div>
   );
+
+  if (selectable) {
+    return (
+      <button
+        type="button"
+        className="trade-swap-item trade-swap-toggle"
+        onClick={onToggle}
+        aria-pressed={accepted}
+      >
+        {body}
+      </button>
+    );
+  }
+  return <div className="trade-swap-item">{body}</div>;
 }
 
 export function TradeDeadlineFlow({
@@ -86,6 +117,15 @@ export function TradeDeadlineFlow({
   const [stage, setStage] = useState<'gate' | 'spinning' | 'result' | 'scoutingPick'>('gate');
   const [result, setResult] = useState<TradeResult | null>(null);
   const [spinToken, setSpinToken] = useState(0);
+  // Which of the current result's swaps the player is accepting. Only the
+  // Blockbuster makes its swaps toggleable (tap a card to accept/decline); every
+  // swap defaults to accepted, and
+  // the player can decline down to a single swap but never zero (see handleContinue
+  // + the Continue button's disabled state). Initialized whenever a result lands.
+  const [acceptedSwaps, setAcceptedSwaps] = useState<boolean[]>([]);
+  useEffect(() => {
+    setAcceptedSwaps(result ? result.swaps.map(() => true) : []);
+  }, [result]);
 
   // Same slot-machine cycling as the season-roll spin in the draft — lands on
   // the flavor that's already been rolled (rng is consumed once, synchronously,
@@ -123,9 +163,22 @@ export function TradeDeadlineFlow({
     setStage('result');
   }
 
+  // Blockbuster applies only the swaps the player kept; every other flavor applies
+  // its full (fixed) result.
+  const isBlockbuster = result?.flavor === 'blockbuster';
+  const swapsToApply = result
+    ? isBlockbuster
+      ? result.swaps.filter((_, i) => acceptedSwaps[i])
+      : result.swaps
+    : [];
+
   function handleContinue() {
-    const finalPicks = result && result.swaps.length > 0 ? applyTradeSwaps(picks, result.swaps) : picks;
+    const finalPicks = swapsToApply.length > 0 ? applyTradeSwaps(picks, swapsToApply) : picks;
     onResolved(finalPicks);
+  }
+
+  function toggleSwap(i: number) {
+    setAcceptedSwaps((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
   }
 
   if (stage === 'gate') {
@@ -163,7 +216,7 @@ export function TradeDeadlineFlow({
             Enter the trade market
           </button>
           <button type="button" className="secondary-btn" onClick={handleStandPat}>
-            Stand pat
+            Continue without trade
           </button>
         </div>
         <p className="trade-deadline-disclaimer">Enter the market and you're accepting the result, good or bad. No takebacks.</p>
@@ -194,7 +247,7 @@ export function TradeDeadlineFlow({
         <p className="trade-deadline-eyebrow">{FLAVOR_COPY.scoutingReport.title}</p>
         <p className="trade-deadline-prompt">{FLAVOR_COPY.scoutingReport.blurb}</p>
         <p className="roster-picker-heading">
-          Replacing {outgoing.player.name} <span className="roster-row-pos">{outgoing.slot}</span>
+          Replacing {outgoing.player.name}
         </p>
         <div className="scouting-outgoing">
           <span className="roster-row-name">
@@ -239,11 +292,27 @@ export function TradeDeadlineFlow({
         {result.swaps.length > 0 && (
           <div className="trade-swap-card">
             {result.swaps.map((swap, i) => (
-              <SwapRow key={i} outgoing={swap.outgoing} incoming={swap.incoming} seasonsById={seasonsById} />
+              <SwapRow
+                key={i}
+                outgoing={swap.outgoing}
+                incoming={swap.incoming}
+                seasonsById={seasonsById}
+                selectable={isBlockbuster}
+                accepted={acceptedSwaps[i] ?? true}
+                onToggle={() => toggleSwap(i)}
+              />
             ))}
           </div>
         )}
-        <button type="button" className="primary-btn" onClick={handleContinue}>
+        {isBlockbuster && swapsToApply.length === 0 && (
+          <p className="trade-swap-min-note">Accept at least one swap to continue.</p>
+        )}
+        <button
+          type="button"
+          className="primary-btn"
+          onClick={handleContinue}
+          disabled={isBlockbuster && swapsToApply.length === 0}
+        >
           Continue the season
         </button>
       </div>
