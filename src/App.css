@@ -2116,14 +2116,13 @@
   pointer-events: none;
   z-index: 5;
 }
-/* Forgiving hit zone: a transparent area extending beyond the puck so taps near it
-   still count. It's part of the button, so taps on it fire the same handler; a
-   dissolving puck's pointer-events: none disables it. Extra vertical padding because
-   the puck is a fast vertical mover, so a fingertip a bit above/below still lands. */
+/* Forgiving hit zone: a transparent area extending 28px beyond the puck on all
+   sides, so taps near it still count. It's part of the button, so taps on it fire
+   the same handler; a dissolving puck's pointer-events: none disables it. */
 .collapse-puck::before {
   content: '';
   position: absolute;
-  inset: -34px -26px;
+  inset: -28px;
 }
 .collapse-puck:active {
   filter: brightness(1.4);
