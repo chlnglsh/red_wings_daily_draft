@@ -124,6 +124,11 @@ export function SeasonSimScreen({
   const [completedGames, setCompletedGames] = useState<GameResult[]>(devSkipToDeadline ? preTradeGames : []);
   const [skipped, setSkipped] = useState(false);
   const [fast, setFast] = useState(false);
+  // Skip confirmation: null = no dialog. 'beforeDeadline' = a trade deadline is
+  // still ahead (skipping stands pat there); 'eventsAhead' = past the deadline but
+  // another in-season event (March Collapse) is still pending. When nothing is
+  // pending, Skip just runs — no dialog.
+  const [skipDialog, setSkipDialog] = useState<'beforeDeadline' | 'eventsAhead' | null>(null);
   const feedRef = useRef<HTMLDivElement | null>(null);
 
   const currentGame = allGames[currentIndex] ?? null;
@@ -313,13 +318,29 @@ export function SeasonSimScreen({
   useEffect(() => {
     const seasonDone = isCollapseDay ? finalGames !== null : midGames !== null;
     if (currentIndex >= SEASON_LENGTH && seasonDone) {
-      const t = setTimeout(() => onComplete(aggregateGames(allGames), currentPicks), 400);
+      // Hold on the finished game list for a beat so the final result can be read
+      // before the screen advances — applies to every path (live, sped-up, skipped),
+      // since they all land here once currentIndex reaches the season length.
+      const t = setTimeout(() => onComplete(aggregateGames(allGames), currentPicks), 1500);
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, midGames, finalGames, isCollapseDay, allGames, currentPicks, onComplete]);
 
+  // Gate the Skip button behind a confirmation only when skipping would actually
+  // bypass a pending event. A trade deadline still ahead defaults to standing pat;
+  // any other in-season event (currently March Collapse) still pending would be
+  // forfeited. Nothing pending → skip straight away with no dialog.
+  function requestSkip() {
+    const tradeAhead = HAS_TRADE_DEADLINE && tradeStage === 'pending';
+    const otherEventsAhead = collapseStage === 'pending';
+    if (tradeAhead) setSkipDialog('beforeDeadline');
+    else if (otherEventsAhead) setSkipDialog('eventsAhead');
+    else handleSkip();
+  }
+
   function handleSkip() {
+    setSkipDialog(null);
     setSkipped(true);
     // Skipping past an unresolved trade decision defaults to standing pat, and an
     // unresolved collapse defaults to a failed stand (you didn't defend) — so the
@@ -396,7 +417,7 @@ export function SeasonSimScreen({
               {fast ? '🐢 Normal speed' : '⏩ Speed up'}
             </button>
           )}
-          <button type="button" className="sim-action-btn" onClick={handleSkip}>
+          <button type="button" className="sim-action-btn" onClick={requestSkip}>
             Skip to end
           </button>
         </div>
@@ -491,6 +512,26 @@ export function SeasonSimScreen({
           </div>
         )}
       </div>
+
+      {skipDialog && (
+        <div className="skip-confirm-overlay" role="dialog" aria-modal="true">
+          <div className="skip-confirm-card">
+            <p className="skip-confirm-text">
+              {skipDialog === 'beforeDeadline'
+                ? "Skip the rest? You'll remain at status quo at the trade deadline and may forfeit other season events. We recommend speeding up if you don't want to skip possible content"
+                : 'Skip the rest? You may forfeit other season events. We recommend speeding up if you don\'t want to skip possible content'}
+            </p>
+            <div className="skip-confirm-actions">
+              <button type="button" className="text-btn" onClick={() => setSkipDialog(null)}>
+                Keep watching
+              </button>
+              <button type="button" className="primary-btn skip-confirm-go" onClick={handleSkip}>
+                Skip to end
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

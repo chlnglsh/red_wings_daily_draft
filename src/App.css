@@ -1524,6 +1524,40 @@
     padding: 5px 9px;
   }
 }
+/* Skip-to-end confirmation: a centered card over a dimmed scrim, shown only when
+   skipping would bypass a pending event (trade deadline / March Collapse). */
+.skip-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+}
+.skip-confirm-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--paper);
+  border: 2px solid var(--wings-red);
+  border-radius: 14px;
+  padding: 22px 20px;
+  box-shadow: 6px 6px 0 var(--wings-red-dark);
+  text-align: center;
+}
+.skip-confirm-text {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 18px;
+}
+.skip-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
 /* Wraps the feed (normal flow, fills this frame) and the live card/shootout
    ceremony (absolutely positioned overlays — see below) so the live card can
    grow with real content, uncapped, without pushing the frame or the feed

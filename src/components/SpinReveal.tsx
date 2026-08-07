@@ -24,9 +24,7 @@ export function SpinReveal({
       <h2 key={tick} className={`spin-reveal-season${spinning ? ' spinning' : ''}`}>
         {season.label}
       </h2>
-      {spinning ? (
-        <p className="spin-reveal-blurb spinning">Spinning…</p>
-      ) : (
+      {spinning ? null : (
         <>
           <p className="spin-reveal-blurb">{season.blurb}</p>
           <StrengthMeter label={strength.label} pointPct={strength.pointPct} />

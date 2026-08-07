@@ -41,7 +41,7 @@ export function RoundScreen({
       />
       <div className="round-content">
         {spinning ? (
-          <div className="spin-placeholder">🎰 Spinning the wheel…</div>
+          <div className="spin-placeholder">Spinning the wheel…</div>
         ) : (
           <RosterPicker
             season={season}
