@@ -70,7 +70,7 @@ export function SeasonRecapScreen({
           <div key={g.gameNumber} className="season-sim-game">
             <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
             <span className="season-sim-opponent">
-              G{g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
+              G{g.gameNumber} vs. {g.opponent} {g.home ? '(H)' : '(A)'}
             </span>
             <span className="season-sim-score">{gameLine(g)}</span>
           </div>

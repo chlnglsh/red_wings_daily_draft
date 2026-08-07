@@ -364,20 +364,23 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     setShowDebugCollapse(true);
   }
 
-  // Dev-only: renders a shortcut as two buttons — one that runs the flow under the
-  // Reddit-style mock platform (leaderboard shown, Reddit copy) and one under the
-  // standalone hidden platform (no leaderboard, standalone copy) — so both versions
-  // of the destination screen can be eyeballed. The platform override batches with
-  // the flow's own state updates, so it's in effect by the time the screen renders.
+  // Dev-only: one compact row per destination — the label, then two inline links
+  // ("reddit version | standalone version") that run the flow under the Reddit-style
+  // mock platform (leaderboard, Reddit copy) or the standalone hidden platform (no
+  // leaderboard, standalone copy). Keeps the dev menu from ballooning to two full
+  // buttons per shortcut. The platform override batches with the flow's own state
+  // updates, so it's in effect by the time the screen renders.
   const devShortcut = (label: string, run: () => void) => (
-    <>
-      <button type="button" className="text-btn dev-reset" onClick={() => { setDevPlatform(mockPlatform); run(); }}>
-        🧪 {label} — Reddit
+    <p className="dev-shortcut">
+      🧪 {label}:{' '}
+      <button type="button" className="dev-shortcut-link" onClick={() => { setDevPlatform(mockPlatform); run(); }}>
+        reddit version
       </button>
-      <button type="button" className="text-btn dev-reset" onClick={() => { setDevPlatform(hiddenPlatform); run(); }}>
-        🧪 {label} — standalone
+      {' | '}
+      <button type="button" className="dev-shortcut-link" onClick={() => { setDevPlatform(hiddenPlatform); run(); }}>
+        standalone version
       </button>
-    </>
+    </p>
   );
 
   // Dev-only debug entry point. March Collapse boots straight into the minigame in
@@ -401,9 +404,9 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     return (
       <div className="app-shell">
         <header className="intro">
-          <p className="intro-eyebrow">
-            {platform.showsLeaderboard ? `r/${subreddit} · ${dateStr}` : dateStr}
-          </p>
+          {platform.showsLeaderboard && (
+            <p className="intro-eyebrow">r/{subreddit} · {dateStr}</p>
+          )}
           <h1 className="intro-title">{TEAM_NAME} Daily Draft</h1>
           <p className="intro-sub">
             {platform.showsLeaderboard ? (

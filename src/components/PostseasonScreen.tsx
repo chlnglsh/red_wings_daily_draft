@@ -362,7 +362,7 @@ export function PostseasonScreen({
             {playerWonSeries ? 'Series won!' : 'Series lost'}
           </h2>
           <p className="postseason-series-result-score">
-            {playerWinsCount}-{oppWinsCount} vs {opponent!.team.name}
+            {playerWinsCount}-{oppWinsCount} vs. {opponent!.team.name}
           </p>
           <button type="button" className="primary-btn" onClick={handleContinue}>
             Continue
@@ -374,7 +374,7 @@ export function PostseasonScreen({
     // finished
     return (
       <div className="postseason-screen rink-backdrop">
-        <p className="results-eyebrow">r/{subreddit} · {dateStr}</p>
+        {platform.showsLeaderboard && <p className="results-eyebrow">r/{subreddit} · {dateStr}</p>}
         {postseason.playerWonCup ? (
           <>
             <img className="results-tier-cup" src={stanleyCupSrc} alt="" />
@@ -466,7 +466,7 @@ export function PostseasonScreen({
       </div>
 
       <p className="postseason-series-status">
-        vs {opponent!.team.name} ({opponent!.label})
+        vs. {opponent!.team.name} ({opponent!.label})
       </p>
       <div className="postseason-tally">
         <div>
@@ -499,7 +499,7 @@ export function PostseasonScreen({
               <div key={completedGames.length - i} className="season-sim-game">
                 <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
                 <span className="season-sim-opponent">
-                  G{g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
+                  G{g.gameNumber} vs. {g.opponent} {g.home ? '(H)' : '(A)'}
                 </span>
                 <span className="season-sim-score">{gameLine(g)}</span>
               </div>
@@ -522,7 +522,7 @@ export function PostseasonScreen({
           <div className="season-sim-live">
             <div className="season-sim-live-header">
               <span>
-                vs {opponent!.team.name} {currentGame.home ? '(H)' : '(A)'}
+                vs. {opponent!.team.name} {currentGame.home ? '(H)' : '(A)'}
               </span>
               <span className="season-sim-live-score">
                 {liveGoals.length}-{liveOppGoals.length}

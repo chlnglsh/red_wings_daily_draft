@@ -24,13 +24,17 @@ export function buildShareText(options: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   subreddit: string;
+  // The Reddit build shares a dated, daily-leaderboard result; the standalone build
+  // has no daily gate or subreddit, so it drops the date from the header (the
+  // r/subreddit rank line is already Reddit-only, gated by rank below).
+  showDate: boolean;
   // Omitted where there's no real subreddit leaderboard behind the rank (standalone
   // web/mobile, or Reddit before the leaderboard fetch resolves) — the rank line
   // is left out of the share text entirely rather than showing a fake number.
   rank?: number;
   totalPlayers?: number;
 }): string {
-  const { dateStr, tier, record, picks, seasonsById, subreddit, rank, totalPlayers } = options;
+  const { dateStr, tier, record, picks, seasonsById, subreddit, showDate, rank, totalPlayers } = options;
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
   const squares = SLOT_ORDER.map((slot) => {
     const pick = bySlot.get(slot);
@@ -41,7 +45,7 @@ export function buildShareText(options: {
   }).join(' ');
 
   const lines = [
-    `${TEAM_NAME} Daily Draft — ${dateStr}`,
+    showDate ? `${TEAM_NAME} Daily Draft — ${dateStr}` : `${TEAM_NAME} Daily Draft`,
     `${tier.emoji} ${tier.label} — ${record.wins}-${record.losses}-${record.otl} (${record.points} PTS)`,
     squares,
   ];

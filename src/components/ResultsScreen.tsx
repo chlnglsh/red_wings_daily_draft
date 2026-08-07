@@ -73,9 +73,10 @@ export function ResultsScreen({
     () =>
       buildShareText({
         dateStr, tier, record: simResult, picks, seasonsById, subreddit,
+        showDate: platform.showsLeaderboard,
         rank: rankInfo?.rank, totalPlayers: rankInfo?.total,
       }),
-    [dateStr, tier, simResult, picks, seasonsById, subreddit, rankInfo],
+    [dateStr, tier, simResult, picks, seasonsById, subreddit, platform, rankInfo],
   );
 
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
@@ -98,7 +99,7 @@ export function ResultsScreen({
 
   return (
     <div className="results-screen rink-backdrop">
-      <p className="results-eyebrow">r/{subreddit} · {dateStr}</p>
+      {platform.showsLeaderboard && <p className="results-eyebrow">r/{subreddit} · {dateStr}</p>}
       <div className="results-tier">
         <span className="results-tier-emoji">{tier.emoji}</span>
         <h1 className="results-tier-label">{tier.label}</h1>

@@ -438,7 +438,7 @@ export function SeasonSimScreen({
             <div key={g.gameNumber} className="season-sim-game">
               <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
               <span className="season-sim-opponent">
-                G{g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
+                G{g.gameNumber} vs. {g.opponent} {g.home ? '(H)' : '(A)'}
               </span>
               <span className="season-sim-score">{gameLine(g)}</span>
             </div>
@@ -449,7 +449,7 @@ export function SeasonSimScreen({
           <div className="season-sim-live">
             <div className="season-sim-live-header">
               <span>
-                vs {currentGame.opponent} {currentGame.home ? '(H)' : '(A)'}
+                vs. {currentGame.opponent} {currentGame.home ? '(H)' : '(A)'}
               </span>
               <span className="season-sim-live-score">
                 {liveGoals.length}-{liveOppGoals.length}

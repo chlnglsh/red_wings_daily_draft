@@ -867,6 +867,28 @@
   opacity: 0.6;
 }
 
+/* Compact dev-shortcut row: label + two inline "version" links, so the debug
+   menu stays one line per destination instead of two full buttons. */
+.dev-shortcut {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  opacity: 0.6;
+  text-align: center;
+}
+.dev-shortcut-link {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0 2px;
+}
+.dev-shortcut-link:hover {
+  color: var(--ink);
+}
+
 /* ---------- Squad summary (ratings + predicted standing) ---------- */
 
 .squad-summary {
@@ -1309,8 +1331,10 @@
   margin: 0 auto;
   display: block;
   /* Raised into place from off-screen, not faded in — reads like the banner is
-     being hoisted up to hang under the round name, then it just stops there. */
-  animation: postseason-banner-raise 2200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+     being hoisted up to hang under the round name, then it just stops there.
+     Constant speed (linear) the whole way — no fast whip-up then decelerate;
+     it glides at one steady pace and stops. */
+  animation: postseason-banner-raise 1800ms linear both;
 }
 @keyframes postseason-banner-raise {
   from {

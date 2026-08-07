@@ -134,7 +134,7 @@ export function PostseasonRecapScreen({
                 <span className="postseason-recap-round">{ROUND_NAMES[s.round]}</span>
                 <span className={`postseason-recap-series-result ${won ? 'win' : 'loss'}`}>
                   {/* A loss is only ever the elimination series, so label it as such. */}
-                  {won ? 'Won' : 'Eliminated'} {playerWins}-{oppWins} vs {oppName}
+                  {won ? 'Won' : 'Eliminated'} {playerWins}-{oppWins} vs. {oppName}
                 </span>
               </p>
               <div className="postseason-recap-series-games">
@@ -142,7 +142,7 @@ export function PostseasonRecapScreen({
                   <div key={g.gameNumber} className="season-sim-game">
                     <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
                     <span className="season-sim-opponent">
-                      Game {g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
+                      Game {g.gameNumber} vs. {g.opponent} {g.home ? '(H)' : '(A)'}
                     </span>
                     <span className="season-sim-score">{gameLine(g)}</span>
                   </div>
@@ -175,7 +175,7 @@ export function PostseasonRecapScreen({
           <div key={g.gameNumber} className="season-sim-game">
             <span className={`season-sim-result ${g.result === 'W' ? 'win' : 'loss'}`}>{g.result}</span>
             <span className="season-sim-opponent">
-              G{g.gameNumber} vs {g.opponent} {g.home ? '(H)' : '(A)'}
+              G{g.gameNumber} vs. {g.opponent} {g.home ? '(H)' : '(A)'}
             </span>
             <span className="season-sim-score">{gameLine(g)}</span>
           </div>
