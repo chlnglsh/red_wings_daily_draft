@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Season, SlotId } from './types';
 import { SLOT_ORDER, eligiblePosition } from './types';
 import { SEASONS } from './data/seasons';
-import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTSEASON } from './data/team';
+import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTSEASON, gameTitle } from './data/team';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
 import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
@@ -407,7 +407,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           {platform.showsLeaderboard && (
             <p className="intro-eyebrow">r/{subreddit} · {dateStr}</p>
           )}
-          <h1 className="intro-title">{TEAM_NAME} Daily Draft</h1>
+          <h1 className="intro-title">{gameTitle(platform.showsLeaderboard)}</h1>
           <p className="intro-sub">
             {platform.showsLeaderboard ? (
               <>
@@ -530,6 +530,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           picks={picks}
           seasonsById={seasonsById}
           simResult={simResult!}
+          showsLeaderboard={platform.showsLeaderboard}
           onBack={handleBackFromRecap}
         />
       </div>

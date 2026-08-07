@@ -8,6 +8,13 @@ export const TEAM_NAME = 'Red Wings';
 export const TEAM_FULL_NAME = `${TEAM_CITY} ${TEAM_NAME}`;
 export const SUBREDDIT = 'RedWings';
 
+// The Reddit build is a one-play-per-day contest, so it's a "Daily Draft". The
+// standalone build has no daily lock (a refresh just replays), and it's really a
+// build-your-all-time-roster game, so it's a "Dynasty Draft" instead. Gate on the
+// same showsLeaderboard flag that separates the two builds everywhere else.
+export const gameTitle = (showsLeaderboard: boolean) =>
+  `${TEAM_NAME} ${showsLeaderboard ? 'Daily' : 'Dynasty'} Draft`;
+
 // Real Red Wings playoff folklore (fans throwing an octopus on the ice) — not a
 // generic hockey tradition, so it shouldn't fire on a reskinned build unless that
 // team has an equivalent of its own wired up to replace it. See OctopusFlyby.tsx

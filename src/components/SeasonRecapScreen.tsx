@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
-import { TEAM_NAME } from '../data/team';
+import { gameTitle } from '../data/team';
 
 // Mirrors SeasonSimScreen's gameLine: shootout games show as "(OT)" too — this
 // game's choice, not standard box-score convention.
@@ -18,11 +18,13 @@ export function SeasonRecapScreen({
   picks,
   seasonsById,
   simResult,
+  showsLeaderboard,
   onBack,
 }: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
+  showsLeaderboard: boolean;
   onBack: () => void;
 }) {
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
@@ -80,7 +82,7 @@ export function SeasonRecapScreen({
       <button type="button" className="primary-btn" onClick={onBack}>
         Back
       </button>
-      <p className="season-recap-footer">{TEAM_NAME} Daily Draft</p>
+      <p className="season-recap-footer">{gameTitle(showsLeaderboard)}</p>
     </div>
   );
 }

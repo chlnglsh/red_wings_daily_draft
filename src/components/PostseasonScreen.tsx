@@ -341,6 +341,7 @@ export function PostseasonScreen({
         seasonsById={seasonsById}
         simResult={simResult}
         postseason={postseason}
+        showsLeaderboard={platform.showsLeaderboard}
         onBack={() => setShowRecap(false)}
       />
     );

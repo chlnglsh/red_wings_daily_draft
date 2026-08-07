@@ -3,7 +3,7 @@ import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
 import type { PostseasonResult, Series } from '../lib/postseason';
-import { TEAM_NAME } from '../data/team';
+import { gameTitle } from '../data/team';
 import stanleyCupSrc from '../assets/stanley-cup.png';
 import divisionBannerSrc from '../assets/division-champions-banner.png';
 import conferenceBannerSrc from '../assets/conference-champions-banner.png';
@@ -60,12 +60,14 @@ export function PostseasonRecapScreen({
   seasonsById,
   simResult,
   postseason,
+  showsLeaderboard,
   onBack,
 }: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
   postseason: PostseasonResult;
+  showsLeaderboard: boolean;
   onBack: () => void;
 }) {
   const bySlot = new Map<SlotId, DraftPick>(picks.map((p) => [p.slot, p]));
@@ -185,7 +187,7 @@ export function PostseasonRecapScreen({
       <button type="button" className="primary-btn" onClick={onBack}>
         Back
       </button>
-      <p className="season-recap-footer">{TEAM_NAME} Daily Draft</p>
+      <p className="season-recap-footer">{gameTitle(showsLeaderboard)}</p>
     </div>
   );
 }
