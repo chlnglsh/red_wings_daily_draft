@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Season, SlotId } from './types';
 import { SLOT_ORDER, eligiblePosition } from './types';
 import { SEASONS } from './data/seasons';
-import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTSEASON, gameTitle } from './data/team';
+import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTSEASON, HAS_GM_COACH, gameTitle } from './data/team';
+import { rollGmCoach } from './lib/gmCoach';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
 import type { SeasonSimResult, WeightedSkater } from './lib/gameSim';
@@ -15,6 +16,7 @@ import { mockPlatform } from './lib/mockPlatform';
 import { hiddenPlatform } from './lib/hiddenPlatform';
 import { RoundScreen } from './components/RoundScreen';
 import { SquadSummaryScreen } from './components/SquadSummaryScreen';
+import { FrontOfficeScreen } from './components/FrontOfficeScreen';
 import { SeasonSimScreen } from './components/SeasonSimScreen';
 import { MarchCollapseFlow } from './components/MarchCollapseFlow';
 import { ResultsScreen } from './components/ResultsScreen';
@@ -23,7 +25,7 @@ import { SeasonRecapScreen } from './components/SeasonRecapScreen';
 import slotMachineSrc from './assets/lucky-red-slot-machine.png';
 import './App.css';
 
-type Screen = 'intro' | 'round' | 'squadSummary' | 'simulating' | 'results' | 'postseason' | 'recap';
+type Screen = 'intro' | 'round' | 'frontOffice' | 'squadSummary' | 'simulating' | 'results' | 'postseason' | 'recap';
 
 const seasonsById = new Map(SEASONS.map((s) => [s.id, s] as [string, Season]));
 
@@ -81,6 +83,15 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   }
 
   const primaryRounds = useMemo(() => generateRoundSeasons(runSeed, SEASONS), [runSeed]);
+
+  // GM/Coach roll: a deterministic per-run roll from its own runSeed-derived stream
+  // (kept separate from the sim's stream so it can't perturb game results). Rolled
+  // when the draft's six positions fill; revealed on the front-office screen and
+  // folded into the season win% as a flat modifier. Null when the feature is off.
+  const frontOffice = useMemo(
+    () => (HAS_GM_COACH ? rollGmCoach(mulberry32(hashStringToInt(`${runSeed}:gmCoach`))) : null),
+    [runSeed],
+  );
 
   // Keyed by name, not player.id — the same real player has a different, season-scoped
   // id in every season's roster entry (e.g. '1996-fedorov' vs '2001-fedorov'), so an
@@ -150,7 +161,9 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     const nextPicks = [...picks, newPick];
     setPicks(nextPicks);
     if (nextPicks.length >= 6) {
-      setScreen('squadSummary');
+      // Front-office reveal sits between the last pick and the squad summary; skip
+      // straight to the squad when the feature is off.
+      setScreen(HAS_GM_COACH ? 'frontOffice' : 'squadSummary');
     } else {
       setRoundIndex((i) => i + 1);
       setSpinToken((t) => t + 1);
@@ -478,10 +491,18 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     );
   }
 
+  if (screen === 'frontOffice' && frontOffice) {
+    return (
+      <div className="app-shell">
+        <FrontOfficeScreen frontOffice={frontOffice} onContinue={() => setScreen('squadSummary')} />
+      </div>
+    );
+  }
+
   if (screen === 'squadSummary') {
     return (
       <div className="app-shell">
-        <SquadSummaryScreen picks={picks} seasonsById={seasonsById} onSimulate={handleSimulate} />
+        <SquadSummaryScreen picks={picks} seasonsById={seasonsById} frontOffice={frontOffice} onSimulate={handleSimulate} />
       </div>
     );
   }
@@ -498,6 +519,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           sharedDailyCollapse={platform.sharedDailyEvents}
           devSkipToDeadline={devSkipToDeadline}
           reduceFlashing={reduceFlashing}
+          frontOfficeModifier={frontOffice?.totalModifier ?? 0}
           onComplete={handleSimComplete}
         />
       </div>
@@ -517,6 +539,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           picks={picks}
           seasonsById={seasonsById}
           simResult={simResult!}
+          frontOffice={frontOffice}
           platform={platform}
         />
       </div>
@@ -530,6 +553,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           picks={picks}
           seasonsById={seasonsById}
           simResult={simResult!}
+          frontOffice={frontOffice}
           showsLeaderboard={platform.showsLeaderboard}
           onBack={handleBackFromRecap}
         />

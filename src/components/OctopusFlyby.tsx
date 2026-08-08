@@ -8,7 +8,7 @@ import octopusSrc from '../assets/octopus.png';
 // itself, in flight. Round 1 flies left to right, the Final flies right to
 // left — the image is mirrored via CSS either way.
 // Keep in sync with the animation-duration on .octopus-flyby-sprite in App.css.
-const FLIGHT_MS = 3600;
+const FLIGHT_MS = 1600;
 
 export function OctopusFlyby({ direction, onComplete }: { direction: 'ltr' | 'rtl'; onComplete: () => void }) {
   // Caller passes an inline arrow (`onComplete={() => setOctopusMoment(null)}`),

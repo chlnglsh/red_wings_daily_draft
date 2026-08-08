@@ -3,7 +3,9 @@ import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
 import type { PostseasonResult, Series } from '../lib/postseason';
+import type { GmCoachResult } from '../lib/gmCoach';
 import { gameTitle } from '../data/team';
+import { FrontOfficeRecapCards } from './FrontOfficeRecapCards';
 import stanleyCupSrc from '../assets/stanley-cup.png';
 import divisionBannerSrc from '../assets/division-champions-banner.png';
 import conferenceBannerSrc from '../assets/conference-champions-banner.png';
@@ -60,6 +62,7 @@ export function PostseasonRecapScreen({
   seasonsById,
   simResult,
   postseason,
+  frontOffice,
   showsLeaderboard,
   onBack,
 }: {
@@ -67,6 +70,7 @@ export function PostseasonRecapScreen({
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
   postseason: PostseasonResult;
+  frontOffice: GmCoachResult | null;
   showsLeaderboard: boolean;
   onBack: () => void;
 }) {
@@ -169,6 +173,7 @@ export function PostseasonRecapScreen({
             </div>
           );
         })}
+        <FrontOfficeRecapCards frontOffice={frontOffice} />
       </div>
 
       <p className="season-recap-heading">Regular season games</p>

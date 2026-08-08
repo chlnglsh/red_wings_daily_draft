@@ -30,11 +30,13 @@ export function isMarchCollapsePlay(runSeed: number): boolean {
   return rollsCollapse(runSeed);
 }
 
-// A soft downward drag, not a cliff — starts small right after the collapse and
-// compounds gently over the remaining stretch, then holds flat once it ramps up.
-// Never shown to the player as a number; only ever surfaces as narrative flavor.
-const PENALTY_START = 0.01;
-const PENALTY_MAX = 0.05;
+// A downward drag, not a cliff — starts smaller right after the collapse and
+// compounds over the remaining stretch, then holds flat once it ramps up. Never
+// shown to the player as a number; only ever surfaces as narrative flavor. Sized so
+// the failed stand really bites: it maxes at a -0.20 win% hit on the flat stretch
+// (up from -0.05), with the onset kept proportionally small (1:5 ramp).
+const PENALTY_START = 0.04;
+const PENALTY_MAX = 0.2;
 const PENALTY_RAMP_GAMES = 8;
 
 export function buildCollapsePenaltyModifier(collapseGame: number): (gameNumber: number) => number {

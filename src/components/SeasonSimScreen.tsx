@@ -50,6 +50,7 @@ export function SeasonSimScreen({
   forceMarchCollapse = false,
   devSkipToDeadline = false,
   reduceFlashing = false,
+  frontOfficeModifier = 0,
   onComplete,
 }: {
   picks: DraftPick[];
@@ -67,6 +68,9 @@ export function SeasonSimScreen({
   // Player opted out of flashing on the splash screen — forwarded to the March
   // Collapse intro so it skips the lightning flicker.
   reduceFlashing?: boolean;
+  // Flat season-long win% nudge from the GM/Coach roll (already summed). Added to the
+  // base win% of every game segment; 0 when the feature is off.
+  frontOfficeModifier?: number;
   onComplete: (result: SeasonSimResult, finalPicks: DraftPick[]) => void;
 }) {
   // One persistent RNG for the whole day's sim — shared across every segment
@@ -101,7 +105,7 @@ export function SeasonSimScreen({
       pickScorer,
       startGame: 1,
       endGame: TRADE_DEADLINE_GAME - 1,
-      baseWinPct: initialRosterState.winPct,
+      baseWinPct: initialRosterState.winPct + frontOfficeModifier,
       era: initialRosterState.era,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -214,7 +218,7 @@ export function SeasonSimScreen({
       pickScorer,
       startGame: TRADE_DEADLINE_GAME,
       endGame: isCollapseDay ? MARCH_COLLAPSE_GAME - 1 : SEASON_LENGTH,
-      baseWinPct: rosterState.winPct,
+      baseWinPct: rosterState.winPct + frontOfficeModifier,
       era: rosterState.era,
     });
   }
@@ -229,7 +233,7 @@ export function SeasonSimScreen({
       pickScorer,
       startGame: MARCH_COLLAPSE_GAME,
       endGame: SEASON_LENGTH,
-      baseWinPct: rosterState.winPct,
+      baseWinPct: rosterState.winPct + frontOfficeModifier,
       era: rosterState.era,
       modifierForGame: success ? undefined : buildCollapsePenaltyModifier(MARCH_COLLAPSE_GAME),
     });

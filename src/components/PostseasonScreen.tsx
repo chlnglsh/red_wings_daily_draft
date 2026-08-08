@@ -10,6 +10,7 @@ import { mascotOnly } from '../data/nhlAlignment';
 import { ShootoutCeremony } from './ShootoutCeremony';
 import { OctopusFlyby } from './OctopusFlyby';
 import { PostseasonRecapScreen } from './PostseasonRecapScreen';
+import type { GmCoachResult } from '../lib/gmCoach';
 import stanleyCupSrc from '../assets/stanley-cup.png';
 import divisionBannerSrc from '../assets/division-champions-banner.png';
 import conferenceBannerSrc from '../assets/conference-champions-banner.png';
@@ -73,6 +74,7 @@ export function PostseasonScreen({
   picks,
   seasonsById,
   simResult,
+  frontOffice,
   platform,
 }: {
   postseason: PostseasonResult;
@@ -88,6 +90,7 @@ export function PostseasonScreen({
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
+  frontOffice: GmCoachResult | null;
   platform: Platform;
 }) {
   const playerSeries = useMemo(() => getPlayerSeries(postseason), [postseason]);
@@ -341,6 +344,7 @@ export function PostseasonScreen({
         seasonsById={seasonsById}
         simResult={simResult}
         postseason={postseason}
+        frontOffice={frontOffice}
         showsLeaderboard={platform.showsLeaderboard}
         onBack={() => setShowRecap(false)}
       />

@@ -41,3 +41,9 @@ export const HAS_TRADE_DEADLINE = true;
 // "Enter the Playoffs" gate never appears. See handleSimComplete in App.tsx (the
 // postseason sim is skipped) and the gated blocks in ResultsScreen.tsx.
 export const HAS_POSTSEASON = true;
+
+// GM/Coach: a start-of-season modifier — once the draft is filled, roll a GM and a
+// Coach from tiered pools of real franchise figures, each applying a flat season-long
+// win% nudge. Team-specific (the pools are real Red Wings names), so a reskinned build
+// turns it off here. See lib/gmCoach.ts and the roll wiring in SeasonSimScreen.tsx.
+export const HAS_GM_COACH = true;

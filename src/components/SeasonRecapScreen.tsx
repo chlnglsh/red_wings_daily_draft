@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
+import type { GmCoachResult } from '../lib/gmCoach';
 import { gameTitle } from '../data/team';
+import { FrontOfficeRecapCards } from './FrontOfficeRecapCards';
 
 // Mirrors SeasonSimScreen's gameLine: shootout games show as "(OT)" too — this
 // game's choice, not standard box-score convention.
@@ -18,12 +20,14 @@ export function SeasonRecapScreen({
   picks,
   seasonsById,
   simResult,
+  frontOffice,
   showsLeaderboard,
   onBack,
 }: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
+  frontOffice: GmCoachResult | null;
   showsLeaderboard: boolean;
   onBack: () => void;
 }) {
@@ -64,6 +68,7 @@ export function SeasonRecapScreen({
             </div>
           );
         })}
+        <FrontOfficeRecapCards frontOffice={frontOffice} />
       </div>
 
       <p className="season-recap-heading">Regular season games</p>

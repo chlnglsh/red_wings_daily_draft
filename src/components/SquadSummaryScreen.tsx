@@ -5,6 +5,7 @@ import { rosterScore } from '../lib/scoring';
 import { computeSquadRatings } from '../lib/ratings';
 import { simulateRecord } from '../lib/simulate';
 import { getTierFromRosterScore } from '../lib/tiers';
+import type { GmCoachResult } from '../lib/gmCoach';
 
 function RatingBar({ label, value }: { label: string; value: number }) {
   return (
@@ -21,10 +22,12 @@ function RatingBar({ label, value }: { label: string; value: number }) {
 export function SquadSummaryScreen({
   picks,
   seasonsById,
+  frontOffice,
   onSimulate,
 }: {
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
+  frontOffice: GmCoachResult | null;
   onSimulate: () => void;
 }) {
   const score = useMemo(() => rosterScore(picks, seasonsById), [picks, seasonsById]);
@@ -51,6 +54,19 @@ export function SquadSummaryScreen({
           );
         })}
       </div>
+
+      {frontOffice && (
+        <div className="squad-front-office">
+          <div className="squad-fo-item">
+            <span className="squad-fo-role">General Manager</span>
+            <span className="squad-fo-name">{frontOffice.gm.name}</span>
+          </div>
+          <div className="squad-fo-item">
+            <span className="squad-fo-role">Head Coach</span>
+            <span className="squad-fo-name">{frontOffice.coach.name}</span>
+          </div>
+        </div>
+      )}
 
       <div className="rating-bars">
         <RatingBar label="Attack" value={ratings.attack} />

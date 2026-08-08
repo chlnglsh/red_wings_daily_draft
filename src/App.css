@@ -1029,6 +1029,129 @@
   margin-top: 6px;
 }
 
+.front-office {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  margin: 32px 0 40px;
+}
+.front-office-title {
+  font-size: 36px;
+  color: var(--wings-red);
+}
+.front-office-intro {
+  font-size: 15px;
+  color: var(--ink-soft);
+  max-width: 34ch;
+  text-wrap: balance;
+}
+.front-office-cards {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 6px 0 4px;
+}
+.front-office-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.front-office-role {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wings-red);
+}
+.front-office-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  min-height: 26px;
+  animation: spin-pop 0.16s ease;
+}
+.front-office-summary {
+  font-size: 13px;
+  color: var(--ink-soft);
+  max-width: 42ch;
+  text-wrap: balance;
+}
+
+/* GM/Coach as two half-width cards under the lineup (below the goalie) in the recaps.
+   Styled like the .results-roster-row player cards (same border, fill, radius) but
+   half-width, with role stacked over name and much smaller text. */
+.recap-fo-cards {
+  width: 100%;
+  display: flex;
+  gap: 6px;
+}
+.recap-fo-card {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  /* Vertical padding trimmed so the two stacked lines match the single-line
+     .results-roster-row card height (44px). */
+  padding: 5px 12px;
+  background: var(--paper);
+  text-align: center;
+}
+.recap-fo-role {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--wings-red);
+}
+.recap-fo-name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+/* GM/Coach line on the squad summary, tucked under the lineup diagram. */
+.squad-front-office {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.squad-fo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.squad-fo-role {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wings-red);
+}
+.squad-fo-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .results-vs-predicted {
   font-size: 14px;
   font-weight: 600;
@@ -1921,7 +2044,7 @@
      can ever produce — a triangle, not a curve). Direction (round 1 = left to
      right, the Final = right to left) picks which of the two keyframe sets
      below runs — see the .ltr modifier. */
-  animation: octopus-flyby-rtl 3.6s linear forwards;
+  animation: octopus-flyby-rtl 1.6s linear forwards;
 }
 .octopus-flyby-sprite.ltr {
   animation-name: octopus-flyby-ltr;
