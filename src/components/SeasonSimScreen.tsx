@@ -12,11 +12,21 @@ import {
   type SeasonSimResult,
 } from '../lib/gameSim';
 import { MARCH_COLLAPSE_GAME, isMarchCollapseDay, isMarchCollapsePlay, buildCollapsePenaltyModifier } from '../lib/marchCollapse';
+import {
+  isHockeyFightDay,
+  isHockeyFightPlay,
+  hockeyFightGame,
+  hockeyFightMinute,
+  hockeyFightVariant,
+  buildFightBoostModifier,
+  type FightOutcome,
+} from '../lib/hockeyFight';
 import { goalieTargetSavePct } from '../lib/goalie';
-import { TEAM_NAME, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE } from '../data/team';
+import { TEAM_NAME, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_HOCKEY_FIGHT } from '../data/team';
 import { mascotOnly } from '../data/nhlAlignment';
 import { TradeDeadlineFlow } from './TradeDeadlineFlow';
 import { MarchCollapseFlow } from './MarchCollapseFlow';
+import { HockeyFightFlow } from './HockeyFightFlow';
 
 const TICKS_PER_GAME = 14;
 const VISIBLE_COMPLETED_FAST = 14;
@@ -48,6 +58,7 @@ export function SeasonSimScreen({
   dateSeed,
   sharedDailyCollapse = false,
   forceMarchCollapse = false,
+  forceHockeyFight = false,
   devSkipToDeadline = false,
   reduceFlashing = false,
   frontOfficeModifier = 0,
@@ -58,11 +69,14 @@ export function SeasonSimScreen({
   seasons: Season[];
   runSeed: number;
   dateSeed: number;
-  // Which March Collapse cadence to use: true = shared daily roll (Reddit build),
-  // false = per-playthrough roll (standalone). Mirrors Platform.sharedDailyEvents.
+  // Which in-season-event cadence to use: true = shared daily roll (Reddit build),
+  // false = per-playthrough roll (standalone). Mirrors Platform.sharedDailyEvents and
+  // drives both March Collapse and Hockey Fight.
   sharedDailyCollapse?: boolean;
   // Dev-only: force the March Collapse event to fire this run regardless of the roll.
   forceMarchCollapse?: boolean;
+  // Dev-only: force the Hockey Fight event to fire this run regardless of the roll.
+  forceHockeyFight?: boolean;
   // Dev-only: skip straight to the trade deadline gate instead of playing games 1-60.
   devSkipToDeadline?: boolean;
   // Player opted out of flashing on the splash screen — forwarded to the March
@@ -95,37 +109,74 @@ export function SeasonSimScreen({
     [forceMarchCollapse, sharedDailyCollapse, dateSeed, runSeed],
   );
 
+  // Does a Hockey Fight fire this run? Same dual cadence as the collapse (shared
+  // daily roll on Reddit, per-playthrough roll standalone). Suppressed under
+  // devSkipToDeadline, which fabricates a jump straight to the deadline gate and so
+  // would skip past a first-half fight anyway. When off, fightStage stays 'resolved'
+  // and every fight-aware branch falls back to the plain pre-trade block.
+  const fightSeed = sharedDailyCollapse ? dateSeed : runSeed;
+  const isFightDay = useMemo(
+    () =>
+      !devSkipToDeadline &&
+      // Dev force bypasses HAS_HOCKEY_FIGHT so the WIP feature can be exercised while
+      // the flag stays off for real players; the natural roll stays gated on the flag.
+      (forceHockeyFight ||
+        (HAS_HOCKEY_FIGHT &&
+          (sharedDailyCollapse ? isHockeyFightDay(dateSeed) : isHockeyFightPlay(runSeed)))),
+    [forceHockeyFight, sharedDailyCollapse, dateSeed, runSeed, devSkipToDeadline],
+  );
+  // The game the fight fires at (6-41), the minute within that game it breaks out at,
+  // and which minigame variant shows — all derived from the same seed the roll used so
+  // a Reddit day is identical for everyone.
+  const fightGame = useMemo(() => hockeyFightGame(fightSeed), [fightSeed]);
+  const fightMinute = useMemo(() => hockeyFightMinute(fightSeed), [fightSeed]);
+  const fightVariant = useMemo(() => hockeyFightVariant(fightSeed), [fightSeed]);
+
   const initialRosterState = useMemo(() => deriveRosterGameState(picks, seasonsById), [picks, seasonsById]);
 
-  // Games 1 through the deadline, from the roster as drafted — computed once on mount.
-  const preTradeGames = useMemo(() => {
+  // Games 1 through the fight game (inclusive) on a fight day, else games 1 through the
+  // deadline — all from the roster as drafted, computed once on mount. The fight game
+  // is pre-generated here (not lazily) because the scrap interrupts it mid-clock: its
+  // opponent becomes the challenger and its outcome is already fixed, so only the games
+  // *after* it (postFightGames) carry the win% boost, generated lazily once the fight
+  // resolves.
+  const preFightGames = useMemo(() => {
     const pickScorer = buildScorerPicker(initialRosterState.skaters, rngRef.current!);
     return simulateGamesInRange({
       rng: rngRef.current!,
       pickScorer,
       startGame: 1,
-      endGame: TRADE_DEADLINE_GAME - 1,
+      endGame: isFightDay ? fightGame : TRADE_DEADLINE_GAME - 1,
       baseWinPct: initialRosterState.winPct + frontOfficeModifier,
       era: initialRosterState.era,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Index of the fight game within allGames (its last pre-fight game). -1 off a fight day.
+  const fightGameIndex = isFightDay ? preFightGames.length - 1 : -1;
 
   const [currentPicks, setCurrentPicks] = useState(picks);
+  const [postFightGames, setPostFightGames] = useState<GameResult[] | null>(null);
   const [midGames, setMidGames] = useState<GameResult[] | null>(null);
   const [finalGames, setFinalGames] = useState<GameResult[] | null>(null);
+  const [fightStage, setFightStage] = useState<'pending' | 'active' | 'resolved'>(isFightDay ? 'pending' : 'resolved');
   const [tradeStage, setTradeStage] = useState<'pending' | 'active' | 'resolved'>('pending');
   const [collapseStage, setCollapseStage] = useState<'pending' | 'active' | 'resolved'>(isCollapseDay ? 'pending' : 'resolved');
 
   const allGames = useMemo(
-    () => [...preTradeGames, ...(midGames ?? []), ...(finalGames ?? [])],
-    [preTradeGames, midGames, finalGames],
+    () => [...preFightGames, ...(postFightGames ?? []), ...(midGames ?? []), ...(finalGames ?? [])],
+    [preFightGames, postFightGames, midGames, finalGames],
   );
 
-  const [currentIndex, setCurrentIndex] = useState(devSkipToDeadline ? preTradeGames.length : 0);
+  // Combined length of the pre-trade half (pre-fight + post-fight). On a non-fight
+  // run postFightGames stays null and this is just preFightGames (games 1-60).
+  const preTradeLen = preFightGames.length + (postFightGames?.length ?? 0);
+  const fightResolved = !isFightDay || postFightGames !== null;
+
+  const [currentIndex, setCurrentIndex] = useState(devSkipToDeadline ? preFightGames.length : 0);
   const [currentMinute, setCurrentMinute] = useState(0);
   const [otSuspense, setOtSuspense] = useState(false);
-  const [completedGames, setCompletedGames] = useState<GameResult[]>(devSkipToDeadline ? preTradeGames : []);
+  const [completedGames, setCompletedGames] = useState<GameResult[]>(devSkipToDeadline ? preFightGames : []);
   const [skipped, setSkipped] = useState(false);
   const [fast, setFast] = useState(false);
   // Skip confirmation: null = no dialog. 'beforeDeadline' = a trade deadline is
@@ -134,10 +185,18 @@ export function SeasonSimScreen({
   // pending, Skip just runs — no dialog.
   const [skipDialog, setSkipDialog] = useState<'beforeDeadline' | 'eventsAhead' | null>(null);
   const feedRef = useRef<HTMLDivElement | null>(null);
+  // When the fight freezes the live clock mid-game, the minute to resume that game
+  // from is stashed here so the play loop picks up where it left off (instead of
+  // restarting the clock at 0'). null = normal game start.
+  const fightResumeMinuteRef = useRef<number | null>(null);
 
   const currentGame = allGames[currentIndex] ?? null;
-  const atDeadline = currentIndex >= preTradeGames.length && !midGames;
-  const atCollapse = isCollapseDay && !!midGames && currentIndex >= preTradeGames.length + midGames.length && !finalGames;
+  const fightActive = fightStage === 'active';
+  // The fight interrupts its game mid-clock, so the deadline pause must wait until the
+  // fight has resolved (and postFightGames generated) — otherwise both first-half
+  // pauses could read as reached at once.
+  const atDeadline = fightResolved && currentIndex >= preTradeLen && !midGames;
+  const atCollapse = isCollapseDay && !!midGames && currentIndex >= preTradeLen + midGames.length && !finalGames;
   const liveFeedWrapRef = useRef<HTMLDivElement | null>(null);
   const [feedTop, setFeedTop] = useState(0);
   // Explicit height (not auto) once sticky: constrains the feed to whatever
@@ -208,6 +267,26 @@ export function SeasonSimScreen({
     updateEdgeClasses(feedRef.current);
   });
 
+  // Games from just after the fight game up to the trade deadline — same drafted
+  // roster as the pre-fight stretch (the fight happens before any trade). The fight
+  // outcome applies a short flat win% boost to the next 1 (tie) or 3 (win) games via
+  // modifierForGame, starting the game *after* the scrap (the fight game itself is
+  // already fixed in preFightGames). A loss adds no modifier (upside-only).
+  function generatePostFightGames(outcome: FightOutcome): GameResult[] {
+    const boostStart = fightGame + 1;
+    const rosterState = deriveRosterGameState(currentPicks, seasonsById);
+    const pickScorer = buildScorerPicker(rosterState.skaters, rngRef.current!);
+    return simulateGamesInRange({
+      rng: rngRef.current!,
+      pickScorer,
+      startGame: boostStart,
+      endGame: TRADE_DEADLINE_GAME - 1,
+      baseWinPct: rosterState.winPct + frontOfficeModifier,
+      era: rosterState.era,
+      modifierForGame: buildFightBoostModifier(boostStart, outcome),
+    });
+  }
+
   // Games from the trade deadline up to either the season's end (no collapse today)
   // or the collapse pause point — the roster is fixed for this whole stretch.
   function generateMidGames(finalPicks: DraftPick[]): GameResult[] {
@@ -239,6 +318,11 @@ export function SeasonSimScreen({
     });
   }
 
+  function handleFightResolved(outcome: FightOutcome) {
+    setPostFightGames(generatePostFightGames(outcome));
+    setFightStage('resolved');
+  }
+
   function handleTradeResolved(finalPicks: DraftPick[]) {
     setCurrentPicks(finalPicks);
     setMidGames(generateMidGames(finalPicks));
@@ -254,15 +338,31 @@ export function SeasonSimScreen({
   // went to OT/SO — holds at the OT marker for a beat before revealing the decider,
   // so there's actually some suspense instead of the bar just sailing past 60'.
   useEffect(() => {
-    if (skipped || fast || atDeadline || atCollapse) return;
+    if (skipped || fast || atDeadline || atCollapse || fightActive) return;
     if (!currentGame) return;
     let cancelled = false;
+    // On a fight day, this game's clock freezes at fightMinute until the scrap is
+    // resolved; once resolved we resume it from that minute rather than replaying it.
+    const isFightGameNow = isFightDay && currentIndex === fightGameIndex;
 
     async function play() {
-      await sleep(PACE.startPauseMs);
       const step = REGULATION_END / TICKS_PER_GAME;
+      // Resume mid-game after the fight, or start a fresh game from 0'.
       let m = 0;
+      if (fightResumeMinuteRef.current !== null) {
+        m = fightResumeMinuteRef.current;
+        fightResumeMinuteRef.current = null;
+      } else {
+        await sleep(PACE.startPauseMs);
+      }
       while (m < REGULATION_END && !cancelled) {
+        // The scrap breaks out mid-clock: freeze here and hand off to the minigame.
+        if (isFightGameNow && fightStage === 'pending' && m >= fightMinute) {
+          setCurrentMinute(fightMinute);
+          fightResumeMinuteRef.current = fightMinute;
+          setFightStage('active');
+          return;
+        }
         m = Math.min(REGULATION_END, m + step);
         setCurrentMinute(m);
         await sleep(PACE.tickMs);
@@ -284,17 +384,23 @@ export function SeasonSimScreen({
     return () => {
       cancelled = true;
     };
-  }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse]);
+  }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse, fightActive, fightStage]);
 
   // Fast mode: no live theater, just bank finished games one after another quickly.
+  // The fight has no live clock here, so it fires as its game comes up (at the edge)
+  // rather than mid-clock; once resolved, that game banks normally.
   useEffect(() => {
-    if (skipped || !fast || atDeadline || atCollapse || !currentGame) return;
+    if (skipped || !fast || atDeadline || atCollapse || fightActive || !currentGame) return;
+    if (isFightDay && fightStage === 'pending' && currentIndex === fightGameIndex) {
+      setFightStage('active');
+      return;
+    }
     const t = setTimeout(() => {
       setCompletedGames((prev) => [...prev, currentGame]);
       setCurrentIndex((i) => i + 1);
     }, FAST_GAME_MS);
     return () => clearTimeout(t);
-  }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse]);
+  }, [currentIndex, currentGame, skipped, fast, atDeadline, atCollapse, fightActive, fightStage]);
 
   // Reaching the end of the pre-trade half pauses for the deadline gate instead of
   // trying to animate a game that doesn't exist yet. When the Trade Deadline is
@@ -311,6 +417,11 @@ export function SeasonSimScreen({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [atDeadline, tradeStage]);
+
+  // The fight is activated inline by the live/fast play effects above when its game's
+  // clock reaches fightMinute (live) or that game comes up (fast) — no separate
+  // pause-point effect is needed, since the scrap interrupts a game rather than
+  // sitting in the gap between two games like the deadline and collapse do.
 
   // Same pattern for the collapse pause point, on days it's scheduled to fire.
   useEffect(() => {
@@ -337,7 +448,7 @@ export function SeasonSimScreen({
   // forfeited. Nothing pending → skip straight away with no dialog.
   function requestSkip() {
     const tradeAhead = HAS_TRADE_DEADLINE && tradeStage === 'pending';
-    const otherEventsAhead = collapseStage === 'pending';
+    const otherEventsAhead = collapseStage === 'pending' || fightStage === 'pending';
     if (tradeAhead) setSkipDialog('beforeDeadline');
     else if (otherEventsAhead) setSkipDialog('eventsAhead');
     else handleSkip();
@@ -346,14 +457,19 @@ export function SeasonSimScreen({
   function handleSkip() {
     setSkipDialog(null);
     setSkipped(true);
-    // Skipping past an unresolved trade decision defaults to standing pat, and an
-    // unresolved collapse defaults to a failed stand (you didn't defend) — so the
-    // whole season can still resolve instantly instead of forcing the player through it.
+    // Skipping past an unresolved event defaults to its neutral outcome: a fight not
+    // played grants no boost ('loss', since it's upside-only), a trade decision stands
+    // pat, and a collapse defaults to a failed stand. Each segment is generated only if
+    // it doesn't already exist, and in season order, so the shared RNG stream stays
+    // in sequence (pre-fight -> post-fight -> mid -> final).
+    const post = isFightDay ? (postFightGames ?? generatePostFightGames('loss')) : [];
     const mid = midGames ?? generateMidGames(currentPicks);
     const final = isCollapseDay ? (finalGames ?? generateFinalGames(false)) : [];
-    const allResolved = [...preTradeGames, ...mid, ...final];
+    const allResolved = [...preFightGames, ...post, ...mid, ...final];
+    if (isFightDay) setPostFightGames(post);
     setMidGames(mid);
     if (isCollapseDay) setFinalGames(final);
+    setFightStage('resolved');
     setTradeStage('resolved');
     setCollapseStage('resolved');
     setCompletedGames(allResolved);
@@ -382,6 +498,16 @@ export function SeasonSimScreen({
         seasons={seasons}
         rng={rngRef.current!}
         onResolved={handleTradeResolved}
+      />
+    );
+  }
+
+  if (fightStage === 'active') {
+    return (
+      <HockeyFightFlow
+        variant={fightVariant}
+        opponent={currentGame ? mascotOnly(currentGame.opponent) : undefined}
+        onResolved={handleFightResolved}
       />
     );
   }

@@ -2532,3 +2532,377 @@
   transform: scaleY(-1);
 }
 
+/* ===== Hockey Fight minigame (WIP, HAS_HOCKEY_FIGHT) =========================
+   Shares the app's theme variables so it reads as part of the same game and
+   flips with light/dark automatically. Three-stage flow: intro hype card,
+   the skill minigame (variant 0 = tug-of-war so far), then a graded result. */
+.fight-flow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 0;
+  text-align: center;
+}
+
+.fight-intro,
+.fight-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 420px;
+}
+
+.fight-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wings-red);
+  margin: 0;
+}
+
+.fight-title {
+  font-family: var(--display);
+  font-size: 52px;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--ink);
+}
+
+.fight-intro-sub {
+  margin: 0;
+  color: var(--ink-soft);
+  text-wrap: balance;
+}
+
+/* The two fighters, on the intro card and again under the meter. "You" wears the
+   team red; the challenger is a neutral grey. */
+.fight-matchup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 6px 0 4px;
+}
+
+/* Team names, not buttons — plain display-font text: the team in its red, the
+   opponent in muted grey. No box, border, or fill. */
+.fight-fighter {
+  font-family: var(--display);
+  font-size: 24px;
+  letter-spacing: 0.02em;
+}
+
+.fight-fighter.you {
+  color: var(--wings-red);
+}
+
+.fight-fighter.rival {
+  color: var(--ink-soft);
+}
+
+.fight-vs {
+  font-family: var(--display);
+  font-size: 20px;
+  color: var(--ink-soft);
+}
+
+/* ---- Arena (the live minigame) ---- */
+.fight-arena {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.fight-clock {
+  font-family: var(--display);
+  font-size: 44px;
+  line-height: 1;
+  color: var(--ink);
+  min-width: 1.4em;
+}
+
+/* The tug-of-war meter: three zones (loss / tie / win, left to right) with a
+   marker showing where the rope currently sits. */
+.fight-meter {
+  position: relative;
+  width: 100%;
+  height: 26px;
+  border-radius: 13px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: var(--paper-soft);
+}
+
+.fight-meter-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.fight-meter-zone.loss {
+  left: 0;
+  background: color-mix(in srgb, var(--wings-red) 22%, transparent);
+}
+
+.fight-meter-zone.tie {
+  background: color-mix(in srgb, var(--gold) 30%, transparent);
+}
+
+.fight-meter-zone.win {
+  background: color-mix(in srgb, var(--good) 32%, transparent);
+}
+
+.fight-meter-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 6px;
+  border-radius: 3px;
+  background: var(--ink);
+  transform: translateX(-50%);
+  /* Smooths the constant opponent drag; a hard mash still snaps visibly. */
+  transition: left 0.05s linear;
+}
+
+.fight-meter-ends {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: -6px;
+}
+
+.fight-meter-ends .fight-fighter {
+  font-size: 16px;
+}
+
+.fight-pull-btn {
+  width: 100%;
+  padding: 26px;
+  font-family: var(--display);
+  font-size: 34px;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--wings-red);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.05s ease, background-color 0.15s ease;
+}
+
+.fight-pull-btn:active {
+  transform: scale(0.97);
+  background: var(--wings-red-dark);
+}
+
+.fight-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* ---- Result ---- */
+.fight-result-title {
+  font-family: var(--display);
+  font-size: 40px;
+  line-height: 1;
+  margin: 0;
+  color: var(--ink);
+}
+
+.fight-result.win .fight-result-title {
+  color: var(--good);
+}
+
+.fight-result.loss .fight-result-title {
+  color: var(--ink-soft);
+}
+
+.fight-result-body {
+  margin: 0;
+  color: var(--ink-soft);
+  text-wrap: balance;
+}
+
+/* ---- Variant 1: punch timing / rhythm ---- */
+.fight-punch-count {
+  font-family: var(--display);
+  font-size: 24px;
+  letter-spacing: 0.03em;
+  color: var(--ink-soft);
+}
+
+/* Shot clock: a ticking countdown (seconds) for the current punch, hockey-style —
+   turns red in the final third. */
+.fight-shotclock {
+  font-family: var(--display);
+  font-size: 40px;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  min-height: 40px;
+}
+
+.fight-shotclock.low {
+  color: var(--wings-red);
+}
+
+/* The Punch tap is a single timing hit, not a mash, so it doesn't need the big
+   full-width mash button the tug-of-war uses — size it down to a normal button. */
+.fight-punch-btn {
+  width: auto;
+  align-self: center;
+  padding: 12px 40px;
+  font-size: 24px;
+}
+
+/* Reuses .fight-meter's shell; the target window is the zone to land the marker in.
+   The green is a gradient — brightest dead centre, where a "perfect" (double score)
+   lands — fading toward the edges where it's only a normal hit. */
+.fight-punch-bar {
+  height: 30px;
+}
+
+.fight-punch-target {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--good) 12%, transparent),
+    color-mix(in srgb, var(--good) 70%, transparent) 50%,
+    color-mix(in srgb, var(--good) 12%, transparent)
+  );
+  border-left: 2px solid color-mix(in srgb, var(--good) 45%, transparent);
+  border-right: 2px solid color-mix(in srgb, var(--good) 45%, transparent);
+}
+
+/* Hit/miss feedback line, kept a fixed height so the layout doesn't jump. */
+.fight-flash {
+  min-height: 22px;
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: transparent;
+  transition: color 0.1s ease;
+}
+
+.fight-flash.perfect {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.fight-flash.hit {
+  color: var(--good);
+}
+
+.fight-flash.miss {
+  color: var(--wings-red);
+}
+
+/* ---- Variant 2: dodge and counter (falling-note rhythm game) ---- */
+.fight-ddr {
+  width: 100%;
+  max-width: 360px;
+}
+
+/* Four lanes side by side; arrows fall from the top toward the hit line. */
+.fight-ddr-lanes {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  height: 340px;
+}
+
+/* The hit line spans all four lanes at the receptor height. */
+.fight-ddr-hitline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: color-mix(in srgb, var(--ink) 45%, transparent);
+  transform: translateY(-50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Each lane is the tap target for its direction (plus arrow keys). */
+.fight-ddr-lane {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  padding: 0;
+  background: var(--paper-soft);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.fight-ddr-lane.perfect {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 24%, transparent);
+}
+
+.fight-ddr-lane.good {
+  border-color: var(--good);
+  background: color-mix(in srgb, var(--good) 22%, transparent);
+}
+
+.fight-ddr-lane.miss {
+  border-color: var(--wings-red);
+  background: color-mix(in srgb, var(--wings-red) 16%, transparent);
+}
+
+/* Faint arrow "receptor" fixed at the hit line — the target to land notes on. */
+.fight-ddr-receptor {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink-soft);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* A falling note; top is set inline from its y position (0 = top of lane). */
+.fight-ddr-note {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  line-height: 1;
+  color: var(--ink);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Dev-only variant switcher shown above the isolated minigame. */
+.dev-variant-switch {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 16px 0 0;
+}
+
+.dev-variant-switch .dev-shortcut-link.active {
+  font-weight: 700;
+  text-decoration: underline;
+}
+

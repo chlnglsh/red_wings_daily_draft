@@ -19,6 +19,8 @@ import { SquadSummaryScreen } from './components/SquadSummaryScreen';
 import { FrontOfficeScreen } from './components/FrontOfficeScreen';
 import { SeasonSimScreen } from './components/SeasonSimScreen';
 import { MarchCollapseFlow } from './components/MarchCollapseFlow';
+import { HockeyFightFlow } from './components/HockeyFightFlow';
+import { FIGHT_VARIANT_COUNT, type FightVariant } from './lib/hockeyFight';
 import { ResultsScreen } from './components/ResultsScreen';
 import { PostseasonScreen } from './components/PostseasonScreen';
 import { SeasonRecapScreen } from './components/SeasonRecapScreen';
@@ -44,6 +46,13 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   const debugScreen = useMemo(() => new URLSearchParams(window.location.search).get('debug'), []);
   const [debugReplayToken, setDebugReplayToken] = useState(0);
   const [showDebugCollapse, setShowDebugCollapse] = useState(false);
+  // Dev-only: iterate on the Hockey Fight minigame in isolation, and cycle which of
+  // the three variants shows. forceHockeyFight instead exercises the full-season
+  // integration (the fight firing partway through a real sim); both bypass the
+  // HAS_HOCKEY_FIGHT flag so the WIP feature can be worked on while it ships off.
+  const [showDebugFight, setShowDebugFight] = useState(false);
+  const [debugFightVariant, setDebugFightVariant] = useState<FightVariant>(0);
+  const [forceHockeyFight, setForceHockeyFight] = useState(false);
   // Dev-only: debug shortcuts can launch a flow under either the Reddit-style mock
   // platform (leaderboard shown) or the standalone hidden platform, so both versions
   // of a screen can be checked. null = use the real passed-in platform.
@@ -301,6 +310,8 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     setPostseason(null);
     setDevSkipToDeadline(false);
     setShowDebugCollapse(false);
+    setShowDebugFight(false);
+    setForceHockeyFight(false);
     setPostseasonStartRound(undefined);
     setDevPlatform(null);
   }
@@ -377,6 +388,26 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     setShowDebugCollapse(true);
   }
 
+  // Dev-only: jump straight to the Hockey Fight minigame in isolation for iterating on
+  // its feel. Starts on the variant the current seed would pick, then the in-screen
+  // buttons cycle through all three.
+  function handleForceHockeyFightTest(variant: FightVariant) {
+    setDebugFightVariant(variant);
+    setDebugReplayToken((t) => t + 1);
+    setShowDebugFight(true);
+  }
+
+  // Dev-only: force the fight to fire inside a real full-season sim (skips the draft
+  // via a fabricated roster) so its segmentation + win% boost can be checked in context.
+  function handleForceHockeyFightSeasonTest() {
+    const fabricatedPicks = fabricateRosterPicks();
+    if (!fabricatedPicks) return;
+    setRunSeed(getRandomSeed());
+    setPicks(fabricatedPicks);
+    setForceHockeyFight(true);
+    setScreen('simulating');
+  }
+
   // Dev-only: one compact row per destination — the label, then two inline links
   // ("reddit version | standalone version") that run the flow under the Reddit-style
   // mock platform (leaderboard, Reddit copy) or the standalone hidden platform (no
@@ -407,6 +438,37 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
         <MarchCollapseFlow
           key={debugReplayToken}
           reduceFlashing={reduceFlashing}
+          onResolved={() => setDebugReplayToken((t) => t + 1)}
+        />
+      </div>
+    );
+  }
+
+  // Dev-only isolated Hockey Fight: boots straight into the minigame with a variant
+  // switcher, no season sim around it, so its visuals/feel can be iterated directly.
+  // Reached via ?debug=hockey-fight or the intro dev button. Resolving remounts a
+  // fresh run (via the key) so you can go again.
+  if (import.meta.env.DEV && (debugScreen === 'hockey-fight' || showDebugFight)) {
+    return (
+      <div className="app-shell">
+        <div className="dev-variant-switch">
+          {Array.from({ length: FIGHT_VARIANT_COUNT }, (_, v) => (
+            <button
+              key={v}
+              type="button"
+              className={`dev-shortcut-link${debugFightVariant === v ? ' active' : ''}`}
+              onClick={() => {
+                setDebugFightVariant(v as FightVariant);
+                setDebugReplayToken((t) => t + 1);
+              }}
+            >
+              Variant {v + 1}
+            </button>
+          ))}
+        </div>
+        <HockeyFightFlow
+          key={debugReplayToken}
+          variant={debugFightVariant}
           onResolved={() => setDebugReplayToken((t) => t + 1)}
         />
       </div>
@@ -466,6 +528,23 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
                   🧪 Force March Collapse (isolated minigame — platform-independent)
                 </button>
               )}
+              {/* Hockey Fight is WIP (HAS_HOCKEY_FIGHT off): dev buttons force it
+                  regardless so it can be worked on while it ships dormant. */}
+              {devShortcut('Force Hockey Fight (in season)', handleForceHockeyFightSeasonTest)}
+              <p className="dev-shortcut">
+                🧪 Hockey Fight minigame:{' '}
+                <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(0)}>
+                  tug-of-war
+                </button>
+                {' | '}
+                <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(1)}>
+                  punch timing
+                </button>
+                {' | '}
+                <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(2)}>
+                  dodge &amp; counter
+                </button>
+              </p>
             </>
           )}
         </header>
@@ -517,6 +596,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           runSeed={runSeed}
           dateSeed={dateSeed}
           sharedDailyCollapse={platform.sharedDailyEvents}
+          forceHockeyFight={forceHockeyFight}
           devSkipToDeadline={devSkipToDeadline}
           reduceFlashing={reduceFlashing}
           frontOfficeModifier={frontOffice?.totalModifier ?? 0}

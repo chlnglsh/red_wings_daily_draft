@@ -47,3 +47,17 @@ export const HAS_POSTSEASON = true;
 // win% nudge. Team-specific (the pools are real Red Wings names), so a reskinned build
 // turns it off here. See lib/gmCoach.ts and the roll wiring in SeasonSimScreen.tsx.
 export const HAS_GM_COACH = true;
+
+// Hockey Fight: an upside-only, first-half-of-season minigame event. Fires ~1-in-3,
+// picks one of three rotating skill minigames, and a graded outcome grants a
+// temporary win% boost (win = next 3 games, tie = next 1, loss = nothing — no
+// penalty exists). Not team-specific folklore, but a pared-back or reskinned build
+// can turn it off here and the first half runs as one uninterrupted stretch. See
+// lib/hockeyFight.ts, HockeyFightFlow.tsx, and the fight-stage wiring in
+// SeasonSimScreen.tsx.
+//
+// WORK IN PROGRESS — kept OFF by default so this half-built feature stays dormant in
+// the shipping build while smaller items are committed alongside it. Flip to true to
+// work on it live, or use the dev "Force Hockey Fight" buttons, which bypass this
+// flag so the feature can be exercised without turning it on for real players.
+export const HAS_HOCKEY_FIGHT = false;
