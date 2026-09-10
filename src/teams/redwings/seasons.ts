@@ -1,4 +1,4 @@
-import type { Season } from '../types';
+import type { Season } from '../../types';
 
 // Real, sourced Detroit Red Wings season/roster data (hockey-reference.com team
 // pages, cross-checked against Wikipedia/hockeydb where noted below), covering

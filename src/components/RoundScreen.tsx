@@ -3,7 +3,7 @@ import { SpinReveal } from './SpinReveal';
 import { RosterPicker } from './RosterPicker';
 import { ProgressTracker } from './ProgressTracker';
 import { useSpinAnimation } from '../hooks/useSpinAnimation';
-import { SEASONS } from '../data/seasons';
+import { TEAM } from '../teams/current';
 
 export function RoundScreen({
   roundIndex,
@@ -26,7 +26,7 @@ export function RoundScreen({
   onPick: (player: Player, slot: SlotId) => void;
   picks: DraftPick[];
 }) {
-  const { displayItem: displaySeason, spinning, tick } = useSpinAnimation(season, spinToken, SEASONS);
+  const { displayItem: displaySeason, spinning, tick } = useSpinAnimation(season, spinToken, TEAM.seasons);
 
   return (
     <div className="round-screen rink-backdrop">

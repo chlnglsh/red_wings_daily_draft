@@ -1,7 +1,6 @@
-// Red Wings flavor pack — the content currently shipping. See flavorText.ts for
-// how this plugs in, and flavorText.generic.ts for a team-agnostic starting point
-// when reskinning.
-import type { FlavorPack } from './flavorText';
+// Red Wings flavor pack. See src/teams/types.ts (FlavorPack) for what each field
+// drives, and src/teams/flavor.generic.ts for a team-agnostic starting point.
+import type { FlavorPack } from '../types';
 
 export const FLAVOR_TEXT_REDWINGS: FlavorPack = {
   mockUsernames: [
@@ -21,15 +20,17 @@ export const FLAVOR_TEXT_REDWINGS: FlavorPack = {
     cupContender: { label: 'Cup Contender', flavor: 'One hot goalie away from a parade.', emoji: '🏆' },
     dynasty: { label: 'Dynasty', flavor: 'Hockeytown special. Hang another banner.', emoji: '👑' },
   },
-
-  rivalPools: {
-    originalSix: ['Toronto Maple Leafs', 'Montreal Canadiens', 'Boston Bruins', 'Chicago Black Hawks', 'New York Rangers'],
-    modern: [
-      'Toronto Maple Leafs', 'Chicago Blackhawks', 'Boston Bruins', 'Pittsburgh Penguins',
-      'Colorado Avalanche', 'Tampa Bay Lightning', 'Edmonton Oilers', 'New York Rangers',
-      'Nashville Predators', 'Carolina Hurricanes', 'Vegas Golden Knights', 'Dallas Stars',
-      'Florida Panthers', 'Los Angeles Kings', 'St. Louis Blues', 'Minnesota Wild',
-      'Winnipeg Jets', 'New Jersey Devils', 'Washington Capitals', 'Vancouver Canucks',
-    ],
-  },
 };
+
+// Flavor-only opponent pools for the regular-season game feed, one per era so old
+// seasons face period-appropriate rivals instead of expansion teams that didn't
+// exist yet (wired to the eras in ./index.ts). Purely cosmetic, never affects sim
+// outcomes. The Red Wings themselves must never appear in either list.
+export const ORIGINAL_SIX_RIVALS = ['Toronto Maple Leafs', 'Montreal Canadiens', 'Boston Bruins', 'Chicago Black Hawks', 'New York Rangers'];
+export const MODERN_RIVALS = [
+  'Toronto Maple Leafs', 'Chicago Blackhawks', 'Boston Bruins', 'Pittsburgh Penguins',
+  'Colorado Avalanche', 'Tampa Bay Lightning', 'Edmonton Oilers', 'New York Rangers',
+  'Nashville Predators', 'Carolina Hurricanes', 'Vegas Golden Knights', 'Dallas Stars',
+  'Florida Panthers', 'Los Angeles Kings', 'St. Louis Blues', 'Minnesota Wild',
+  'Winnipeg Jets', 'New Jersey Devils', 'Washington Capitals', 'Vancouver Canucks',
+];

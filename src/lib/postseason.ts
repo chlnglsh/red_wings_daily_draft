@@ -1,19 +1,22 @@
 // Postseason simulator. Builds on the regular-season engine (gameSim.ts) — see the
-// postseason spec. The player's roster occupies the real Red Wings' slot in the
-// Atlantic standings; everything else in the league gets a point total sampled from
-// a placeholder range (see nhlAlignment.ts) deterministically off the day's runSeed.
+// postseason spec. The player's roster occupies the real team's slot in its
+// division standings (TeamConfig.alignment); everything else in the league gets a
+// point total sampled from a placeholder range (see nhlAlignment.ts)
+// deterministically off the day's runSeed.
 //
 // The whole bracket — both conferences, every round — is always fully simulated,
-// whether or not the player qualifies. The West conference is simulated purely to
+// whether or not the player qualifies. The other conference is simulated purely to
 // produce a legitimate Stanley Cup Final opponent; the player never sees its games,
-// only the eventual champion's name (see spec: "player never sees Western Conference
-// progress"). Series the player isn't part of use a lightweight win/loss-only sim
-// (deriveOpponentWinPct), not the full goal-by-goal engine.
+// only the eventual champion's name (see spec: "player never sees the other
+// conference's progress"). Series the player isn't part of use a lightweight
+// win/loss-only sim (deriveOpponentWinPct), not the full goal-by-goal engine.
 
 import { mulberry32, hashStringToInt } from './prng';
-import { DIVISIONS, LEAGUE_TEAMS, type Conference, type Division } from '../data/nhlAlignment';
+import { DIVISIONS, DIVISION_PAIRS, LEAGUE_TEAMS, divisionSeedPrefix, type Conference, type Division } from '../data/nhlAlignment';
 import { deriveOpponentWinPct, simulateGame, buildScorerPicker, type GameResult, type WeightedSkater } from './gameSim';
-import { TEAM_FULL_NAME } from '../data/team';
+import { TEAM } from '../teams/current';
+
+const PLAYER_TEAM_NAME = `${TEAM.identity.city} ${TEAM.identity.name}`;
 
 export interface TeamStanding {
   name: string;
@@ -58,8 +61,8 @@ interface ConferenceBracket {
 export interface PostseasonResult {
   qualified: boolean;
   playerSeedLabel: string | null;
-  atlanticStandings: TeamStanding[]; // sorted by points, for the qualification/standings display
-  eastStandings: TeamStanding[]; // both East divisions combined, sorted by points
+  divisionStandings: TeamStanding[]; // the player's division, sorted by points, for the qualification/standings display
+  conferenceStandings: TeamStanding[]; // both of the player's conference's divisions combined, sorted by points
   eastBracket: ConferenceBracket;
   westBracket: ConferenceBracket;
   finalSeries: Series;
@@ -70,14 +73,12 @@ export interface PostseasonResult {
   playerWonConference: boolean;
 }
 
-const DIVISION_PAIRS: Record<Conference, [Division, Division]> = {
-  East: ['Atlantic', 'Metropolitan'],
-  West: ['Central', 'Pacific'],
-};
-
+// The player's own real team is dropped from the league so their simulated roster
+// can take its slot (filtered BEFORE sampling, so the rng draw order over the
+// remaining 31 teams is fixed).
 function sampleLeagueStandings(runSeed: number, playerPoints: number): TeamStanding[] {
   const rng = mulberry32(hashStringToInt(`${runSeed}:postseason:standings`));
-  const standings: TeamStanding[] = LEAGUE_TEAMS.map((t) => {
+  const standings: TeamStanding[] = LEAGUE_TEAMS.filter((t) => t.name !== PLAYER_TEAM_NAME).map((t) => {
     const [min, max] = t.pointsRange;
     return {
       name: t.name,
@@ -88,9 +89,9 @@ function sampleLeagueStandings(runSeed: number, playerPoints: number): TeamStand
     };
   });
   standings.push({
-    name: TEAM_FULL_NAME,
-    division: 'Atlantic',
-    conference: 'East',
+    name: PLAYER_TEAM_NAME,
+    division: TEAM.alignment.division,
+    conference: TEAM.alignment.conference,
     points: playerPoints,
     isPlayer: true,
   });
@@ -131,10 +132,7 @@ function buildConferenceR1(standings: TeamStanding[], conference: Conference): {
   const divAWinnerOpponent = divAWinner === strongerWinner ? strongerOpponent : weakerOpponent;
   const divBWinnerOpponent = divBWinner === strongerWinner ? strongerOpponent : weakerOpponent;
 
-  const label = (team: TeamStanding, seed: number) => {
-    const prefix = team.division === 'Atlantic' ? 'A' : team.division === 'Metropolitan' ? 'M' : team.division === 'Central' ? 'C' : 'P';
-    return `${prefix}${seed}`;
-  };
+  const label = (team: TeamStanding, seed: number) => `${divisionSeedPrefix(team.division)}${seed}`;
 
   const seedIndex = (team: TeamStanding, top3: TeamStanding[]) => top3.indexOf(team) + 1;
 
@@ -304,47 +302,54 @@ export function simulatePostseason(
 ): PostseasonResult {
   const standings = sampleLeagueStandings(runSeed, playerPoints);
   const rng = mulberry32(hashStringToInt(`${runSeed}:postseason:bracket`));
+  const { division: playerDivision, conference: playerConference } = TEAM.alignment;
 
-  const atlanticStandings = standings.filter((t) => t.division === 'Atlantic').sort((a, b) => b.points - a.points);
-  const eastStandings = standings.filter((t) => t.conference === 'East').sort((a, b) => b.points - a.points);
-  const { divATop3, wc1, wc2 } = seedConference(standings, 'East');
-  const playerQualified = divATop3.some((t) => t.isPlayer) || wc1.isPlayer || wc2.isPlayer;
+  const divisionStandings = standings.filter((t) => t.division === playerDivision).sort((a, b) => b.points - a.points);
+  const conferenceStandings = standings.filter((t) => t.conference === playerConference).sort((a, b) => b.points - a.points);
+  const { divATop3, divBTop3, wc1, wc2 } = seedConference(standings, playerConference);
+  // seedConference's divA is the first division of the conference pair — the
+  // player's own division may be either one.
+  const ownDivisionTop3 = DIVISION_PAIRS[playerConference][0] === playerDivision ? divATop3 : divBTop3;
+  const playerQualified = ownDivisionTop3.some((t) => t.isPlayer) || wc1.isPlayer || wc2.isPlayer;
   const playerSeedEntry = playerQualified
-    ? divATop3.find((t) => t.isPlayer)
-      ? { seed: divATop3.findIndex((t) => t.isPlayer) + 1, kind: 'division' as const }
+    ? ownDivisionTop3.find((t) => t.isPlayer)
+      ? { seed: ownDivisionTop3.findIndex((t) => t.isPlayer) + 1, kind: 'division' as const }
       : { seed: wc1.isPlayer ? 1 : 2, kind: 'wildcard' as const }
     : null;
   const playerSeedLabel = playerSeedEntry
     ? playerSeedEntry.kind === 'division'
-      ? `A${playerSeedEntry.seed}`
+      ? `${divisionSeedPrefix(playerDivision)}${playerSeedEntry.seed}`
       : `WC${playerSeedEntry.seed}`
     : null;
 
+  // Always East then West, whichever side the player is on, so the rng stream is
+  // consumed in a fixed order.
   const eastBracket = simulateConference(standings, 'East', rng, playerPoints, playerSkaters);
   const westBracket = simulateConference(standings, 'West', rng, playerPoints, playerSkaters);
+  const playerBracket = playerConference === 'East' ? eastBracket : westBracket;
 
   const finalUnresolved = advance(eastBracket.confFinal!, westBracket.confFinal!, 'SCF', 4, null);
   const finalSeries = resolveSeries(finalUnresolved, rng, playerPoints, playerSkaters);
   const cupChampion = finalSeries.winner!;
 
-  const playerWonConference = eastBracket.champion?.team.isPlayer ?? false;
+  const playerWonConference = playerBracket.champion?.team.isPlayer ?? false;
   const playerWonCup = cupChampion.team.isPlayer;
 
   let playerEliminatedRound: Round | null = null;
   let eliminatedBy: SeedEntry | null = null;
   if (playerQualified && !playerWonCup) {
     // Find the first series (in round order) where the player took part and lost.
-    const allEastSeries: Series[] = [
-      eastBracket.divATop,
-      eastBracket.divABottom,
-      eastBracket.divBTop,
-      eastBracket.divBBottom,
-      eastBracket.divAFinal,
-      eastBracket.divBFinal,
-      eastBracket.confFinal,
+    const playerSideSeries: Series[] = [
+      playerBracket.divATop,
+      playerBracket.divABottom,
+      playerBracket.divBTop,
+      playerBracket.divBBottom,
+      playerBracket.divAFinal,
+      playerBracket.divBFinal,
+      playerBracket.confFinal,
       finalSeries,
     ].filter((s): s is Series => s !== null);
-    const lostSeries = allEastSeries.find((s) => s.isPlayerSeries && s.winner && !s.winner.team.isPlayer);
+    const lostSeries = playerSideSeries.find((s) => s.isPlayerSeries && s.winner && !s.winner.team.isPlayer);
     playerEliminatedRound = lostSeries ? lostSeries.round : null;
     eliminatedBy = lostSeries?.winner ?? null;
   }
@@ -352,8 +357,8 @@ export function simulatePostseason(
   return {
     qualified: playerQualified,
     playerSeedLabel,
-    atlanticStandings,
-    eastStandings,
+    divisionStandings,
+    conferenceStandings,
     eastBracket,
     westBracket,
     finalSeries,

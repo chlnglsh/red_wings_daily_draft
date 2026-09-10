@@ -5,7 +5,7 @@ import type { PostseasonResult } from './postseason';
 export interface SavedRun {
   picks: DraftPick[];
   simResult: SeasonSimResult;
-  // null in a regular-season-only build (HAS_POSTSEASON off) — no bracket is simulated.
+  // null in a regular-season-only build (postseason feature off) — no bracket is simulated.
   postseason: PostseasonResult | null;
 }
 
@@ -50,8 +50,8 @@ export interface Platform {
   saveTodaysPlay(run: SavedRun): Promise<void>;
   getTodaysPlay(): Promise<SavedRun | null>;
   // The subreddit this build is actually installed in, at runtime — a real
-  // Reddit install could be on any subreddit, not just the one named in
-  // data/team.ts (that constant is just this build's dev-time default/fallback,
+  // Reddit install could be on any subreddit, not just the team config's
+  // TeamIdentity.subreddit (that's just this build's dev-time default/fallback,
   // used verbatim by the mock/hidden platforms since neither has a real one).
   getSubreddit(): Promise<string>;
 }

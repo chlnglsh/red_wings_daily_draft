@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Season, SlotId } from './types';
 import { SLOT_ORDER, eligiblePosition } from './types';
-import { SEASONS } from './data/seasons';
-import { TEAM_NAME, SUBREDDIT, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_POSTSEASON, HAS_GM_COACH, gameTitle } from './data/team';
+import { TEAM, gameTitle } from './teams/current';
 import { rollGmCoach } from './lib/gmCoach';
 import { getRandomSeed, getDateSeed, getUtcDateString } from './lib/dailySeed';
 import { generateRoundSeasons, getRerollAlternate } from './lib/spin';
@@ -18,17 +17,16 @@ import { RoundScreen } from './components/RoundScreen';
 import { SquadSummaryScreen } from './components/SquadSummaryScreen';
 import { FrontOfficeScreen } from './components/FrontOfficeScreen';
 import { SeasonSimScreen } from './components/SeasonSimScreen';
-import { MarchCollapseFlow } from './components/MarchCollapseFlow';
 import { HockeyFightFlow } from './components/HockeyFightFlow';
 import { FIGHT_VARIANT_COUNT, type FightVariant } from './lib/hockeyFight';
 import { ResultsScreen } from './components/ResultsScreen';
 import { PostseasonScreen } from './components/PostseasonScreen';
 import { SeasonRecapScreen } from './components/SeasonRecapScreen';
-import slotMachineSrc from './assets/lucky-red-slot-machine.png';
 import './App.css';
 
 type Screen = 'intro' | 'round' | 'frontOffice' | 'squadSummary' | 'simulating' | 'results' | 'postseason' | 'recap';
 
+const SEASONS = TEAM.seasons;
 const seasonsById = new Map(SEASONS.map((s) => [s.id, s] as [string, Season]));
 
 // No platform passed = standalone build. Dev mode keeps the mock leaderboard
@@ -49,7 +47,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   // Dev-only: iterate on the Hockey Fight minigame in isolation, and cycle which of
   // the three variants shows. forceHockeyFight instead exercises the full-season
   // integration (the fight firing partway through a real sim); both bypass the
-  // HAS_HOCKEY_FIGHT flag so the WIP feature can be worked on while it ships off.
+  // hockeyFight feature flag so the WIP feature can be worked on while it ships off.
   const [showDebugFight, setShowDebugFight] = useState(false);
   const [debugFightVariant, setDebugFightVariant] = useState<FightVariant>(0);
   const [forceHockeyFight, setForceHockeyFight] = useState(false);
@@ -73,7 +71,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   // Which final screen the Season Recap was opened from, so Back returns there.
   const [recapReturn, setRecapReturn] = useState<'results' | 'postseason'>('results');
 
-  // Accessibility opt-out for the March Collapse lightning intro, toggled on the
+  // Accessibility opt-out for the late-season event's flashing intro, toggled on the
   // splash screen and remembered across visits. Defaults to on when the OS already
   // asks for reduced motion, so those players never have to find the toggle.
   const [reduceFlashing, setReduceFlashing] = useState<boolean>(() => {
@@ -98,7 +96,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   // when the draft's six positions fill; revealed on the front-office screen and
   // folded into the season win% as a flat modifier. Null when the feature is off.
   const frontOffice = useMemo(
-    () => (HAS_GM_COACH ? rollGmCoach(mulberry32(hashStringToInt(`${runSeed}:gmCoach`))) : null),
+    () => (TEAM.frontOffice ? rollGmCoach(TEAM.frontOffice, mulberry32(hashStringToInt(`${runSeed}:gmCoach`))) : null),
     [runSeed],
   );
 
@@ -114,11 +112,11 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   // interactive, RNG-consuming choice, so it isn't reproducible from runSeed alone.
   const [postseason, setPostseason] = useState<PostseasonResult | null>(null);
 
-  // SUBREDDIT (data/team.ts) is just this build's dev-time default — a real
+  // The team config's subreddit is just this build's dev-time default — a real
   // Reddit install could be on any subreddit. mockPlatform/hiddenPlatform
   // resolve this to that same constant, so only a real Reddit build ever
   // actually changes it; the constant is what's shown until (if ever) it does.
-  const [subreddit, setSubreddit] = useState(SUBREDDIT);
+  const [subreddit, setSubreddit] = useState(TEAM.identity.subreddit);
   useEffect(() => {
     let cancelled = false;
     platform.getSubreddit().then((real) => {
@@ -172,7 +170,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     if (nextPicks.length >= 6) {
       // Front-office reveal sits between the last pick and the squad summary; skip
       // straight to the squad when the feature is off.
-      setScreen(HAS_GM_COACH ? 'frontOffice' : 'squadSummary');
+      setScreen(TEAM.frontOffice ? 'frontOffice' : 'squadSummary');
     } else {
       setRoundIndex((i) => i + 1);
       setSpinToken((t) => t + 1);
@@ -190,7 +188,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     // Regular-season-only builds skip the bracket entirely; the results screen is
     // the final screen. The postseason engine also computes the divisional
     // standings shown on the results screen, so with it off those are hidden too.
-    const postseasonResult = HAS_POSTSEASON
+    const postseasonResult = TEAM.features.postseason
       ? simulatePostseason(runSeed, result.points, finalSkaters)
       : null;
 
@@ -353,7 +351,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
       startGame: 1,
       endGame: SEASON_LENGTH,
       baseWinPct: rosterState.winPct,
-      era: rosterState.era,
+      opponentPool: rosterState.rivals,
     });
     return aggregateGames(games);
   }
@@ -381,9 +379,9 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     setScreen('simulating');
   }
 
-  // Dev-only: jump straight to the March Collapse minigame in isolation (the same
-  // screen as the ?debug=march-collapse link) instead of playing a full season sim
-  // to reach the collapse — for iterating on the minigame body.
+  // Dev-only: jump straight to the team's late-season minigame in isolation (the
+  // same screen as the ?debug=late-season link) instead of playing a full season
+  // sim to reach it — for iterating on the minigame body.
   function handleForceMarchCollapseTest() {
     setShowDebugCollapse(true);
   }
@@ -427,16 +425,20 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     </p>
   );
 
-  // Dev-only debug entry point. March Collapse boots straight into the minigame in
-  // isolation — flicker → hold → minigame → result — with no season sim
-  // around it, so its visuals/UX can be iterated on directly. Reached via either the
-  // ?debug=march-collapse URL or the intro dev button (handleForceMarchCollapseTest).
-  // Resolving it remounts a fresh run (via the key) so you can go again.
-  if (import.meta.env.DEV && (debugScreen === 'march-collapse' || showDebugCollapse)) {
+  // Dev-only debug entry point. The team's late-season event (Detroit: March
+  // Collapse) boots straight into its minigame in isolation — no season sim around
+  // it, so its visuals/UX can be iterated on directly. Reached via either the
+  // ?debug=late-season URL (?debug=march-collapse still works) or the intro dev
+  // button (handleForceMarchCollapseTest). No roster is passed, so the flow uses
+  // its own defaults. Resolving it remounts a fresh run (via the key) so you can go again.
+  const lateSeasonEvent = TEAM.events.lateSeason;
+  if (import.meta.env.DEV && lateSeasonEvent && (debugScreen === 'late-season' || debugScreen === 'march-collapse' || showDebugCollapse)) {
     return (
       <div className="app-shell">
-        <MarchCollapseFlow
+        <lateSeasonEvent.Flow
           key={debugReplayToken}
+          picks={[]}
+          seasonsById={seasonsById}
           reduceFlashing={reduceFlashing}
           onResolved={() => setDebugReplayToken((t) => t + 1)}
         />
@@ -486,22 +488,22 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           <p className="intro-sub">
             {platform.showsLeaderboard ? (
               <>
-                Spin six real {TEAM_NAME} seasons, draft a starting six, and see where you land on
+                Spin six real {TEAM.identity.name} seasons, draft a starting six, and see where you land on
                 today's leaderboard. One play per day, come back tomorrow to see if you can reach
                 number{' '}one.
               </>
             ) : (
               <>
-                Spin six real {TEAM_NAME} seasons, draft a starting six, and see how far you can take
+                Spin six real {TEAM.identity.name} seasons, draft a starting six, and see how far you can take
                 them through the playoffs.
               </>
             )}
           </p>
-          <img className="intro-slot-machine" src={slotMachineSrc} alt="" />
+          <img className="intro-slot-machine" src={TEAM.assets.slotMachine} alt="" />
           <button type="button" className="primary-btn" onClick={handleStart}>
             {platform.showsLeaderboard ? "Start today's draft" : 'Start draft'}
           </button>
-          {HAS_MARCH_COLLAPSE && (
+          {lateSeasonEvent?.hasFlashingIntro && (
             <label className="flash-optout">
               <input
                 type="checkbox"
@@ -514,7 +516,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
           {import.meta.env.DEV && (
             <div className="dev-menu">
               <p className="dev-menu-title">Dev tools</p>
-              {HAS_POSTSEASON && (
+              {TEAM.features.postseason && (
                 <div className="dev-group">
                   <p className="dev-group-label">Postseason jumps</p>
                   {devShortcut('Force First Series', handleForceFirstSeriesTest)}
@@ -525,17 +527,17 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
               )}
               <div className="dev-group">
                 <p className="dev-group-label">Season flows</p>
-                {HAS_TRADE_DEADLINE && devShortcut('Force Trade Deadline', handleForceTradeDeadlineTest)}
+                {TEAM.features.tradeDeadline && devShortcut('Force Trade Deadline', handleForceTradeDeadlineTest)}
                 {devShortcut('Force Regular Season', handleForceRegularSeasonTest)}
               </div>
               <div className="dev-group">
                 <p className="dev-group-label">In-season minigames</p>
-                {HAS_MARCH_COLLAPSE && (
+                {lateSeasonEvent && (
                   <button type="button" className="text-btn dev-reset" onClick={handleForceMarchCollapseTest}>
-                    🧪 Force March Collapse (isolated — platform-independent)
+                    🧪 Force {lateSeasonEvent.name} (isolated — platform-independent)
                   </button>
                 )}
-                {/* Hockey Fight is WIP (HAS_HOCKEY_FIGHT off): dev buttons force it
+                {/* Hockey Fight is WIP (hockeyFight feature off): dev buttons force it
                     regardless so it can be worked on while it ships dormant. */}
                 {devShortcut('Force Hockey Fight (in season)', handleForceHockeyFightSeasonTest)}
                 <p className="dev-shortcut">

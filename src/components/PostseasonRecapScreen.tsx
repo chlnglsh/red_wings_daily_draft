@@ -4,12 +4,9 @@ import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
 import type { PostseasonResult, Series } from '../lib/postseason';
 import type { GmCoachResult } from '../lib/gmCoach';
-import { gameTitle } from '../data/team';
+import { TEAM, gameTitle } from '../teams/current';
 import { FrontOfficeRecapCards } from './FrontOfficeRecapCards';
 import stanleyCupSrc from '../assets/stanley-cup.png';
-import divisionBannerSrc from '../assets/division-champions-banner.png';
-import conferenceBannerSrc from '../assets/conference-champions-banner.png';
-import stanleyCupBannerSrc from '../assets/stanleycup-champions-banner.png';
 
 const ROUND_NAMES: Record<number, string> = {
   1: 'First Series',
@@ -85,9 +82,9 @@ export function PostseasonRecapScreen({
   );
   const wonCup = highestRoundWon >= 4;
   const banners: string[] = [];
-  if (highestRoundWon >= 2) banners.push(divisionBannerSrc);
-  if (highestRoundWon >= 3) banners.push(conferenceBannerSrc);
-  if (highestRoundWon >= 4) banners.push(stanleyCupBannerSrc);
+  if (highestRoundWon >= 2) banners.push(TEAM.assets.banners.division);
+  if (highestRoundWon >= 3) banners.push(TEAM.assets.banners.conference);
+  if (highestRoundWon >= 4) banners.push(TEAM.assets.banners.stanleyCup);
 
   // The header names the highest title the player actually WON, never the
   // elimination — a season with a banner shouldn't be topped by "Eliminated".

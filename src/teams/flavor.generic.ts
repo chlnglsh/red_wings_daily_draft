@@ -1,9 +1,9 @@
-// Team-agnostic starting point for a reskin. Nothing in here references any real
-// team, city, or nickname — copy this file to flavorText.<team>.ts, rename the
-// export, customize freely (the rivalPools especially — pick real rivals for
-// your team, and make sure your own team isn't in either list), then point
-// flavorText.ts's import at your new file.
-import type { FlavorPack } from './flavorText';
+// Team-agnostic starting point for a new team. Nothing in here references any real
+// team, city, or nickname — copy this file to src/teams/<team>/flavor.ts, rename
+// the export, and customize freely. The rival lists below are a starting point
+// for a team's era rival pools (TeamEra.rivals): pick real rivals for your team,
+// and make sure your own team isn't in any list.
+import type { FlavorPack } from './types';
 
 export const FLAVOR_TEXT_GENERIC: FlavorPack = {
   mockUsernames: [
@@ -26,14 +26,13 @@ export const FLAVOR_TEXT_GENERIC: FlavorPack = {
 
   // Placeholder pools — swap for real rivals of whichever team you're building.
   // Remove your own team if it shows up here (it won't, in this generic set).
-  rivalPools: {
-    originalSix: ['Toronto Maple Leafs', 'Montreal Canadiens', 'Boston Bruins', 'Chicago Blackhawks', 'New York Rangers'],
-    modern: [
-      'Toronto Maple Leafs', 'Chicago Blackhawks', 'Boston Bruins', 'Pittsburgh Penguins',
-      'Colorado Avalanche', 'Tampa Bay Lightning', 'Edmonton Oilers', 'New York Rangers',
-      'Nashville Predators', 'Carolina Hurricanes', 'Vegas Golden Knights', 'Dallas Stars',
-      'Florida Panthers', 'Los Angeles Kings', 'St. Louis Blues', 'Minnesota Wild',
-      'Winnipeg Jets', 'New Jersey Devils', 'Washington Capitals', 'Vancouver Canucks',
-    ],
-  },
 };
+
+export const GENERIC_ORIGINAL_SIX_RIVALS = ['Toronto Maple Leafs', 'Montreal Canadiens', 'Boston Bruins', 'Chicago Blackhawks', 'New York Rangers', 'Detroit Red Wings'];
+export const GENERIC_MODERN_RIVALS = [
+  'Toronto Maple Leafs', 'Chicago Blackhawks', 'Boston Bruins', 'Pittsburgh Penguins',
+  'Colorado Avalanche', 'Tampa Bay Lightning', 'Edmonton Oilers', 'New York Rangers',
+  'Nashville Predators', 'Carolina Hurricanes', 'Vegas Golden Knights', 'Dallas Stars',
+  'Florida Panthers', 'Los Angeles Kings', 'St. Louis Blues', 'Minnesota Wild',
+  'Winnipeg Jets', 'New Jersey Devils', 'Washington Capitals', 'Vancouver Canucks', 'Detroit Red Wings',
+];

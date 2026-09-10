@@ -11,7 +11,6 @@ import {
   type GameResult,
   type SeasonSimResult,
 } from '../lib/gameSim';
-import { MARCH_COLLAPSE_GAME, isMarchCollapseDay, isMarchCollapsePlay, buildCollapsePenaltyModifier } from '../lib/marchCollapse';
 import {
   isHockeyFightDay,
   isHockeyFightPlay,
@@ -21,12 +20,14 @@ import {
   buildFightBoostModifier,
   type FightOutcome,
 } from '../lib/hockeyFight';
-import { goalieTargetSavePct } from '../lib/goalie';
-import { TEAM_NAME, HAS_MARCH_COLLAPSE, HAS_TRADE_DEADLINE, HAS_HOCKEY_FIGHT } from '../data/team';
+import { TEAM } from '../teams/current';
 import { mascotOnly } from '../data/nhlAlignment';
 import { TradeDeadlineFlow } from './TradeDeadlineFlow';
-import { MarchCollapseFlow } from './MarchCollapseFlow';
 import { HockeyFightFlow } from './HockeyFightFlow';
+
+// The team's late-season pause-point event (Detroit: March Collapse), if it has one.
+// Everything "collapse"-named below is that slot — the naming predates the registry.
+const lateSeasonEvent = TEAM.events.lateSeason;
 
 const TICKS_PER_GAME = 14;
 const VISIBLE_COMPLETED_FAST = 14;
@@ -73,14 +74,14 @@ export function SeasonSimScreen({
   // false = per-playthrough roll (standalone). Mirrors Platform.sharedDailyEvents and
   // drives both March Collapse and Hockey Fight.
   sharedDailyCollapse?: boolean;
-  // Dev-only: force the March Collapse event to fire this run regardless of the roll.
+  // Dev-only: force the late-season event to fire this run regardless of the roll.
   forceMarchCollapse?: boolean;
   // Dev-only: force the Hockey Fight event to fire this run regardless of the roll.
   forceHockeyFight?: boolean;
   // Dev-only: skip straight to the trade deadline gate instead of playing games 1-60.
   devSkipToDeadline?: boolean;
-  // Player opted out of flashing on the splash screen — forwarded to the March
-  // Collapse intro so it skips the lightning flicker.
+  // Player opted out of flashing on the splash screen — forwarded to the late-season
+  // event's intro so it skips any flicker.
   reduceFlashing?: boolean;
   // Flat season-long win% nudge from the GM/Coach roll (already summed). Added to the
   // base win% of every game segment; 0 when the feature is off.
@@ -95,17 +96,17 @@ export function SeasonSimScreen({
     rngRef.current = mulberry32(hashStringToInt(`${runSeed}:simseason:${picks.map((p) => p.player.id + p.slot).join(',')}`));
   }
 
-  // Does March Collapse fire this run? Cadence depends on the build: a Reddit
+  // Does the late-season event fire this run? Cadence depends on the build: a Reddit
   // build uses a subreddit-wide daily roll (dateSeed — same day for everyone),
   // while a standalone build rolls per playthrough (runSeed — fresh each play), so
-  // a repeat player hits it ~1 in 8 runs instead of waiting on the calendar. Gated
-  // on HAS_MARCH_COLLAPSE so a reskinned build never fires it; when off, this stays
-  // false and every collapse-aware branch below falls back to the plain two-segment sim.
+  // a repeat player hits it on its own odds instead of waiting on the calendar. A
+  // team with no such event never fires it; then this stays false and every
+  // collapse-aware branch below falls back to the plain two-segment sim.
   const isCollapseDay = useMemo(
     () =>
-      HAS_MARCH_COLLAPSE &&
+      !!lateSeasonEvent &&
       (forceMarchCollapse ||
-        (sharedDailyCollapse ? isMarchCollapseDay(dateSeed) : isMarchCollapsePlay(runSeed))),
+        (sharedDailyCollapse ? lateSeasonEvent.firesOnDay(dateSeed) : lateSeasonEvent.firesOnPlay(runSeed))),
     [forceMarchCollapse, sharedDailyCollapse, dateSeed, runSeed],
   );
 
@@ -118,10 +119,10 @@ export function SeasonSimScreen({
   const isFightDay = useMemo(
     () =>
       !devSkipToDeadline &&
-      // Dev force bypasses HAS_HOCKEY_FIGHT so the WIP feature can be exercised while
-      // the flag stays off for real players; the natural roll stays gated on the flag.
+      // Dev force bypasses the hockeyFight feature flag so the WIP feature can be
+      // exercised while it stays off for real players; the natural roll stays gated.
       (forceHockeyFight ||
-        (HAS_HOCKEY_FIGHT &&
+        (TEAM.features.hockeyFight &&
           (sharedDailyCollapse ? isHockeyFightDay(dateSeed) : isHockeyFightPlay(runSeed)))),
     [forceHockeyFight, sharedDailyCollapse, dateSeed, runSeed, devSkipToDeadline],
   );
@@ -148,7 +149,7 @@ export function SeasonSimScreen({
       startGame: 1,
       endGame: isFightDay ? fightGame : TRADE_DEADLINE_GAME - 1,
       baseWinPct: initialRosterState.winPct + frontOfficeModifier,
-      era: initialRosterState.era,
+      opponentPool: initialRosterState.rivals,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -282,7 +283,7 @@ export function SeasonSimScreen({
       startGame: boostStart,
       endGame: TRADE_DEADLINE_GAME - 1,
       baseWinPct: rosterState.winPct + frontOfficeModifier,
-      era: rosterState.era,
+      opponentPool: rosterState.rivals,
       modifierForGame: buildFightBoostModifier(boostStart, outcome),
     });
   }
@@ -296,9 +297,9 @@ export function SeasonSimScreen({
       rng: rngRef.current!,
       pickScorer,
       startGame: TRADE_DEADLINE_GAME,
-      endGame: isCollapseDay ? MARCH_COLLAPSE_GAME - 1 : SEASON_LENGTH,
+      endGame: isCollapseDay ? lateSeasonEvent!.game - 1 : SEASON_LENGTH,
       baseWinPct: rosterState.winPct + frontOfficeModifier,
-      era: rosterState.era,
+      opponentPool: rosterState.rivals,
     });
   }
 
@@ -310,11 +311,11 @@ export function SeasonSimScreen({
     return simulateGamesInRange({
       rng: rngRef.current!,
       pickScorer,
-      startGame: MARCH_COLLAPSE_GAME,
+      startGame: lateSeasonEvent!.game,
       endGame: SEASON_LENGTH,
       baseWinPct: rosterState.winPct + frontOfficeModifier,
-      era: rosterState.era,
-      modifierForGame: success ? undefined : buildCollapsePenaltyModifier(MARCH_COLLAPSE_GAME),
+      opponentPool: rosterState.rivals,
+      modifierForGame: lateSeasonEvent!.modifierForOutcome(success),
     });
   }
 
@@ -409,7 +410,7 @@ export function SeasonSimScreen({
   // exactly as if the player had stood pat.
   useEffect(() => {
     if (atDeadline && tradeStage === 'pending') {
-      if (HAS_TRADE_DEADLINE) {
+      if (TEAM.features.tradeDeadline) {
         setTradeStage('active');
       } else {
         handleTradeResolved(currentPicks);
@@ -447,7 +448,7 @@ export function SeasonSimScreen({
   // any other in-season event (currently March Collapse) still pending would be
   // forfeited. Nothing pending → skip straight away with no dialog.
   function requestSkip() {
-    const tradeAhead = HAS_TRADE_DEADLINE && tradeStage === 'pending';
+    const tradeAhead = TEAM.features.tradeDeadline && tradeStage === 'pending';
     const otherEventsAhead = collapseStage === 'pending' || fightStage === 'pending';
     if (tradeAhead) setSkipDialog('beforeDeadline');
     else if (otherEventsAhead) setSkipDialog('eventsAhead');
@@ -512,12 +513,11 @@ export function SeasonSimScreen({
     );
   }
 
-  if (collapseStage === 'active') {
-    const goalie = currentPicks.find((p) => p.player.position === 'G');
-    const targetSavePct = goalie ? goalieTargetSavePct(goalie.player) : undefined;
+  if (collapseStage === 'active' && lateSeasonEvent) {
     return (
-      <MarchCollapseFlow
-        targetSavePct={targetSavePct}
+      <lateSeasonEvent.Flow
+        picks={currentPicks}
+        seasonsById={seasonsById}
         reduceFlashing={reduceFlashing}
         onResolved={handleCollapseResolved}
       />
@@ -623,10 +623,10 @@ export function SeasonSimScreen({
                 <span className="season-sim-goals-empty">Scoreless so far…</span>
               )}
               <div className="season-sim-goals-col">
-                <span className="season-sim-goals-col-header">{TEAM_NAME}</span>
+                <span className="season-sim-goals-col-header">{TEAM.identity.name}</span>
                 {liveGoals.map((g, i) => (
                   <div key={i} className="season-sim-goal-line">
-                    🚨 {g.scorer ?? TEAM_NAME} <span className="season-sim-goal-time">{g.label}</span>
+                    🚨 {g.scorer ?? TEAM.identity.name} <span className="season-sim-goal-time">{g.label}</span>
                   </div>
                 ))}
               </div>

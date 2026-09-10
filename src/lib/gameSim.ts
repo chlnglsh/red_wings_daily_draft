@@ -1,6 +1,3 @@
-import type { SeasonEra } from '../types';
-import { FLAVOR } from '../data/flavorText';
-
 // Real game-by-game season simulation. Hockey has no draws — every game is decided
 // in regulation, overtime, or a shootout — so each game here is a plain win or loss,
 // with OT/SO games flagged separately since a loss there is worth 1 standings point
@@ -33,12 +30,6 @@ export function deriveOpponentWinPct(pointsA: number, pointsB: number): number {
   const raw = 0.5 + (pointsA - pointsB) * DIFF_TO_WINPCT;
   return Math.min(MAX_WINPCT, Math.max(MIN_WINPCT, raw));
 }
-
-// Flavor opponents only — not real schedules or opposing rosters. One rotating pool
-// per era so old seasons face period-appropriate rivals instead of expansion teams
-// that didn't exist yet. See data/flavorText.ts for the reskin-swappable source.
-const ORIGINAL_SIX_RIVALS = FLAVOR.rivalPools.originalSix;
-const MODERN_RIVALS = FLAVOR.rivalPools.modern;
 
 // Regulation is minute 0-60 (three 20-min periods). OT/SO games carry one extra
 // marker past 60 for the deciding moment, so the live reveal can show "OT"/"SO"
@@ -220,13 +211,15 @@ export function simulateGamesInRange(params: {
   startGame: number; // inclusive
   endGame: number; // inclusive
   baseWinPct: number;
-  era: SeasonEra;
+  // Flavor opponents only — not real schedules or opposing rosters. The roster's
+  // majority-era rival pool (rosterState.rivals) so old seasons face
+  // period-appropriate rivals instead of expansion teams that didn't exist yet.
+  opponentPool: string[];
   // Additive per-game adjustment, e.g. a Hockey Fight streak boost or a March Collapse
   // penalty. Defaults to 0 — no modifier features exist yet, this is just the hook.
   modifierForGame?: (gameNumber: number) => number;
 }): GameResult[] {
-  const { rng, pickScorer, startGame, endGame, baseWinPct, era, modifierForGame } = params;
-  const opponentPool = era === 'yzermanOnward' ? MODERN_RIVALS : ORIGINAL_SIX_RIVALS;
+  const { rng, pickScorer, startGame, endGame, baseWinPct, opponentPool, modifierForGame } = params;
   const games: GameResult[] = [];
 
   for (let i = startGame; i <= endGame; i++) {

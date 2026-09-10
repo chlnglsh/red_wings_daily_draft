@@ -8,7 +8,7 @@
 // Either way it doesn't touch the roster like Trade Deadline does — it's purely a
 // win% modifier hook (see modifierForGame in gameSim.ts), triggered by a live skill
 // minigame instead of a random resolution.
-import { hashStringToInt } from './prng';
+import { hashStringToInt } from '../../../lib/prng';
 
 // Matches the real Red Wings' typical March/April games-remaining count.
 export const MARCH_COLLAPSE_GAME = 66;

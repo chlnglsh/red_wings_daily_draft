@@ -3,7 +3,7 @@ import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import type { GameResult, SeasonSimResult } from '../lib/gameSim';
 import type { GmCoachResult } from '../lib/gmCoach';
-import { gameTitle } from '../data/team';
+import { gameTitle } from '../teams/current';
 import { FrontOfficeRecapCards } from './FrontOfficeRecapCards';
 
 // Mirrors SeasonSimScreen's gameLine: shootout games show as "(OT)" too — this

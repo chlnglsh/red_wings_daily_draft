@@ -1,0 +1,94 @@
+/* ---------- Legend of the Octopus flyby ---------- */
+
+.octopus-flyby {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+.octopus-flyby-sprite {
+  position: absolute;
+  top: 32%;
+  left: 0;
+  width: 150px;
+  height: 150px;
+  /* Flight-path transform only (translate, no rotation or scale — an arc at a
+     constant size, not a spin or a pulse) lives here, in normal screen
+     coordinates. The image's own left-right mirror is a separate, unanimated
+     transform on the <img> below — combining both in one transform would flip
+     the translate direction too, sending the arc the wrong way. */
+  /* Linear timing, not ease-in-out — combined with the densely-sampled parabola
+     keyframes below (rather than just 0/50/100%), this is what makes the flight
+     an actual smooth arc at constant horizontal speed instead of two straight
+     segments meeting at a corner (which is all a 3-keyframe eased animation
+     can ever produce — a triangle, not a curve). Direction (round 1 = left to
+     right, the Final = right to left) picks which of the two keyframe sets
+     below runs — see the .ltr modifier. */
+  animation: octopus-flyby-rtl 1.6s linear forwards;
+}
+.octopus-flyby-sprite.ltr {
+  animation-name: octopus-flyby-ltr;
+}
+.octopus-flyby-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+/* Source art is drawn facing/leaning for right-to-left motion, so it's only
+   mirrored for the left-to-right flight (round 1) — each direction ends up
+   facing the way it's actually traveling instead of one of them flying
+   backwards. */
+.octopus-flyby-sprite.ltr .octopus-flyby-img {
+  transform: scaleX(-1);
+}
+/* Both directions share the same Y arc (a sampled parabola, peak at 50%) and
+   opacity fade; only the X progression differs, and .ltr's X list is just
+   .rtl's reversed — same waypoints, opposite order. */
+@keyframes octopus-flyby-rtl {
+  0% { transform: translate(110vw, 40px); opacity: 0; }
+  5% { transform: translate(103.5vw, 25px); opacity: 1; }
+  10% { transform: translate(97vw, 11px); }
+  15% { transform: translate(90.5vw, -1px); }
+  20% { transform: translate(84vw, -11px); }
+  25% { transform: translate(77.5vw, -20px); }
+  30% { transform: translate(71vw, -27px); }
+  35% { transform: translate(64.5vw, -33px); }
+  40% { transform: translate(58vw, -37px); }
+  45% { transform: translate(51.5vw, -39px); }
+  50% { transform: translate(45vw, -40px); }
+  55% { transform: translate(38.5vw, -39px); }
+  60% { transform: translate(32vw, -37px); }
+  65% { transform: translate(25.5vw, -33px); }
+  70% { transform: translate(19vw, -27px); }
+  75% { transform: translate(12.5vw, -20px); }
+  80% { transform: translate(6vw, -11px); }
+  85% { transform: translate(-0.5vw, -1px); }
+  90% { transform: translate(-7vw, 11px); opacity: 1; }
+  95% { transform: translate(-13.5vw, 25px); opacity: 0; }
+  100% { transform: translate(-20vw, 40px); opacity: 0; }
+}
+@keyframes octopus-flyby-ltr {
+  0% { transform: translate(-20vw, 40px); opacity: 0; }
+  5% { transform: translate(-13.5vw, 25px); opacity: 1; }
+  10% { transform: translate(-7vw, 11px); }
+  15% { transform: translate(-0.5vw, -1px); }
+  20% { transform: translate(6vw, -11px); }
+  25% { transform: translate(12.5vw, -20px); }
+  30% { transform: translate(19vw, -27px); }
+  35% { transform: translate(25.5vw, -33px); }
+  40% { transform: translate(32vw, -37px); }
+  45% { transform: translate(38.5vw, -39px); }
+  50% { transform: translate(45vw, -40px); }
+  55% { transform: translate(51.5vw, -39px); }
+  60% { transform: translate(58vw, -37px); }
+  65% { transform: translate(64.5vw, -33px); }
+  70% { transform: translate(71vw, -27px); }
+  75% { transform: translate(77.5vw, -20px); }
+  80% { transform: translate(84vw, -11px); }
+  85% { transform: translate(90.5vw, -1px); }
+  90% { transform: translate(97vw, 11px); opacity: 1; }
+  95% { transform: translate(103.5vw, 25px); opacity: 0; }
+  100% { transform: translate(110vw, 40px); opacity: 0; }
+}

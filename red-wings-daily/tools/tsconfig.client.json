@@ -11,7 +11,10 @@
     // rewriting otherwise-correct code just to satisfy checks it was never
     // written against. Still fully `strict`, just without these two extras.
     "exactOptionalPropertyTypes": false,
-    "noUncheckedIndexedAccess": false
+    "noUncheckedIndexedAccess": false,
+    // Mirrors the game's own tsconfig: `@team` is the Vite alias for the selected
+    // team folder (vite.config.ts); type-check against the Red Wings one.
+    "paths": { "@team": ["../src/client/app/teams/redwings"] }
   },
   "include": ["../src/client/**/*"],
   // main.tsx is the standalone web app's own Vite entry point (Devvit's entries

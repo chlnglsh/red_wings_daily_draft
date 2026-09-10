@@ -1,5 +1,6 @@
-// Real current NHL division/conference alignment. The Red Wings' own slot in the
-// Atlantic Division is replaced by the player's simulated roster — see postseason.ts.
+// Real current NHL division/conference alignment, all 32 teams. At sim time the
+// player's own team (TeamConfig.alignment) is dropped from this list and its slot
+// is taken by the player's simulated roster — see postseason.ts.
 
 export type Conference = 'East' | 'West';
 export type Division = 'Atlantic' | 'Metropolitan' | 'Central' | 'Pacific';
@@ -23,12 +24,32 @@ export const DIVISIONS: Record<Division, Conference> = {
   Pacific: 'West',
 };
 
-// The real Red Wings are intentionally omitted — the player's simulated roster
-// occupies that Atlantic Division slot instead.
+export const CONFERENCE_LABEL: Record<Conference, string> = {
+  East: 'Eastern',
+  West: 'Western',
+};
+
+export const DIVISION_PAIRS: Record<Conference, [Division, Division]> = {
+  East: ['Atlantic', 'Metropolitan'],
+  West: ['Central', 'Pacific'],
+};
+
+/** The other division in the same conference. */
+export function siblingDivision(division: Division): Division {
+  const [a, b] = DIVISION_PAIRS[DIVISIONS[division]];
+  return division === a ? b : a;
+}
+
+/** Seed-label prefix ("A1", "M3", "C2", "P1") — display only. */
+export function divisionSeedPrefix(division: Division): string {
+  return division === 'Atlantic' ? 'A' : division === 'Metropolitan' ? 'M' : division === 'Central' ? 'C' : 'P';
+}
+
 export const LEAGUE_TEAMS: LeagueTeam[] = [
-  // Atlantic (Red Wings replaced by the player)
+  // Atlantic
   { name: 'Boston Bruins', division: 'Atlantic', pointsRange: PLACEHOLDER_RANGE },
   { name: 'Buffalo Sabres', division: 'Atlantic', pointsRange: PLACEHOLDER_RANGE },
+  { name: 'Detroit Red Wings', division: 'Atlantic', pointsRange: PLACEHOLDER_RANGE },
   { name: 'Florida Panthers', division: 'Atlantic', pointsRange: PLACEHOLDER_RANGE },
   { name: 'Montreal Canadiens', division: 'Atlantic', pointsRange: PLACEHOLDER_RANGE },
   { name: 'Ottawa Senators', division: 'Atlantic', pointsRange: PLACEHOLDER_RANGE },
@@ -66,8 +87,8 @@ export const LEAGUE_TEAMS: LeagueTeam[] = [
   { name: 'Vegas Golden Knights', division: 'Pacific', pointsRange: PLACEHOLDER_RANGE },
 ];
 
-// Full "City Mascot" -> mascot-only, for spots that want to match how TEAM_NAME
-// is shown for the player's own side (just "Red Wings", never "Detroit Red Wings").
+// Full "City Mascot" -> mascot-only, for spots that want to match how the player's
+// own team is shown (just "Red Wings", never "Detroit Red Wings").
 // Can't derive this by splitting on the first word — cities and mascots are each
 // sometimes one word, sometimes two ("St. Louis Blues", "Vegas Golden Knights"),
 // so it's a real lookup, not a heuristic. Covers every name in LEAGUE_TEAMS plus
@@ -75,6 +96,7 @@ export const LEAGUE_TEAMS: LeagueTeam[] = [
 const MASCOT_ONLY: Record<string, string> = {
   'Boston Bruins': 'Bruins',
   'Buffalo Sabres': 'Sabres',
+  'Detroit Red Wings': 'Red Wings',
   'Florida Panthers': 'Panthers',
   'Montreal Canadiens': 'Canadiens',
   'Ottawa Senators': 'Senators',

@@ -1,13 +1,12 @@
 import { mulberry32, hashStringToInt } from './prng';
 import { simulateRecord } from './simulate';
 import type { ChampionEntry, LeaderboardEntry, Platform } from './platform';
-import { FLAVOR } from '../data/flavorText';
-import { SUBREDDIT } from '../data/team';
+import { TEAM } from '../teams/current';
 
 // No backend to talk to outside Reddit — deterministic fake pool of "other
 // players" for the day, seeded off the same daily seed everyone shares. Used
 // for local dev only; the real production web/mobile build uses hiddenPlatform.
-export const MOCK_USERNAMES = FLAVOR.mockUsernames;
+export const MOCK_USERNAMES = TEAM.flavor.mockUsernames;
 
 function mockUsername(i: number): string {
   return MOCK_USERNAMES[i % MOCK_USERNAMES.length] + (i >= MOCK_USERNAMES.length ? `_${i}` : '');
@@ -67,6 +66,6 @@ export const mockPlatform: Platform = {
     return null; // standalone dev build is never gated to one play per day
   },
   async getSubreddit() {
-    return SUBREDDIT; // no real subreddit outside Reddit — this build's dev-time default
+    return TEAM.identity.subreddit; // no real subreddit outside Reddit — this build's dev-time default
   },
 };

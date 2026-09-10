@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { TEAM_NAME } from '../data/team';
+import { TEAM } from '../teams/current';
 import type { FightOutcome, FightVariant } from '../lib/hockeyFight';
 
 // Hockey Fight minigame shell: intro hype card, then one of three skill minigames,
@@ -55,7 +55,7 @@ export function HockeyFightFlow({
             A scrap breaks out against the {opponent}. Win it and the bench gets fired up for the games ahead.
           </p>
           <div className="fight-matchup">
-            <span className="fight-fighter you">{TEAM_NAME}</span>
+            <span className="fight-fighter you">{TEAM.identity.name}</span>
             <span className="fight-vs">vs.</span>
             <span className="fight-fighter rival">{opponent}</span>
           </div>
@@ -178,7 +178,7 @@ function TugOfWarFight({ opponent, onFinish }: { opponent: string; onFinish: (ou
         </div>
         <div className="fight-meter-ends">
           <span className="fight-fighter rival">{opponent}</span>
-          <span className="fight-fighter you">{TEAM_NAME}</span>
+          <span className="fight-fighter you">{TEAM.identity.name}</span>
         </div>
         <button type="button" className="fight-pull-btn" onPointerDown={(e) => { e.preventDefault(); pull(); }}>
           Pull
@@ -329,7 +329,7 @@ function PunchTimingFight({ opponent, onFinish }: { opponent: string; onFinish: 
           <div className="fight-meter-marker" style={{ left: `${pos}%`, transition: 'none' }} />
         </div>
         <div className="fight-meter-ends">
-          <span className="fight-fighter you">{TEAM_NAME}</span>
+          <span className="fight-fighter you">{TEAM.identity.name}</span>
           <span className="fight-fighter rival">{opponent}</span>
         </div>
         <div className={`fight-flash ${flash ?? ''}`}>{flash === 'perfect' ? 'Perfect!' : flash === 'hit' ? 'Clean hit' : flash === 'miss' ? 'Whiff' : ' '}</div>

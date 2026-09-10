@@ -1,6 +1,7 @@
+/* Team colors (--team-primary, --team-primary-dark, --team-on-primary,
+   --rating-elite) are NOT defined here — each team's src/teams/<team>/theme.css
+   sets them, and the build bundles only the selected team's. */
 :root {
-  --wings-red: #ce1126;
-  --wings-red-dark: #9c0d1d;
   --ink: #14161a;
   --ink-soft: #4a4d55;
   --paper: #ffffff;
@@ -14,8 +15,7 @@
   /* Rating badge tiers only (.roster-row-rating.*) — deliberately separate
      from --good/--mid/--low above, which are shared by other UI (strength
      meters, trade-swap deltas) that shouldn't change color just because the
-     rating badge scheme does. */
-  --rating-elite: #ce1126;
+     rating badge scheme does. --rating-elite is the team's, in its theme.css. */
   --rating-great: #d9660b;
   --rating-good: #c99700;
   --rating-rest: #3568d4;

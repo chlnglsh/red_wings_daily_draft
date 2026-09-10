@@ -2,7 +2,7 @@ import type { DraftPick, Season, SlotId } from '../types';
 import { SLOT_ORDER } from '../types';
 import { pickPercentile } from './scoring';
 import type { Tier } from './tiers';
-import { gameTitle } from '../data/team';
+import { gameTitle } from '../teams/current';
 
 function squareFor(percentile: number): string {
   if (percentile >= 0.75) return '🟩';

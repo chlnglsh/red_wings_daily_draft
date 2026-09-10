@@ -25,8 +25,6 @@ export interface Player {
   gaa?: number; // goalies only — goals against average, display stat (tracked since day one of the NHL)
 }
 
-export type SeasonEra = 'preHowe' | 'howeToPreYzerman' | 'yzermanOnward';
-
 export interface Season {
   id: string;
   year: string; // e.g. "1996-97"
@@ -34,7 +32,7 @@ export interface Season {
   scheduledGames: number; // 70 for Original Six-era seasons, 82 for modern
   leagueAvgGoalsPerGame: number; // scoring environment that season, for era normalization
   teamPoints: number; // team standings points that season, strength-signal input
-  era: SeasonEra;
+  era: string; // id of one of the team's eras (TeamEra.id in src/teams/types.ts) — drives spin weighting and the flavor rival pool
   blurb: string; // one-line flavor text for the spin reveal
   roster: Player[];
 }

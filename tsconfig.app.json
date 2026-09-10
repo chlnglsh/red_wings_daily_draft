@@ -15,6 +15,10 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    /* `@team` is a Vite alias resolved from the TEAM env var (see vite.config.ts).
+       Type-check against the Red Wings folder: every team satisfies the same
+       TeamConfig, so checking consumers against one covers all. */
+    "paths": { "@team": ["./src/teams/redwings"] },
 
     /* Linting */
     "noUnusedLocals": true,

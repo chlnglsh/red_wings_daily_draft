@@ -12,8 +12,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--wings-red);
-  color: #fff;
+  background: var(--team-primary);
+  color: var(--team-on-primary);
   border: none;
   border-radius: 10px;
   padding: 14px 28px;
@@ -23,7 +23,7 @@
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 .primary-btn:hover {
-  background: var(--wings-red-dark);
+  background: var(--team-primary-dark);
 }
 .primary-btn:active {
   transform: scale(0.98);
@@ -33,7 +33,7 @@
   cursor: not-allowed;
 }
 .primary-btn:disabled:hover {
-  background: var(--wings-red);
+  background: var(--team-primary);
 }
 
 /* Same size/weight as .primary-btn (not .text-btn) for choices that deserve
@@ -48,8 +48,8 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: var(--wings-red);
-  border: 2px solid var(--wings-red);
+  color: var(--team-primary);
+  border: 2px solid var(--team-primary);
   border-radius: 10px;
   padding: 12px 28px;
   font-size: 17px;
@@ -58,8 +58,8 @@
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 .secondary-btn:hover {
-  background: var(--wings-red);
-  color: #fff;
+  background: var(--team-primary);
+  color: var(--team-on-primary);
 }
 .secondary-btn:active {
   transform: scale(0.98);
@@ -92,7 +92,7 @@
 }
 
 .intro-eyebrow {
-  color: var(--wings-red);
+  color: var(--team-primary);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -136,7 +136,7 @@
 .flash-optout input {
   width: 16px;
   height: 16px;
-  accent-color: var(--wings-red);
+  accent-color: var(--team-primary);
   cursor: pointer;
 }
 
@@ -146,15 +146,15 @@
    in dark mode, matching the results screen) instead of forcing a separate
    light "ice" look — the --border override just keeps the outline red. */
 .rink-backdrop {
-  --border: var(--wings-red);
+  --border: var(--team-primary);
   position: relative;
   border-radius: 16px;
   padding: 24px;
   margin: 20px 0;
   background: var(--paper-soft);
   border: 2px solid var(--border);
-  border-top: 6px solid var(--wings-red);
-  box-shadow: 6px 6px 0 var(--wings-red-dark);
+  border-top: 6px solid var(--team-primary);
+  box-shadow: 6px 6px 0 var(--team-primary-dark);
   overflow: hidden;
 }
 
@@ -213,12 +213,12 @@
   white-space: nowrap;
 }
 .progress-pill-slot {
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .progress-pill.filled {
-  border-color: var(--wings-red-dark);
-  background: var(--wings-red);
-  color: #fff;
+  border-color: var(--team-primary-dark);
+  background: var(--team-primary);
+  color: var(--team-on-primary);
 }
 .progress-pill.filled .progress-pill-slot {
   color: #fff;
@@ -258,7 +258,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin-bottom: 6px;
 }
 .spin-reveal-season {
@@ -267,7 +267,7 @@
   animation: spin-pop 0.16s ease;
 }
 .spin-reveal-season.spinning {
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .spin-reveal-blurb {
   color: var(--ink-soft);
@@ -335,8 +335,8 @@
 .reroll-btn {
   margin-top: 14px;
   background: var(--paper);
-  border: 2px dashed var(--wings-red);
-  color: var(--wings-red-dark);
+  border: 2px dashed var(--team-primary);
+  color: var(--team-primary-dark);
   border-radius: 999px;
   padding: 8px 18px;
   font-size: 13px;
@@ -344,7 +344,7 @@
   cursor: pointer;
 }
 .reroll-btn:hover {
-  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+  background: color-mix(in srgb, var(--team-primary) 8%, var(--paper));
 }
 
 /* ---------- Strength meter ---------- */
@@ -369,7 +369,7 @@
   background: var(--ink-soft);
 }
 .strength-bar.on {
-  background: var(--wings-red);
+  background: var(--team-primary);
 }
 .strength-meter-tag {
   font-weight: 700;
@@ -465,8 +465,8 @@
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .roster-row:hover {
-  border-color: var(--wings-red);
-  background: color-mix(in srgb, var(--wings-red) 5%, var(--paper));
+  border-color: var(--team-primary);
+  background: color-mix(in srgb, var(--team-primary) 5%, var(--paper));
 }
 .roster-row.filled-position {
   cursor: not-allowed;
@@ -536,7 +536,7 @@
   flex-shrink: 0;
   font-family: var(--display);
   font-size: 15px;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .roster-row-stats {
   font-family: var(--mono);
@@ -576,16 +576,16 @@
 .slot-choice-btn {
   font-family: var(--display);
   font-size: 20px;
-  border: 2px solid var(--wings-red);
+  border: 2px solid var(--team-primary);
   background: var(--paper);
-  color: var(--wings-red-dark);
+  color: var(--team-primary-dark);
   border-radius: 10px;
   padding: 10px 18px;
   cursor: pointer;
 }
 .slot-choice-btn:hover {
-  background: var(--wings-red);
-  color: #fff;
+  background: var(--team-primary);
+  color: var(--team-on-primary);
 }
 
 /* ---------- Results ---------- */
@@ -600,7 +600,7 @@
   margin: 32px 0 40px;
 }
 .results-eyebrow {
-  color: var(--wings-red);
+  color: var(--team-primary);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -615,8 +615,8 @@
   height: 84px;
   margin: 0 auto;
   border-radius: 50%;
-  background: var(--wings-red);
-  border: 2px solid var(--wings-red-dark);
+  background: var(--team-primary);
+  border: 2px solid var(--team-primary-dark);
 }
 /* Real trophy art (Stanley Cup champions only) — no red-circle badge like the
    other tiers' emoji get, since actual artwork doesn't need a colored frame
@@ -640,7 +640,7 @@
 .results-tier-label {
   font-size: 48px;
   line-height: 1.05;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .results-tier-flavor {
   color: var(--ink-soft);
@@ -700,7 +700,7 @@
 .results-roster-slot {
   font-family: var(--display);
   font-size: 16px;
-  color: var(--wings-red);
+  color: var(--team-primary);
   width: 28px;
 }
 .results-roster-name {
@@ -744,7 +744,7 @@
   border-bottom: none;
 }
 .mock-leaderboard li.you {
-  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+  background: color-mix(in srgb, var(--team-primary) 8%, var(--paper));
   font-weight: 700;
 }
 .mock-leaderboard-rank {
@@ -798,7 +798,7 @@
   font-size: 12px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin: 0;
   padding-left: 2px;
 }
@@ -821,9 +821,9 @@
   border-bottom: none;
 }
 .standings-table li.you {
-  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+  background: color-mix(in srgb, var(--team-primary) 8%, var(--paper));
   font-weight: 700;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .standings-table-primary li {
   padding: 7px 14px;
@@ -839,7 +839,7 @@
   width: 28px;
 }
 .standings-table li.you .standings-rank {
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .standings-name {
   flex: 1;
@@ -913,7 +913,7 @@
 }
 .squad-summary-title {
   font-size: 36px;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 
 .position-diagram {
@@ -937,7 +937,7 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border: 2px solid var(--wings-red);
+  border: 2px solid var(--team-primary);
   border-radius: 50%;
   background: var(--paper);
 }
@@ -945,7 +945,7 @@
   font-family: var(--display);
   font-size: 26px;
   letter-spacing: 0.02em;
-  color: var(--wings-red);
+  color: var(--team-primary);
   line-height: 1;
 }
 .position-diagram-name {
@@ -989,7 +989,7 @@
 }
 .rating-bar-fill {
   height: 100%;
-  background: var(--wings-red);
+  background: var(--team-primary);
   border-radius: 999px;
 }
 .rating-bar-value {
@@ -1011,7 +1011,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .predicted-standing-record {
   font-family: var(--mono);
@@ -1040,7 +1040,7 @@
 }
 .front-office-title {
   font-size: 36px;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .front-office-intro {
   font-size: 15px;
@@ -1071,7 +1071,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .front-office-name {
   font-size: 22px;
@@ -1117,7 +1117,7 @@
   line-height: 1.4;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .recap-fo-name {
   font-size: 12px;
@@ -1144,7 +1144,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .squad-fo-name {
   font-size: 16px;
@@ -1176,7 +1176,7 @@
   border: 2px solid var(--border);
 }
 .postseason-callout.qualified {
-  border-color: var(--wings-red);
+  border-color: var(--team-primary);
   background: var(--paper);
 }
 .postseason-callout.missed {
@@ -1185,7 +1185,7 @@
 .postseason-callout-label {
   font-family: var(--display);
   font-size: 20px;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .postseason-callout.missed .postseason-callout-label {
   color: var(--ink);
@@ -1220,7 +1220,7 @@
 .trade-deadline-eyebrow {
   font-family: var(--display);
   font-size: 32px;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin-top: 8px;
 }
 .trade-deadline-title {
@@ -1270,7 +1270,7 @@
   font-size: 13px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
   text-align: center;
   margin: 0;
 }
@@ -1302,7 +1302,7 @@
   color: var(--ink-soft);
 }
 .trade-swap-arrow {
-  color: var(--wings-red);
+  color: var(--team-primary);
   font-size: 18px;
 }
 .trade-swap-delta {
@@ -1338,15 +1338,15 @@
   transition: border-color 0.12s ease;
 }
 .trade-swap-toggle:hover {
-  border-color: var(--wings-red);
+  border-color: var(--team-primary);
 }
 .trade-swap-toggle:focus-visible {
-  outline: 2px solid var(--wings-red);
+  outline: 2px solid var(--team-primary);
   outline-offset: 2px;
 }
 .trade-swap-min-note {
   font-size: 13px;
-  color: var(--wings-red);
+  color: var(--team-primary);
   text-align: center;
   margin: 0;
 }
@@ -1367,7 +1367,7 @@
   align-items: center;
   gap: 14px;
   padding: 20px;
-  border: 3px solid var(--wings-red);
+  border: 3px solid var(--team-primary);
   border-radius: 14px;
   background: var(--paper);
 }
@@ -1376,7 +1376,7 @@
   font-size: 15px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .shootout-row {
   width: 100%;
@@ -1431,7 +1431,7 @@
   background: var(--low);
 }
 .shootout-attempt.current {
-  outline: 2px solid var(--wings-red);
+  outline: 2px solid var(--team-primary);
   outline-offset: 2px;
 }
 .shootout-score {
@@ -1483,14 +1483,14 @@
 }
 .postseason-round-title {
   font-size: 36px;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .postseason-round-label {
   font-family: var(--display);
   font-size: 36px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin-top: 40px;
 }
 .postseason-series-banner {
@@ -1561,7 +1561,7 @@
 .hoc-heading {
   font-family: var(--display);
   font-size: 18px;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin-top: 12px;
 }
 .hall-of-champions {
@@ -1587,7 +1587,7 @@
   border-bottom: none;
 }
 .hall-of-champions li.you {
-  background: color-mix(in srgb, var(--wings-red) 8%, var(--paper));
+  background: color-mix(in srgb, var(--team-primary) 8%, var(--paper));
   font-weight: 700;
 }
 .hall-of-champions-name {
@@ -1607,12 +1607,12 @@
   white-space: nowrap;
 }
 .hall-of-champions-badge.cup {
-  background: var(--wings-red);
-  color: #fff;
+  background: var(--team-primary);
+  color: var(--team-on-primary);
 }
 .hall-of-champions-badge.conference {
   background: #fff;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 /* Narrow phones: shrink the badge so the username column gets more room instead
    of being squeezed down to a handful of characters before the ellipsis. */
@@ -1647,9 +1647,9 @@
   font-family: var(--sans);
   font-size: 14px;
   font-weight: 700;
-  color: var(--wings-red-dark);
+  color: var(--team-primary-dark);
   background: var(--paper);
-  border: 2px solid var(--wings-red);
+  border: 2px solid var(--team-primary);
   border-radius: 999px;
   padding: 6px 14px;
   white-space: nowrap;
@@ -1660,9 +1660,9 @@
   gap: 10px;
 }
 .sim-action-btn {
-  background: var(--wings-red);
-  color: #fff;
-  border: 2px solid var(--wings-red-dark);
+  background: var(--team-primary);
+  color: var(--team-on-primary);
+  border: 2px solid var(--team-primary-dark);
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 13px;
@@ -1672,14 +1672,14 @@
   white-space: nowrap;
 }
 .sim-action-btn:hover {
-  background: var(--wings-red-dark);
+  background: var(--team-primary-dark);
 }
 .sim-action-btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
 .sim-action-btn:disabled:hover {
-  background: var(--wings-red);
+  background: var(--team-primary);
 }
 /* Narrow phones: "Game X of 82" + two pill buttons don't fit this row's width at
    the base sizing — text was wrapping inside each pill instead of the pills
@@ -1716,10 +1716,10 @@
   width: 100%;
   max-width: 380px;
   background: var(--paper);
-  border: 2px solid var(--wings-red);
+  border: 2px solid var(--team-primary);
   border-radius: 14px;
   padding: 22px 20px;
-  box-shadow: 6px 6px 0 var(--wings-red-dark);
+  box-shadow: 6px 6px 0 var(--team-primary-dark);
   text-align: center;
 }
 .skip-confirm-text {
@@ -1792,7 +1792,7 @@
   font-family: var(--mono);
   font-size: 20px;
   font-weight: 700;
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 .season-sim-progress-track {
   position: relative;
@@ -1804,7 +1804,7 @@
 }
 .season-sim-progress-fill {
   height: 100%;
-  background: var(--wings-red);
+  background: var(--team-primary);
   border-radius: 999px;
   transition: width 0.1s linear;
 }
@@ -1827,7 +1827,7 @@
   text-align: center;
   font-size: 13px;
   font-weight: 600;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin-bottom: 8px;
   animation: pulse-fade 0.7s ease-in-out infinite alternate;
 }
@@ -1872,7 +1872,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin-bottom: 2px;
 }
 .season-sim-goals-empty {
@@ -2015,347 +2015,6 @@
   color: var(--ink-soft);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-
-/* ---------- Legend of the Octopus flyby ---------- */
-
-.octopus-flyby {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  overflow: hidden;
-}
-.octopus-flyby-sprite {
-  position: absolute;
-  top: 32%;
-  left: 0;
-  width: 150px;
-  height: 150px;
-  /* Flight-path transform only (translate, no rotation or scale — an arc at a
-     constant size, not a spin or a pulse) lives here, in normal screen
-     coordinates. The image's own left-right mirror is a separate, unanimated
-     transform on the <img> below — combining both in one transform would flip
-     the translate direction too, sending the arc the wrong way. */
-  /* Linear timing, not ease-in-out — combined with the densely-sampled parabola
-     keyframes below (rather than just 0/50/100%), this is what makes the flight
-     an actual smooth arc at constant horizontal speed instead of two straight
-     segments meeting at a corner (which is all a 3-keyframe eased animation
-     can ever produce — a triangle, not a curve). Direction (round 1 = left to
-     right, the Final = right to left) picks which of the two keyframe sets
-     below runs — see the .ltr modifier. */
-  animation: octopus-flyby-rtl 1.6s linear forwards;
-}
-.octopus-flyby-sprite.ltr {
-  animation-name: octopus-flyby-ltr;
-}
-.octopus-flyby-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
-}
-/* Source art is drawn facing/leaning for right-to-left motion, so it's only
-   mirrored for the left-to-right flight (round 1) — each direction ends up
-   facing the way it's actually traveling instead of one of them flying
-   backwards. */
-.octopus-flyby-sprite.ltr .octopus-flyby-img {
-  transform: scaleX(-1);
-}
-/* Both directions share the same Y arc (a sampled parabola, peak at 50%) and
-   opacity fade; only the X progression differs, and .ltr's X list is just
-   .rtl's reversed — same waypoints, opposite order. */
-@keyframes octopus-flyby-rtl {
-  0% { transform: translate(110vw, 40px); opacity: 0; }
-  5% { transform: translate(103.5vw, 25px); opacity: 1; }
-  10% { transform: translate(97vw, 11px); }
-  15% { transform: translate(90.5vw, -1px); }
-  20% { transform: translate(84vw, -11px); }
-  25% { transform: translate(77.5vw, -20px); }
-  30% { transform: translate(71vw, -27px); }
-  35% { transform: translate(64.5vw, -33px); }
-  40% { transform: translate(58vw, -37px); }
-  45% { transform: translate(51.5vw, -39px); }
-  50% { transform: translate(45vw, -40px); }
-  55% { transform: translate(38.5vw, -39px); }
-  60% { transform: translate(32vw, -37px); }
-  65% { transform: translate(25.5vw, -33px); }
-  70% { transform: translate(19vw, -27px); }
-  75% { transform: translate(12.5vw, -20px); }
-  80% { transform: translate(6vw, -11px); }
-  85% { transform: translate(-0.5vw, -1px); }
-  90% { transform: translate(-7vw, 11px); opacity: 1; }
-  95% { transform: translate(-13.5vw, 25px); opacity: 0; }
-  100% { transform: translate(-20vw, 40px); opacity: 0; }
-}
-@keyframes octopus-flyby-ltr {
-  0% { transform: translate(-20vw, 40px); opacity: 0; }
-  5% { transform: translate(-13.5vw, 25px); opacity: 1; }
-  10% { transform: translate(-7vw, 11px); }
-  15% { transform: translate(-0.5vw, -1px); }
-  20% { transform: translate(6vw, -11px); }
-  25% { transform: translate(12.5vw, -20px); }
-  30% { transform: translate(19vw, -27px); }
-  35% { transform: translate(25.5vw, -33px); }
-  40% { transform: translate(32vw, -37px); }
-  45% { transform: translate(38.5vw, -39px); }
-  50% { transform: translate(45vw, -40px); }
-  55% { transform: translate(51.5vw, -39px); }
-  60% { transform: translate(58vw, -37px); }
-  65% { transform: translate(64.5vw, -33px); }
-  70% { transform: translate(71vw, -27px); }
-  75% { transform: translate(77.5vw, -20px); }
-  80% { transform: translate(84vw, -11px); }
-  85% { transform: translate(90.5vw, -1px); }
-  90% { transform: translate(97vw, 11px); opacity: 1; }
-  95% { transform: translate(103.5vw, 25px); opacity: 0; }
-  100% { transform: translate(110vw, 40px); opacity: 0; }
-}
-
-/* ---------- March Collapse (regular season, ~game 66) ---------- */
-
-/* Both warning stages break out of the app-shell's max-width card and cover the
-   full viewport — this is meant to read as a jump-scare interruption, not
-   another card in the flow. */
-.collapse-warning {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  /* JS toggles flash-magenta/flash-yellow directly — no CSS transition, an
-     instant hard cut reads as a strobe instead of a smooth pulse. */
-}
-/* Strobe strike colors, toned down ~20% from the game's full-strength magenta/neon
-   green so the flicker reads softer. Only the strobe frames use these — the steady
-   hold card below keeps the full neon green (#d4ff3a). */
-.collapse-warning.flash-magenta {
-  background: #ab0058;
-}
-.collapse-warning.flash-yellow {
-  background: #aacc2e;
-}
-/* "White" peak — the brightest point of a strike, and the sustained climax frame
-   right before the warning card hits (see LIGHTNING_FRAMES). A dimmed off-white with
-   a slight green cast (toward the game's neon warning green) rather than pure #fff:
-   the dimming takes the intensity down, the green hue ties it to the palette. */
-.collapse-warning.flash-white {
-  background: #d5dec9;
-}
-/* Dark "storm" gap between lightning strikes — the pauses that make the flicker
-   read as lightning rather than an even strobe (see LIGHTNING_FRAMES). */
-.collapse-warning.dark {
-  background: #0a0a0a;
-}
-.collapse-warning-hold {
-  position: fixed;
-  /* Slightly larger than the viewport so the jolt shake below never exposes a
-     gap at the screen edges. */
-  inset: -12px;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 32px;
-  background: #d4ff3a;
-  text-align: center;
-  /* The warning slams into place as the final white strike lands — a quick
-     thunderclap jolt, played once. Skipped for reduced-motion users (who never
-     saw the strobe either). */
-  animation: collapse-hold-jolt 460ms ease-out both;
-}
-@keyframes collapse-hold-jolt {
-  0% { transform: translate(0, 0); }
-  12% { transform: translate(-7px, 5px); }
-  26% { transform: translate(6px, -4px); }
-  40% { transform: translate(-5px, 3px); }
-  55% { transform: translate(4px, -3px); }
-  70% { transform: translate(-3px, 2px); }
-  85% { transform: translate(2px, -1px); }
-  100% { transform: translate(0, 0); }
-}
-/* The flashing opt-out (splash-screen checkbox) also suppresses the jolt, so an
-   opt-out lands on a completely still card — not just a strobe-free one. */
-.collapse-warning-hold.no-jolt {
-  animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .collapse-warning-hold {
-    animation: none;
-  }
-}
-.collapse-warning-octopus {
-  width: 340px;
-  height: auto;
-  margin-bottom: 8px;
-}
-.collapse-warning-eyebrow {
-  font-family: var(--display);
-  font-size: 15px;
-  letter-spacing: 0.03em;
-  color: #0a0a0a;
-  margin: 0;
-  white-space: nowrap;
-}
-.collapse-warning-title {
-  font-family: var(--display);
-  font-size: 48px;
-  letter-spacing: 0.02em;
-  color: #0a0a0a;
-  margin: 0;
-  line-height: 1.05;
-}
-.collapse-warning-instructions {
-  font-size: 14px;
-  color: #0a0a0a;
-  max-width: 46ch;
-  margin: 4px 0 8px;
-}
-.collapse-hold-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #0a0a0a;
-  color: #d6006e;
-  border: none;
-  border-radius: 10px;
-  padding: 14px 28px;
-  font-size: 17px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.collapse-hold-btn:hover {
-  background: #1a1a1a;
-}
-.march-collapse-title {
-  font-size: 40px;
-  line-height: 1.05;
-  color: var(--wings-red);
-  margin: 0;
-}
-.march-collapse {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  padding-bottom: 24px;
-}
-.collapse-instructions {
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin: 0 auto;
-  max-width: 42ch;
-}
-.collapse-hud {
-  display: flex;
-  gap: 18px;
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 700;
-}
-/* Live save% turns red the moment the player drops below the goalie's target. */
-.collapse-sv-below {
-  color: var(--wings-red);
-}
-.collapse-result-line {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin: 0;
-}
-/* Hockey-stick cursor, scoped to the minigame gameplay only (not the
-   warning/rules or result screens). Desktop only; `auto` falls back if a browser
-   rejects the image. Hotspot 0 25 is the blade tip. */
-.collapse-playing {
-  cursor: url('./assets/hockey-stick-cursor.png') 0 25, auto;
-}
-.collapse-arena {
-  position: relative;
-  width: 100%;
-  max-width: 460px;
-  height: 680px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  background: #c9e8f5; /* light ice blue */
-  overflow: hidden;
-}
-/* The goal sits at the bottom of the arena: a full-width red goal line flush
-   above the net image — the threshold the player defends, where a puck that
-   reaches it has beaten the stand — with the net directly below it. */
-.collapse-goal {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  pointer-events: none; /* pucks stay clickable */
-}
-.collapse-goal-line {
-  width: 100%;
-  height: 10px;
-  /* Matches the red of the net's posts (sampled from collapse-net.png). */
-  background: #c0201f;
-}
-.collapse-puck {
-  position: absolute;
-  top: 0;
-  width: 48px;
-  height: 44px;
-  margin-left: -24px;
-  background: url('./assets/collapse-puck.png') center / contain no-repeat;
-  border: none;
-  padding: 0;
-  /* Inherit the hockey-stick cursor from .collapse-playing so it stays the stick
-     over the pucks too, rather than reverting to the pointer hand. */
-  cursor: inherit;
-  /* Kill the mobile tap delay and stop a tap on a falling puck being interpreted
-     as a scroll/zoom gesture — the block must register the instant a finger lands. */
-  touch-action: manipulation;
-  animation-name: collapse-puck-fall;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-}
-/* Block explosion frame: placed and rotated in JS (inline styles) about its puck
-   center, sits above the pucks, and never intercepts clicks. */
-.collapse-boom {
-  position: absolute;
-  height: auto;
-  pointer-events: none;
-  z-index: 5;
-}
-/* Forgiving hit zone: a transparent area extending 28px beyond the puck on all
-   sides, so taps near it still count. It's part of the button, so taps on it fire
-   the same handler; a dissolving puck's pointer-events: none disables it. */
-.collapse-puck::before {
-  content: '';
-  position: absolute;
-  inset: -28px;
-}
-.collapse-puck:active {
-  filter: brightness(1.4);
-}
-/* Once a puck crosses the goal line it dissolves out: opacity only, fading in
-   stepped, pixelated chunks (transition-timing steps()) over a per-puck duration
-   set inline (~0.25–0.5s). The fall animation above keeps running untouched, so the
-   puck keeps sliding forward at the same speed while it fades — no jump, no speed-up.
-   Only line-crossing pucks get this class; blocked pucks are removed instantly. */
-.collapse-puck.dissolving {
-  opacity: 0;
-  transition-property: opacity;
-  transition-duration: 120ms; /* fast fade (DISSOLVE_FADE_MS); the delay before it is in JS */
-  transition-timing-function: steps(6, end);
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-@keyframes collapse-puck-fall {
-  from { transform: translateY(0); }
-  /* One continuous fall past the red goal line (which sits at ~405px); a timer
-     marks the crossing as a miss, and the puck keeps sliding to here through the
-     post-crossing delay and the fast fade. Matches PUCK_FALL_END_Y. */
-  to { transform: translateY(550px); }
 }
 
 /* A touch more breathing room above the champion screen's "Draft again" button
@@ -2525,13 +2184,6 @@
   gap: 8px;
   width: 100%;
 }
-.collapse-net-img {
-  width: 88%;
-  height: auto;
-  /* Flipped across its horizontal axis (scaleY(-1)) so the goal faces the pucks. */
-  transform: scaleY(-1);
-}
-
 /* ===== Hockey Fight minigame (WIP, HAS_HOCKEY_FIGHT) =========================
    Shares the app's theme variables so it reads as part of the same game and
    flips with light/dark automatically. Three-stage flow: intro hype card,
@@ -2561,7 +2213,7 @@
   letter-spacing: 0.14em;
   font-size: 13px;
   font-weight: 700;
-  color: var(--wings-red);
+  color: var(--team-primary);
   margin: 0;
 }
 
@@ -2598,7 +2250,7 @@
 }
 
 .fight-fighter.you {
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 
 .fight-fighter.rival {
@@ -2649,7 +2301,7 @@
 
 .fight-meter-zone.loss {
   left: 0;
-  background: color-mix(in srgb, var(--wings-red) 22%, transparent);
+  background: color-mix(in srgb, var(--team-primary) 22%, transparent);
 }
 
 .fight-meter-zone.tie {
@@ -2689,8 +2341,8 @@
   font-family: var(--display);
   font-size: 34px;
   letter-spacing: 0.04em;
-  color: #fff;
-  background: var(--wings-red);
+  color: var(--team-on-primary);
+  background: var(--team-primary);
   border: none;
   border-radius: 14px;
   cursor: pointer;
@@ -2702,7 +2354,7 @@
 
 .fight-pull-btn:active {
   transform: scale(0.97);
-  background: var(--wings-red-dark);
+  background: var(--team-primary-dark);
 }
 
 .fight-hint {
@@ -2754,7 +2406,7 @@
 }
 
 .fight-shotclock.low {
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 
 /* The Punch tap is a single timing hit, not a mash, so it doesn't need the big
@@ -2807,7 +2459,7 @@
 }
 
 .fight-flash.miss {
-  color: var(--wings-red);
+  color: var(--team-primary);
 }
 
 /* ---- Variant 2: dodge and counter (falling-note rhythm game) ---- */
@@ -2865,8 +2517,8 @@
 }
 
 .fight-ddr-lane.miss {
-  border-color: var(--wings-red);
-  background: color-mix(in srgb, var(--wings-red) 16%, transparent);
+  border-color: var(--team-primary);
+  background: color-mix(in srgb, var(--team-primary) 16%, transparent);
 }
 
 /* Faint arrow "receptor" fixed at the hit line — the target to land notes on. */

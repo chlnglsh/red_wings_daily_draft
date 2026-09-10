@@ -1,0 +1,11 @@
+/* Detroit Red Wings palette. The engine only ever uses these four tokens (see
+   src/index.css for the shared, team-neutral ones). */
+:root {
+  --team-primary: #ce1126;
+  --team-primary-dark: #9c0d1d;
+  /* Text/icon color on top of --team-primary (buttons, badges). */
+  --team-on-primary: #fff;
+  /* Rating badge tier for elite players — deliberately separate from --good/--mid/
+     --low so those shared UI colors don't change just because a team's badge does. */
+  --rating-elite: #ce1126;
+}

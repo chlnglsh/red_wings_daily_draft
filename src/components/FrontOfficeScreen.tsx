@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import type { GmCoachResult } from '../lib/gmCoach';
-import { GM_NAMES, COACH_NAMES } from '../lib/gmCoach';
+import { TEAM } from '../teams/current';
 import { useSpinAnimation } from '../hooks/useSpinAnimation';
+
+// Name lists for the spin-reel animation (display only). This screen is only ever
+// reached when the team has a front office, so the fallbacks never show.
+const GM_NAMES: string[] = TEAM.frontOffice?.gmPool.map((e) => e.name) ?? [];
+const COACH_NAMES: string[] = TEAM.frontOffice?.coachPool.map((e) => e.name) ?? [];
 
 function Reel({
   role,

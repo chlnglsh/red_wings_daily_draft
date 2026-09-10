@@ -8,7 +8,8 @@ import { SEASON_LENGTH, type SeasonSimResult } from '../lib/gameSim';
 import { rankAmong, type LeaderboardEntry, type Platform } from '../lib/platform';
 import { buildShareText } from '../lib/share';
 import type { PostseasonResult } from '../lib/postseason';
-import { TEAM_NAME } from '../data/team';
+import { TEAM } from '../teams/current';
+import { CONFERENCE_LABEL, siblingDivision } from '../data/nhlAlignment';
 
 function squareClass(percentile: number): string {
   if (percentile >= 0.75) return 'pick-square good';
@@ -35,7 +36,7 @@ export function ResultsScreen({
   picks: DraftPick[];
   seasonsById: Map<string, Season>;
   simResult: SeasonSimResult;
-  // null in a regular-season-only build (HAS_POSTSEASON off): the playoff callout
+  // null in a regular-season-only build (postseason feature off): the playoff callout
   // and divisional standings below are hidden and this screen is the final one.
   postseason: PostseasonResult | null;
   onStartPostseason: () => void;
@@ -94,8 +95,10 @@ export function ResultsScreen({
   }
 
   const pointsDiff = simResult.points - predicted.points;
-  const atlanticRank = postseason ? postseason.atlanticStandings.findIndex((t) => t.isPlayer) + 1 : 0;
-  const metroStandings = postseason ? postseason.eastStandings.filter((t) => t.division === 'Metropolitan') : [];
+  const { division, conference } = TEAM.alignment;
+  const otherDivision = siblingDivision(division);
+  const divisionRank = postseason ? postseason.divisionStandings.findIndex((t) => t.isPlayer) + 1 : 0;
+  const otherDivisionStandings = postseason ? postseason.conferenceStandings.filter((t) => t.division === otherDivision) : [];
 
   return (
     <div className="results-screen rink-backdrop">
@@ -134,7 +137,7 @@ export function ResultsScreen({
           <div className="postseason-callout missed">
             <p className="postseason-callout-label">Missed the playoffs this time</p>
             <p className="postseason-callout-detail">
-              {atlanticRank}th in the Atlantic wasn't enough to qualify — see how the division shook out below.
+              {divisionRank}th in the {division} wasn't enough to qualify — see how the division shook out below.
             </p>
           </div>
         ))}
@@ -157,23 +160,23 @@ export function ResultsScreen({
 
       {postseason?.qualified && (
         <div className="results-standings">
-          <p className="results-standings-heading">Eastern Conference standings</p>
+          <p className="results-standings-heading">{CONFERENCE_LABEL[conference]} Conference standings</p>
           <div className="standings-group">
-            <p className="standings-group-label">Atlantic</p>
+            <p className="standings-group-label">{division}</p>
             <ol className="standings-table standings-table-primary">
-              {postseason.atlanticStandings.map((team, i) => (
+              {postseason.divisionStandings.map((team, i) => (
                 <li key={team.name} className={team.isPlayer ? 'you' : ''}>
                   <span className="standings-rank">#{i + 1}</span>
-                  <span className="standings-name">{team.isPlayer ? `You (${TEAM_NAME})` : team.name}</span>
+                  <span className="standings-name">{team.isPlayer ? `You (${TEAM.identity.name})` : team.name}</span>
                   <span className="standings-points">{team.points} pts</span>
                 </li>
               ))}
             </ol>
           </div>
           <div className="standings-group">
-            <p className="standings-group-label">Metropolitan</p>
+            <p className="standings-group-label">{otherDivision}</p>
             <ol className="standings-table standings-table-secondary">
-              {metroStandings.map((team, i) => (
+              {otherDivisionStandings.map((team, i) => (
                 <li key={team.name}>
                   <span className="standings-rank">#{i + 1}</span>
                   <span className="standings-name">{team.name}</span>

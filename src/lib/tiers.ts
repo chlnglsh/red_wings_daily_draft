@@ -1,4 +1,5 @@
-import { FLAVOR, type TierId } from '../data/flavorText';
+import { TEAM } from '../teams/current';
+import type { TierId } from '../teams/types';
 
 export interface Tier {
   label: string;
@@ -7,7 +8,7 @@ export interface Tier {
 }
 
 function tierFor(id: TierId): Tier {
-  return FLAVOR.tiers[id];
+  return TEAM.flavor.tiers[id];
 }
 
 // Placeholder thresholds — TBD per spec, tune once real score/points distributions

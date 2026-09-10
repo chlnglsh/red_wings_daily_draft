@@ -1,12 +1,14 @@
 import { type PointerEvent, useEffect, useRef, useState } from 'react';
-import { TEAM_NAME } from '../data/team';
-import { formatSavePct } from '../lib/goalie';
+import type { LateSeasonEventFlowProps } from '../../types';
+import { TEAM_IDENTITIES } from '../../registry';
+import { formatSavePct, goalieTargetSavePct } from '../../../lib/goalie';
 import collapseOctopusSrc from '../assets/collapse-octopus.png';
 import collapseNetSrc from '../assets/collapse-net.png';
 import puckBoom0 from '../assets/puck-boom-0.png';
 import puckBoom1 from '../assets/puck-boom-1.png';
 import puckBoom2 from '../assets/puck-boom-2.png';
 import puckBoom3 from '../assets/puck-boom-3.png';
+import './marchCollapse.css';
 
 // "The Puck Stops Here": pucks fall over a short window and the player clicks/taps
 // to block them before they cross the goal line. Spawn rate ramps up as the clock
@@ -257,7 +259,7 @@ export function MarchCollapseFlow({
         <p className="collapse-warning-eyebrow">Defensive breakdown incoming!</p>
         <h2 className="collapse-warning-title">March Collapse</h2>
         <p className="collapse-warning-instructions">
-          A stretch of potential disaster hits the {TEAM_NAME}. Tap the incoming pucks before they make it
+          A stretch of potential disaster hits the {TEAM_IDENTITIES.redwings.name}. Tap the incoming pucks before they make it
           to the net, block enough of them and the team avoids any March sadness. Otherwise the season looks
           bleak from here on out.
         </p>
@@ -348,4 +350,13 @@ export function MarchCollapseFlow({
       </div>
     </div>
   );
+}
+
+// The registered-event wrapper (TeamEvents.lateSeason.Flow): the save% the player
+// must hold is their drafted goalie's. With no goalie on the roster (the isolated
+// dev harness) the flow's own default applies.
+export function MarchCollapseEvent({ picks, reduceFlashing, onResolved }: LateSeasonEventFlowProps) {
+  const goalie = picks.find((p) => p.player.position === 'G');
+  const targetSavePct = goalie ? goalieTargetSavePct(goalie.player) : undefined;
+  return <MarchCollapseFlow targetSavePct={targetSavePct} reduceFlashing={reduceFlashing} onResolved={onResolved} />;
 }

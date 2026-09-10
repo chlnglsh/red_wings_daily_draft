@@ -12,6 +12,15 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# One GitHub Pages site holds every team's build: the Red Wings at the root
+# (/red_wings_daily_draft/ — that URL is frozen) and every other team in its own
+# subfolder (/red_wings_daily_draft/<team>/). vite.config.ts derives the base path
+# and output folder from TEAM, so the root build goes first (it empties dist/) and
+# the subfolder builds land inside it. Add a team to EXTRA_TEAMS once its
+# src/teams/<team>/ folder is ready to ship.
+env:
+  EXTRA_TEAMS: ""
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -21,9 +30,18 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - run: npm run build
+      - name: Build Red Wings (site root)
+        run: npm run build
         env:
           GITHUB_PAGES: true
+          TEAM: redwings
+      - name: Build other teams (subfolders)
+        if: env.EXTRA_TEAMS != ''
+        run: |
+          for team in $EXTRA_TEAMS; do
+            echo "Building $team -> dist/$team"
+            TEAM="$team" GITHUB_PAGES=true npx vite build
+          done
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

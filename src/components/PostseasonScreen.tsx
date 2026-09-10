@@ -5,24 +5,23 @@ import { REGULATION_END } from '../lib/gameSim';
 import type { PostseasonResult, Series } from '../lib/postseason';
 import type { ChampionEntry, Platform } from '../lib/platform';
 import type { DraftPick, Season } from '../types';
-import { TEAM_NAME, HAS_OCTOPUS_TRADITION } from '../data/team';
+import { TEAM } from '../teams/current';
 import { mascotOnly } from '../data/nhlAlignment';
 import { ShootoutCeremony } from './ShootoutCeremony';
-import { OctopusFlyby } from './OctopusFlyby';
 import { PostseasonRecapScreen } from './PostseasonRecapScreen';
 import type { GmCoachResult } from '../lib/gmCoach';
 import stanleyCupSrc from '../assets/stanley-cup.png';
-import divisionBannerSrc from '../assets/division-champions-banner.png';
-import conferenceBannerSrc from '../assets/conference-champions-banner.png';
-import stanleyCupBannerSrc from '../assets/stanleycup-champions-banner.png';
 
 // Round win → matching championship banner shown on that round's "Series won!"
 // screen. Round 1 (winning your first series) isn't a title, so it gets none.
 const ROUND_BANNERS: Partial<Record<number, string>> = {
-  2: divisionBannerSrc,
-  3: conferenceBannerSrc,
-  4: stanleyCupBannerSrc,
+  2: TEAM.assets.banners.division,
+  3: TEAM.assets.banners.conference,
+  4: TEAM.assets.banners.stanleyCup,
 };
+
+// Team-registered playoff flyby (Detroit's octopus), or nothing.
+const PlayoffFlyby = TEAM.events.playoffFlyby?.Flyby;
 
 const TICKS_PER_GAME = 14;
 const PACE = { tickMs: 90, startPauseMs: 500, otSuspenseMs: 1300, endPauseMs: 1300 };
@@ -244,7 +243,7 @@ export function PostseasonScreen({
   }, [gameIdx, seriesIdx]);
 
   useEffect(() => {
-    if (!HAS_OCTOPUS_TRADITION || gameIdx !== 0 || !currentSeries) return;
+    if (!PlayoffFlyby || gameIdx !== 0 || !currentSeries) return;
     if (currentSeries.round === 1 && !octopusRound1Shown.current) {
       octopusRound1Shown.current = true;
       setOctopusMoment('round1');
@@ -486,8 +485,8 @@ export function PostseasonScreen({
         </div>
       </div>
 
-      {octopusMoment && (
-        <OctopusFlyby direction={octopusMoment === 'round1' ? 'ltr' : 'rtl'} onComplete={() => setOctopusMoment(null)} />
+      {octopusMoment && PlayoffFlyby && (
+        <PlayoffFlyby direction={octopusMoment === 'round1' ? 'ltr' : 'rtl'} onComplete={() => setOctopusMoment(null)} />
       )}
 
       <div className="season-sim-live-feed" ref={liveFeedWrapRef}>
@@ -514,7 +513,7 @@ export function PostseasonScreen({
         {shootoutActive && currentGame && (
           <ShootoutCeremony
             weWin={currentGame.result === 'W'}
-            ourName={TEAM_NAME}
+            ourName={TEAM.identity.name}
             theirName={mascotOnly(opponent!.team.name)}
             weAreHome={currentGame.home}
             roundLabel={ROUND_NAMES[currentSeries!.round]}
@@ -550,10 +549,10 @@ export function PostseasonScreen({
                 <span className="season-sim-goals-empty">Scoreless so far…</span>
               )}
               <div className="season-sim-goals-col">
-                <span className="season-sim-goals-col-header">{TEAM_NAME}</span>
+                <span className="season-sim-goals-col-header">{TEAM.identity.name}</span>
                 {liveGoals.map((g, i) => (
                   <div key={i} className="season-sim-goal-line">
-                    🚨 {g.scorer ?? TEAM_NAME} <span className="season-sim-goal-time">{g.label}</span>
+                    🚨 {g.scorer ?? TEAM.identity.name} <span className="season-sim-goal-time">{g.label}</span>
                   </div>
                 ))}
               </div>

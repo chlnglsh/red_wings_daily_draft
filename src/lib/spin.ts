@@ -1,21 +1,17 @@
-import type { Season, SeasonEra } from '../types';
+import type { Season } from '../types';
+import { TEAM } from '../teams/current';
 import { mulberry32, hashStringToInt } from './prng';
 
-// Spin weighting per spec: recent (Yzerman-onward) seasons come up most often,
-// Original Six-through-pre-Yzerman is baseline, pre-Howe is rare texture.
-// These are ERA-level weights (normalize to ~11.8% / 35.3% / 52.9%) — each era
-// gets a fixed slice of the pie, split evenly among whichever seasons currently
-// exist in that era. That keeps era-level odds stable no matter how the season
-// pool grows, instead of drifting based on how many seasons land in each era.
-export const ERA_WEIGHTS: Record<SeasonEra, number> = {
-  preHowe: 0.4,
-  howeToPreYzerman: 1.2,
-  yzermanOnward: 1.8,
-};
+// Spin weighting comes from the team's eras (TeamEra.weight): each era gets a fixed
+// slice of the pie, normalized against the other eras that currently have seasons,
+// and split evenly among whichever seasons exist in that era. That keeps era-level
+// odds stable no matter how the season pool grows, instead of drifting based on
+// how many seasons land in each era.
+const ERA_WEIGHTS: Record<string, number> = Object.fromEntries(TEAM.eras.map((e) => [e.id, e.weight]));
 
 /** Era-weighted season spin — same odds the initial draft uses, reused by Trade Deadline sourcing. */
 export function weightedPick(seasons: Season[], rng: () => number): Season {
-  const eraGroups = new Map<SeasonEra, Season[]>();
+  const eraGroups = new Map<string, Season[]>();
   for (const season of seasons) {
     const group = eraGroups.get(season.era);
     if (group) group.push(season);

@@ -1,0 +1,251 @@
+/* ---------- March Collapse (regular season, ~game 66) ---------- */
+
+/* Both warning stages break out of the app-shell's max-width card and cover the
+   full viewport — this is meant to read as a jump-scare interruption, not
+   another card in the flow. */
+.collapse-warning {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  /* JS toggles flash-magenta/flash-yellow directly — no CSS transition, an
+     instant hard cut reads as a strobe instead of a smooth pulse. */
+}
+/* Strobe strike colors, toned down ~20% from the game's full-strength magenta/neon
+   green so the flicker reads softer. Only the strobe frames use these — the steady
+   hold card below keeps the full neon green (#d4ff3a). */
+.collapse-warning.flash-magenta {
+  background: #ab0058;
+}
+.collapse-warning.flash-yellow {
+  background: #aacc2e;
+}
+/* "White" peak — the brightest point of a strike, and the sustained climax frame
+   right before the warning card hits (see LIGHTNING_FRAMES). A dimmed off-white with
+   a slight green cast (toward the game's neon warning green) rather than pure #fff:
+   the dimming takes the intensity down, the green hue ties it to the palette. */
+.collapse-warning.flash-white {
+  background: #d5dec9;
+}
+/* Dark "storm" gap between lightning strikes — the pauses that make the flicker
+   read as lightning rather than an even strobe (see LIGHTNING_FRAMES). */
+.collapse-warning.dark {
+  background: #0a0a0a;
+}
+.collapse-warning-hold {
+  position: fixed;
+  /* Slightly larger than the viewport so the jolt shake below never exposes a
+     gap at the screen edges. */
+  inset: -12px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  background: #d4ff3a;
+  text-align: center;
+  /* The warning slams into place as the final white strike lands — a quick
+     thunderclap jolt, played once. Skipped for reduced-motion users (who never
+     saw the strobe either). */
+  animation: collapse-hold-jolt 460ms ease-out both;
+}
+@keyframes collapse-hold-jolt {
+  0% { transform: translate(0, 0); }
+  12% { transform: translate(-7px, 5px); }
+  26% { transform: translate(6px, -4px); }
+  40% { transform: translate(-5px, 3px); }
+  55% { transform: translate(4px, -3px); }
+  70% { transform: translate(-3px, 2px); }
+  85% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+/* The flashing opt-out (splash-screen checkbox) also suppresses the jolt, so an
+   opt-out lands on a completely still card — not just a strobe-free one. */
+.collapse-warning-hold.no-jolt {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .collapse-warning-hold {
+    animation: none;
+  }
+}
+.collapse-warning-octopus {
+  width: 340px;
+  height: auto;
+  margin-bottom: 8px;
+}
+.collapse-warning-eyebrow {
+  font-family: var(--display);
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: #0a0a0a;
+  margin: 0;
+  white-space: nowrap;
+}
+.collapse-warning-title {
+  font-family: var(--display);
+  font-size: 48px;
+  letter-spacing: 0.02em;
+  color: #0a0a0a;
+  margin: 0;
+  line-height: 1.05;
+}
+.collapse-warning-instructions {
+  font-size: 14px;
+  color: #0a0a0a;
+  max-width: 46ch;
+  margin: 4px 0 8px;
+}
+.collapse-hold-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+  color: #d6006e;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.collapse-hold-btn:hover {
+  background: #1a1a1a;
+}
+.march-collapse-title {
+  font-size: 40px;
+  line-height: 1.05;
+  color: var(--team-primary);
+  margin: 0;
+}
+.march-collapse {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+.collapse-instructions {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 auto;
+  max-width: 42ch;
+}
+.collapse-hud {
+  display: flex;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+/* Live save% turns red the moment the player drops below the goalie's target. */
+.collapse-sv-below {
+  color: var(--team-primary);
+}
+.collapse-result-line {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+/* Hockey-stick cursor, scoped to the minigame gameplay only (not the
+   warning/rules or result screens). Desktop only; `auto` falls back if a browser
+   rejects the image. Hotspot 0 25 is the blade tip. */
+.collapse-playing {
+  cursor: url('../assets/hockey-stick-cursor.png') 0 25, auto;
+}
+.collapse-arena {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  height: 680px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: #c9e8f5; /* light ice blue */
+  overflow: hidden;
+}
+/* The goal sits at the bottom of the arena: a full-width red goal line flush
+   above the net image — the threshold the player defends, where a puck that
+   reaches it has beaten the stand — with the net directly below it. */
+.collapse-goal {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none; /* pucks stay clickable */
+}
+.collapse-goal-line {
+  width: 100%;
+  height: 10px;
+  /* Matches the red of the net's posts (sampled from collapse-net.png). */
+  background: #c0201f;
+}
+.collapse-puck {
+  position: absolute;
+  top: 0;
+  width: 48px;
+  height: 44px;
+  margin-left: -24px;
+  background: url('../assets/collapse-puck.png') center / contain no-repeat;
+  border: none;
+  padding: 0;
+  /* Inherit the hockey-stick cursor from .collapse-playing so it stays the stick
+     over the pucks too, rather than reverting to the pointer hand. */
+  cursor: inherit;
+  /* Kill the mobile tap delay and stop a tap on a falling puck being interpreted
+     as a scroll/zoom gesture — the block must register the instant a finger lands. */
+  touch-action: manipulation;
+  animation-name: collapse-puck-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+/* Block explosion frame: placed and rotated in JS (inline styles) about its puck
+   center, sits above the pucks, and never intercepts clicks. */
+.collapse-boom {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+  z-index: 5;
+}
+/* Forgiving hit zone: a transparent area extending 28px beyond the puck on all
+   sides, so taps near it still count. It's part of the button, so taps on it fire
+   the same handler; a dissolving puck's pointer-events: none disables it. */
+.collapse-puck::before {
+  content: '';
+  position: absolute;
+  inset: -28px;
+}
+.collapse-puck:active {
+  filter: brightness(1.4);
+}
+/* Once a puck crosses the goal line it dissolves out: opacity only, fading in
+   stepped, pixelated chunks (transition-timing steps()) over a per-puck duration
+   set inline (~0.25–0.5s). The fall animation above keeps running untouched, so the
+   puck keeps sliding forward at the same speed while it fades — no jump, no speed-up.
+   Only line-crossing pucks get this class; blocked pucks are removed instantly. */
+.collapse-puck.dissolving {
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: 120ms; /* fast fade (DISSOLVE_FADE_MS); the delay before it is in JS */
+  transition-timing-function: steps(6, end);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+@keyframes collapse-puck-fall {
+  from { transform: translateY(0); }
+  /* One continuous fall past the red goal line (which sits at ~405px); a timer
+     marks the crossing as a miss, and the puck keeps sliding to here through the
+     post-crossing delay and the fast fade. Matches PUCK_FALL_END_Y. */
+  to { transform: translateY(550px); }
+}
+.collapse-net-img {
+  width: 88%;
+  height: auto;
+  /* Flipped across its horizontal axis (scaleY(-1)) so the goal faces the pucks. */
+  transform: scaleY(-1);
+}

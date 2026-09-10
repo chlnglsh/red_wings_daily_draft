@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import octopusSrc from '../assets/octopus.png';
+import './octopus.css';
 
 // Legend of the Octopus — real Red Wings playoff folklore (it once took 8 wins to
 // win the Cup, hence the tradition). Purely atmospheric: no effect on win
