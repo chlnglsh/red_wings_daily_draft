@@ -1,8 +1,10 @@
-// Translates a roster_score into a simulated 82-game record against the rest of the
-// league, so the payoff reads as "this team would've gone 54-21-7" rather than an
+// Translates a roster_score into a simulated full-season record against the rest of
+// the league, so the payoff reads as "this team would've gone 54-21-7" rather than an
 // abstract point total. Placeholder calibration — tune once real score distributions
 // exist across the full season pool.
-const SEASON_GAMES = 82;
+import { SEASON_LENGTH } from './gameSim';
+
+const SEASON_GAMES = SEASON_LENGTH;
 const BASELINE_SCORE = 375; // roughly the midpoint of the placeholder pool's score range
 const SCORE_TO_WINPCT = 0.00171; // shifts win% by ~0.35 at the pool's observed extremes
 const MIN_WINPCT = 0.15;

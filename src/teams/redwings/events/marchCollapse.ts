@@ -10,7 +10,9 @@
 // minigame instead of a random resolution.
 import { hashStringToInt } from '../../../lib/prng';
 
-// Matches the real Red Wings' typical March/April games-remaining count.
+// Matches the real Red Wings' typical March/April games-remaining count. Kept at 66
+// for the 84-game season (the extra games were added at the start of the calendar,
+// so game 66 still lands in March); revisit against the real 2026-27 schedule.
 export const MARCH_COLLAPSE_GAME = 66;
 
 // 1-in-8 odds, shared by both cadences — only the seed differs (date vs playthrough).

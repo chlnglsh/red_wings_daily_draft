@@ -19,7 +19,7 @@ import { hashStringToInt } from './prng';
 const FIGHT_ODDS = 3;
 
 // The fight fires at a random game in this inclusive window: after the opening five
-// games have settled, and constrained to the first half of the 82-game season so any
+// games have settled, and constrained to the first half of the season so any
 // boost has room to fully play out before the midpoint. Both bounds derive from the
 // same seed the roll uses, so the whole subreddit gets the same fight game that day.
 export const FIGHT_WINDOW_START = 6;

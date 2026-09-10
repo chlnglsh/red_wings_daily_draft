@@ -1,6 +1,6 @@
 # Red Wings Dynasty Draft
 
-Spin six real seasons from a franchise's history, draft a starting six from those rosters, then watch a full 82-game season and playoff run simulate game by game. Live at **https://chlnglsh.github.io/red_wings_daily_draft/**.
+Spin six real seasons from a franchise's history, draft a starting six from those rosters, then watch a full 84-game season and playoff run simulate game by game. Live at **https://chlnglsh.github.io/red_wings_daily_draft/**.
 
 Every team ships in two versions from the same code:
 

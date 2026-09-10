@@ -15,7 +15,8 @@ export interface LeagueTeam {
   pointsRange: [number, number];
 }
 
-const PLACEHOLDER_RANGE: [number, number] = [75, 112];
+// Scaled from the 82-game [75, 112] range for the 84-game season (max 168 pts).
+const PLACEHOLDER_RANGE: [number, number] = [77, 115];
 
 export const DIVISIONS: Record<Division, Conference> = {
   Atlantic: 'East',

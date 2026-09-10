@@ -337,7 +337,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
     return fabricatedPicks;
   }
 
-  // Dev-only: simulate a full, real 82-game regular season for a fabricated roster,
+  // Dev-only: simulate a full, real full-length regular season for a fabricated roster,
   // so the postseason-jump shortcuts below land with a populated Season Recap
   // (lineup + regular-season log) instead of empty stubs. Display-only — the forced
   // postseason itself is still built from its own searched seed, not this result.

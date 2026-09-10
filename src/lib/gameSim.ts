@@ -2,7 +2,11 @@
 // in regulation, overtime, or a shootout — so each game here is a plain win or loss,
 // with OT/SO games flagged separately since a loss there is worth 1 standings point
 // (an "OTL") instead of 0. Winner always gets 2 points.
-export const SEASON_LENGTH = 82;
+// 84 from 2026-27 under the new CBA (the two extra games were added at the START of
+// the calendar, not the end, so the game-numbered pause points below the deadline
+// and March Collapse stay where they were). The single source of truth for season
+// length — simulate.ts's predicted record reads it from here too.
+export const SEASON_LENGTH = 84;
 const OT_RATE = 0.23; // share of decided games that go to OT/SO, real NHL league norm
 const OT_VS_SHOOTOUT = 0.65; // of those, share that end in OT rather than a shootout
 
@@ -199,7 +203,7 @@ export function simulateGame(params: {
   };
 }
 
-// Games are generated in ranges rather than all 82 at once, so a mid-season event
+// Games are generated in ranges rather than all 84 at once, so a mid-season event
 // (Trade Deadline today; GM/Coach, Hockey Fight, and March Collapse later) can change
 // the roster or apply a win% modifier partway through and have it actually affect the
 // remaining games — not just be cosmetic. Callers share one persistent `rng` instance

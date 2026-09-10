@@ -2,7 +2,7 @@
 // draft's six positions are filled, roll a GM and a Coach independently from the
 // team's tiered pools of real franchise figures (TeamConfig.frontOffice). A figure's
 // tier sets a FLAT season-long win% nudge; the two stack additively on top of
-// baseWinPct and apply across all 82 games (no roster mutation, no time-windowed effect).
+// baseWinPct and apply across the whole season (no roster mutation, no time-windowed effect).
 //
 // Two design rules baked in here:
 //   - Recency weighting: figures whose tenure started in the team's cutoff year or

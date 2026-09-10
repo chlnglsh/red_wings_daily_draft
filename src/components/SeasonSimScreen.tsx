@@ -33,8 +33,11 @@ const TICKS_PER_GAME = 14;
 const VISIBLE_COMPLETED_FAST = 14;
 const FAST_GAME_MS = 150; // how long each game sits in the fast-scroll feed before the next one lands
 
-// Real NHL trade deadline lands around game 60-63 of 82 — games 1 through this
-// constant minus one play out first, then the deadline gate appears before the rest.
+// Real NHL trade deadline lands around game 60-63 — games 1 through this constant
+// minus one play out first, then the deadline gate appears before the rest. Kept at
+// 61 for the 84-game season (the extra games were added at the start of the calendar,
+// so game 61 still lands around the real early-March deadline); revisit against the
+// real 2026-27 schedule.
 const TRADE_DEADLINE_GAME = 61;
 
 // Pace for the normal (live, detailed) mode. Fast mode skips the live clock
