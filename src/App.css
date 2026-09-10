@@ -2893,6 +2893,57 @@
   pointer-events: none;
 }
 
+/* Dev-only tools menu at the bottom of the intro — grouped so the shortcuts are
+   scannable instead of one long flat stack. Never shown in a real build. */
+.dev-menu {
+  width: 100%;
+  max-width: 460px;
+  margin: 24px auto 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.dev-menu-title {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-soft);
+  opacity: 0.6;
+}
+
+/* Flex column with a single gap so every row is evenly spaced regardless of whether
+   it's a .dev-shortcut paragraph or the .dev-reset button — those carry different
+   default margins, which is what made the spacing look uneven. */
+.dev-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.dev-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Neutralize the per-element margins (scoped to the dev menu) so the group's gap is
+   the only thing controlling spacing. */
+.dev-menu .dev-shortcut,
+.dev-menu .dev-reset,
+.dev-group-label {
+  margin: 0;
+}
+
+.dev-group-label {
+  text-align: center;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
 /* Dev-only variant switcher shown above the isolated minigame. */
 .dev-variant-switch {
   display: flex;

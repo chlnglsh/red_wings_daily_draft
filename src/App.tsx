@@ -512,40 +512,48 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
             </label>
           )}
           {import.meta.env.DEV && (
-            <>
+            <div className="dev-menu">
+              <p className="dev-menu-title">Dev tools</p>
               {HAS_POSTSEASON && (
-                <>
+                <div className="dev-group">
+                  <p className="dev-group-label">Postseason jumps</p>
                   {devShortcut('Force First Series', handleForceFirstSeriesTest)}
                   {devShortcut('Force Cup Final shootout', handleForceShootoutTest)}
                   {devShortcut('Force Stanley Cup Final', handleForceStanleyCupFinalTest)}
                   {devShortcut('Force Conference Final loss', handleForceConfFinalLossTest)}
-                </>
+                </div>
               )}
-              {HAS_TRADE_DEADLINE && devShortcut('Force Trade Deadline', handleForceTradeDeadlineTest)}
-              {devShortcut('Force Regular Season', handleForceRegularSeasonTest)}
-              {HAS_MARCH_COLLAPSE && (
-                <button type="button" className="text-btn dev-reset" onClick={handleForceMarchCollapseTest}>
-                  🧪 Force March Collapse (isolated minigame — platform-independent)
-                </button>
-              )}
-              {/* Hockey Fight is WIP (HAS_HOCKEY_FIGHT off): dev buttons force it
-                  regardless so it can be worked on while it ships dormant. */}
-              {devShortcut('Force Hockey Fight (in season)', handleForceHockeyFightSeasonTest)}
-              <p className="dev-shortcut">
-                🧪 Hockey Fight minigame:{' '}
-                <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(0)}>
-                  tug-of-war
-                </button>
-                {' | '}
-                <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(1)}>
-                  punch timing
-                </button>
-                {' | '}
-                <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(2)}>
-                  dodge &amp; counter
-                </button>
-              </p>
-            </>
+              <div className="dev-group">
+                <p className="dev-group-label">Season flows</p>
+                {HAS_TRADE_DEADLINE && devShortcut('Force Trade Deadline', handleForceTradeDeadlineTest)}
+                {devShortcut('Force Regular Season', handleForceRegularSeasonTest)}
+              </div>
+              <div className="dev-group">
+                <p className="dev-group-label">In-season minigames</p>
+                {HAS_MARCH_COLLAPSE && (
+                  <button type="button" className="text-btn dev-reset" onClick={handleForceMarchCollapseTest}>
+                    🧪 Force March Collapse (isolated — platform-independent)
+                  </button>
+                )}
+                {/* Hockey Fight is WIP (HAS_HOCKEY_FIGHT off): dev buttons force it
+                    regardless so it can be worked on while it ships dormant. */}
+                {devShortcut('Force Hockey Fight (in season)', handleForceHockeyFightSeasonTest)}
+                <p className="dev-shortcut">
+                  🧪 Hockey Fight minigame:{' '}
+                  <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(0)}>
+                    tug-of-war
+                  </button>
+                  {' | '}
+                  <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(1)}>
+                    punch timing
+                  </button>
+                  {' | '}
+                  <button type="button" className="dev-shortcut-link" onClick={() => handleForceHockeyFightTest(2)}>
+                    dodge &amp; counter
+                  </button>
+                </p>
+              </div>
+            </div>
           )}
         </header>
       </div>
