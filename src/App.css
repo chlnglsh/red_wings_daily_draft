@@ -129,6 +129,14 @@
   width: 220px;
   margin: 22px 0;
 }
+/* Short screens (older/smaller phones in a browser): rein the machine in so the
+   Start button stays above the fold. Modern phones keep the full-size version. */
+@media (max-height: 700px) {
+  .intro-standalone .intro-slot-machine {
+    width: 170px;
+    margin: 12px 0;
+  }
+}
 
 /* Dedication card (TeamConfig.assets.dedication): fade in, hold, fade out. The
    animation length is mirrored by TOTAL_MS in DedicationScreen.tsx. */
