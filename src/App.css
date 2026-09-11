@@ -247,8 +247,15 @@
   font-size: 15px;
   letter-spacing: 0.02em;
 }
+/* The surname on a filled pill: the same display face as the slot label above
+   it, heavy and slightly tracked, so the two lines read as one bold unit
+   instead of a big label over a meek little caption. */
 .progress-pill-name {
-  font-size: 10px;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -284,7 +291,7 @@
     font-size: 12px;
   }
   .progress-pill-name {
-    font-size: 8px;
+    font-size: 11px;
   }
 }
 /* ---------- Spin reveal ---------- */
