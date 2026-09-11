@@ -142,16 +142,14 @@
   max-width: 560px;
   height: auto;
   opacity: 0;
-  animation: dedication-fade 5.6s ease-in-out forwards;
+  /* 2.8s total: 0.5s in, 1.5s hold, 0.8s out. */
+  animation: dedication-fade 2.8s ease-in-out forwards;
 }
 @keyframes dedication-fade {
   0% { opacity: 0; }
-  14% { opacity: 1; }
-  58% { opacity: 1; }
+  18% { opacity: 1; }
+  71% { opacity: 1; }
   100% { opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .dedication-banner { animation-duration: 4s; }
 }
 
 /* Accessibility opt-out for the March Collapse lightning intro, sitting just under
