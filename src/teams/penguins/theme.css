@@ -1,0 +1,12 @@
+/* Pittsburgh Penguins palette. Gold is the action color (the role red plays for
+   Detroit); black stays the ground. This is Pittsburgh gold (Pantone 1235 C, the
+   same gold the Steelers and Pirates use), NOT the 2002-16 "Vegas gold" tan. */
+:root {
+  --team-primary: #ffb81c;
+  --team-primary-dark: #d99a00;
+  /* White on this gold fails contrast, so text on buttons and badges is black. */
+  --team-on-primary: #000;
+  /* Elite rating badge. Dark gold rather than the bright one so the badge text
+     stays legible on the white card. Revisit with the art pass. */
+  --rating-elite: #d99a00;
+}

@@ -17,6 +17,7 @@ export interface TeamIdentity {
 
 export const TEAM_IDENTITIES = {
   redwings: { city: 'Detroit', name: 'Red Wings', subreddit: 'RedWings' },
+  penguins: { city: 'Pittsburgh', name: 'Penguins', subreddit: 'penguins' },
   // Dev-only West fixture, never deployed — see src/teams/devwest/index.ts.
   devwest: { city: 'San Jose', name: 'Sharks', subreddit: 'SanJoseSharks' },
 } satisfies Record<string, TeamIdentity>;

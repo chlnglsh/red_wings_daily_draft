@@ -93,7 +93,7 @@ export const LEAGUE_TEAMS: LeagueTeam[] = [
 // Can't derive this by splitting on the first word — cities and mascots are each
 // sometimes one word, sometimes two ("St. Louis Blues", "Vegas Golden Knights"),
 // so it's a real lookup, not a heuristic. Covers every name in LEAGUE_TEAMS plus
-// the historical "Chicago Black Hawks" spelling used for Original Six-era games.
+// the historical names used for old-era games ("Chicago Black Hawks", North Stars, etc.).
 const MASCOT_ONLY: Record<string, string> = {
   'Boston Bruins': 'Bruins',
   'Buffalo Sabres': 'Sabres',
@@ -113,6 +113,11 @@ const MASCOT_ONLY: Record<string, string> = {
   'Washington Capitals': 'Capitals',
   'Chicago Blackhawks': 'Blackhawks',
   'Chicago Black Hawks': 'Black Hawks',
+  // Historical franchises used by the Penguins' expansion/Lemieux-era rival pools.
+  'Minnesota North Stars': 'North Stars',
+  'California Golden Seals': 'Golden Seals',
+  'Hartford Whalers': 'Whalers',
+  'Quebec Nordiques': 'Nordiques',
   'Colorado Avalanche': 'Avalanche',
   'Dallas Stars': 'Stars',
   'Minnesota Wild': 'Wild',
