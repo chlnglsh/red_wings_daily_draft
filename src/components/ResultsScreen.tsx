@@ -17,6 +17,18 @@ function squareClass(percentile: number): string {
   return 'pick-square low';
 }
 
+
+// "3rd", not "3th": English ordinal suffix for a small positive rank, with the
+// 11th/12th/13th exception handled (a division has at most eight teams, but the
+// rule is cheap to get right).
+function ordinal(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  const mod10 = n % 10;
+  const suffix = mod10 === 1 ? 'st' : mod10 === 2 ? 'nd' : mod10 === 3 ? 'rd' : 'th';
+  return `${n}${suffix}`;
+}
+
 export function ResultsScreen({
   dateStr,
   dateSeed,
@@ -137,7 +149,7 @@ export function ResultsScreen({
           <div className="postseason-callout missed">
             <p className="postseason-callout-label">Missed the playoffs this time</p>
             <p className="postseason-callout-detail">
-              {divisionRank}th in the {division} wasn't enough to qualify — see how the division shook out below.
+              {ordinal(divisionRank)} in the {division} wasn't enough to qualify — see how the division shook out below.
             </p>
           </div>
         ))}
