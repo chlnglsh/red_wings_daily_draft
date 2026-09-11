@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "penguins:build": "node tools/with-team.mjs penguins vite build",
+    "penguins:dev": "node tools/with-team.mjs penguins devvit playtest",
+    "penguins:deploy": "node tools/with-team.mjs penguins npm run deploy",
     "deploy": "npm run test:types && npm run lint && devvit upload",
     "dev": "devvit playtest",
     "launch": "npm run deploy && devvit publish",

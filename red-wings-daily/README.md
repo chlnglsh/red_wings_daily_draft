@@ -25,3 +25,17 @@ A starter to build web applications on Reddit's developer platform
 - `npm run launch`: Publishes your app for review
 - `npm run login`: Logs your CLI into Reddit
 - `npm run type-check`: Type checks, lints, and prettifies your app
+
+## One app per team
+
+This folder is the Reddit (Devvit) version of the game for **every** team, built from the
+shared game source in `../src` (symlinked at `src/client/app`). Each team is its own Devvit
+app and subreddit; `tools/teams.json` lists them.
+
+- Red Wings (default): `npm run build`, `npm run dev`, `npm run deploy` as before.
+- Penguins: `npm run penguins:build`, `npm run penguins:dev`, `npm run penguins:deploy`.
+
+The `penguins:*` scripts go through `tools/with-team.mjs`, which sets `TEAM=penguins` (team
+data, art, titles, and the server's post title all follow from it) and swaps `devvit.json`'s
+app name and dev subreddit for the duration of the command. The committed `devvit.json` is
+always the Red Wings one. Adding a team = one line in `tools/teams.json` plus its scripts.

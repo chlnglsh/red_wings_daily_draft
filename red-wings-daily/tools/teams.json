@@ -1,0 +1,5 @@
+{
+  "_comment": "Per-team Devvit app settings. Each team is its own Devvit app (and subreddit); the client bundle comes from the shared game source via TEAM. Used by tools/with-team.mjs.",
+  "redwings": { "appName": "red-wings-daily", "devSubreddit": "red_wings_daily_dev" },
+  "penguins": { "appName": "penguins-daily", "devSubreddit": "penguins_daily_dev" }
+}
