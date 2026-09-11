@@ -19,7 +19,7 @@ concurrency:
 # the subfolder builds land inside it. Add a team to EXTRA_TEAMS once its
 # src/teams/<team>/ folder is ready to ship.
 env:
-  EXTRA_TEAMS: ""
+  EXTRA_TEAMS: "penguins"
 
 jobs:
   build-and-deploy:
