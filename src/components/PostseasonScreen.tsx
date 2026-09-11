@@ -286,15 +286,20 @@ export function PostseasonScreen({
     return () => {
       cancelled = true;
     };
-    // shootoutActive and octopusMoment deliberately excluded: both are read above
-    // (via the `|| shootoutActive || octopusMoment` guard) purely to skip starting a
-    // run while that overlay is showing, not to restart one once it clears.
-    // handleShootoutComplete/the octopus's onComplete flip these back to false/null
-    // on the very game this effect just finished, and including either here made
-    // that flip re-run play() for that same game — replaying the whole regulation
-    // clock from 0 right when the moment should be holding still.
+    // shootoutActive is deliberately excluded: it is read above purely to skip
+    // starting a run while the ceremony is showing. handleShootoutComplete flips it
+    // back to false on the very game this effect just finished, and including it
+    // here re-ran play() for that same game, replaying the whole regulation clock.
+    //
+    // octopusMoment IS a dependency, on purpose. The flyby shows before Game 1, so
+    // the game should hold at 0' while the octopus crosses and start once it clears.
+    // Without it, Game 1 of the Final never started for a player who had skipped the
+    // Conference Final at its first game (reported 2026-08-08): the series change
+    // re-ran this effect while the flyby was already up, the guard returned early,
+    // and nothing re-ran it when the flyby finished. On the paths that did work the
+    // game had merely started underneath the flyby by luck of effect ordering.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameIdx, seriesIdx, skipped, stage]);
+  }, [gameIdx, seriesIdx, skipped, stage, octopusMoment]);
 
   function bankGame(game: GameResult) {
     const nextGames = [...completedGames, game];
