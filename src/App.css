@@ -120,6 +120,39 @@
   height: auto;
   object-fit: contain;
 }
+/* Standalone (web) build only: the intro isn't competing with a Reddit feed, so
+   the slot machine gets to be the centrepiece, with more air between the text
+   above it and the Start button below. The Reddit build keeps the compact layout. */
+.intro-standalone .intro-slot-machine {
+  width: 220px;
+  margin: 22px 0;
+}
+
+/* Dedication card (TeamConfig.assets.dedication): fade in, hold, fade out. The
+   animation length is mirrored by TOTAL_MS in DedicationScreen.tsx. */
+.dedication-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 12px;
+}
+.dedication-banner {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  opacity: 0;
+  animation: dedication-fade 5.6s ease-in-out forwards;
+}
+@keyframes dedication-fade {
+  0% { opacity: 0; }
+  14% { opacity: 1; }
+  58% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dedication-banner { animation-duration: 4s; }
+}
 
 /* Accessibility opt-out for the March Collapse lightning intro, sitting just under
    the Start button on the splash screen. Understated on purpose — present for anyone

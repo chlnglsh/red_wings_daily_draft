@@ -16,6 +16,7 @@ import slotMachine from './assets/gold-strike-slot-machine.png';
 import divisionBanner from './assets/division-champions-banner.png';
 import conferenceBanner from './assets/conference-champions-banner.png';
 import stanleyCupBanner from './assets/stanleycup-champions-banner.png';
+import dedicationBanner from './assets/dedication-banner.png';
 import './theme.css';
 
 export const TEAM = defineTeam({
@@ -44,5 +45,7 @@ export const TEAM = defineTeam({
   assets: {
     slotMachine,
     banners: { division: divisionBanner, conference: conferenceBanner, stanleyCup: stanleyCupBanner },
+    // Shown after "Start", before the first spin (user art, 2026-09-10).
+    dedication: { src: dedicationBanner, alt: 'In memory of Doug Farruggia, 1964 to 2026' },
   },
 });

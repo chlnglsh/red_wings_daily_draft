@@ -22,9 +22,10 @@ import { FIGHT_VARIANT_COUNT, type FightVariant } from './lib/hockeyFight';
 import { ResultsScreen } from './components/ResultsScreen';
 import { PostseasonScreen } from './components/PostseasonScreen';
 import { SeasonRecapScreen } from './components/SeasonRecapScreen';
+import { DedicationScreen } from './components/DedicationScreen';
 import './App.css';
 
-type Screen = 'intro' | 'round' | 'frontOffice' | 'squadSummary' | 'simulating' | 'results' | 'postseason' | 'recap';
+type Screen = 'intro' | 'dedication' | 'round' | 'frontOffice' | 'squadSummary' | 'simulating' | 'results' | 'postseason' | 'recap';
 
 const SEASONS = TEAM.seasons;
 const seasonsById = new Map(SEASONS.map((s) => [s.id, s] as [string, Season]));
@@ -151,7 +152,8 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   function handleStart() {
     setDevPlatform(null); // normal play always uses the real platform, never a dev override
     setRunSeed(getRandomSeed()); // fresh randomness every playthrough — any season, any time
-    setScreen('round');
+    // A team with a dedication card shows it once here, then the draft begins.
+    setScreen(TEAM.assets.dedication ? 'dedication' : 'round');
   }
 
   function handleReroll() {
@@ -480,7 +482,8 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   if (screen === 'intro') {
     return (
       <div className="app-shell">
-        <header className="intro">
+        {/* The standalone (web) build gets a roomier intro: bigger slot machine, more air. */}
+        <header className={`intro${platform.showsLeaderboard ? '' : ' intro-standalone'}`}>
           {platform.showsLeaderboard && (
             <p className="intro-eyebrow">r/{subreddit} · {dateStr}</p>
           )}
@@ -558,6 +561,14 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
             </div>
           )}
         </header>
+      </div>
+    );
+  }
+
+  if (screen === 'dedication' && TEAM.assets.dedication) {
+    return (
+      <div className="app-shell">
+        <DedicationScreen src={TEAM.assets.dedication.src} alt={TEAM.assets.dedication.alt} onDone={() => setScreen('round')} />
       </div>
     );
   }

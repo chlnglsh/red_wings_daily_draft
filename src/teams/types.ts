@@ -95,6 +95,9 @@ export interface TeamAssets {
     conference: string;
     stanleyCup: string;
   };
+  /** Optional dedication card shown once between "Start" and the first spin:
+   *  fades in, holds, fades out, then the draft begins. `alt` carries its text. */
+  dedication?: { src: string; alt: string };
 }
 
 export interface LateSeasonEventFlowProps {
