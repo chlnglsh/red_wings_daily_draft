@@ -144,8 +144,8 @@
   max-width: 560px;
   height: auto;
   opacity: 0;
-  /* 2.3s total: 0.5s in, 1s hold, 0.8s out. */
-  animation: dedication-fade 2.3s ease-in-out forwards;
+  /* 1.84s total: 0.4s in, 0.8s hold, 0.64s out. */
+  animation: dedication-fade 1.84s ease-in-out forwards;
 }
 @keyframes dedication-fade {
   0% { opacity: 0; }
