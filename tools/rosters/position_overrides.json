@@ -1,0 +1,60 @@
+{
+  "_comment": "Per-season position corrections applied on top of hockey-reference's single-position label (rule 3 in select.py: the position a player actually played that season). Every entry is a judgment call listed for review on 2026-09-11; 'F' labels need one because the engine has no generic forward slot.",
+  "positions": {
+    "2007-08": {
+      "Tomas Holmström": "LW"
+    },
+    "2008-09": {
+      "Johan Franzén": "LW",
+      "Tomas Holmström": "LW"
+    },
+    "2010-11": {
+      "Johan Franzén": "LW",
+      "Jiří Hudler": "RW",
+      "Daniel Cleary": "RW"
+    },
+    "2015-16": {
+      "Dylan Larkin": "LW"
+    },
+    "2020-21": {
+      "Mathias Bromé": "LW"
+    },
+    "2021-22": {
+      "Pius Suter": "C"
+    },
+    "2022-23": {
+      "Pius Suter": "C",
+      "Dominik Shine": "LW"
+    },
+    "2023-24": {
+      "Dominik Shine": "LW"
+    },
+    "2024-25": {
+      "Dominik Shine": "LW",
+      "Michael Brandsegg-Nygard": "RW"
+    },
+    "2025-26": {
+      "Michael Brandsegg-Nygard": "RW",
+      "Dominik Shine": "LW"
+    }
+  },
+  "names": {},
+  "keep": {
+    "_comment": "Names that stay in the pool even when the GP cut would drop them (judgment calls, 2026-09-11).",
+    "1985-86": [
+      "Bob Probert"
+    ],
+    "1986-87": [
+      "Bob Probert"
+    ],
+    "1994-95": [
+      "Viacheslav Fetisov"
+    ],
+    "1997-98": [
+      "Sergei Fedorov"
+    ],
+    "2020-21": [
+      "Jakub Vrána"
+    ]
+  }
+}
