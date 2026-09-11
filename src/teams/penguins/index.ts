@@ -2,16 +2,15 @@
 // every decision here is from the Penguins spec locked 2026-09-10.
 //
 // STATUS: scaffold. Seasons are empty until real, approved rosters land in
-// ./seasons.ts (defineTeam refuses to boot without one). The three banners are
-// real Penguins art; the slot machine is still Detroit's as an explicit PLACEHOLDER,
-// and there is no favicon yet. Not in the deploy list.
+// ./seasons.ts (defineTeam refuses to boot without one). Banners and slot machine
+// are real Penguins art; there is no favicon yet. Not in the deploy list.
 import { defineTeam } from '../defineTeam';
 import { TEAM_IDENTITIES } from '../registry';
 import { SEASONS } from './seasons';
 import { FLAVOR_TEXT_PENGUINS, EXPANSION_ERA_RIVALS, LEMIEUX_ERA_RIVALS, CROSBY_ERA_RIVALS } from './flavor';
 import { FRONT_OFFICE } from './frontOffice';
-// PLACEHOLDER ART (Detroit's slot machine) — replace with ./assets/ once drawn.
-import slotMachine from '../redwings/assets/lucky-red-slot-machine.png';
+// "Gold Strike" slot machine (user art, 2026-09-10), chroma-keyed to transparent.
+import slotMachine from './assets/gold-strike-slot-machine.png';
 // Penguins banners (user art, 2026-09-10): split from one sheet, chroma-keyed to
 // transparent, and upscaled 2x nearest-neighbour to sit at Detroit's banner height.
 import divisionBanner from './assets/division-champions-banner.png';
