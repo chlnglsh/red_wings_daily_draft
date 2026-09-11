@@ -186,6 +186,14 @@
 /* Red-bordered card that follows the page's own theme tokens (black/near-black
    in dark mode, matching the results screen) instead of forcing a separate
    light "ice" look — the --border override just keeps the outline red. */
+ /* Card convention (transparency audit, 2026-09-11): every bordered surface
+   inside the rink backdrop is a SOLID card, filled with --paper so it lifts off
+   the --paper-soft backdrop in both themes. Only meters, tracks and bar fills go
+   without a fill. Before the audit five surfaces were outline-only (the
+   leaderboard, standings and Hall of Champions lists, the missed-playoffs
+   callout, the predicted-standing box and the share-text block); they now
+   follow the same rule. The Hockey Fight meters are the deliberate exception
+   until that feature is finished. */
 .rink-backdrop {
   --border: var(--team-primary);
   position: relative;
@@ -783,6 +791,7 @@
   border: 2px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
+  background: var(--paper);
 }
 .mock-leaderboard li {
   display: flex;
@@ -862,6 +871,7 @@
   border: 2px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
+  background: var(--paper);
 }
 .standings-table li {
   display: flex;
@@ -917,7 +927,7 @@
 .share-text {
   font-family: var(--mono);
   font-size: 13px;
-  background: var(--paper-soft);
+  background: var(--paper);
   border: 2px solid var(--border);
   border-radius: 10px;
   padding: 14px 18px;
@@ -1054,9 +1064,11 @@
 .predicted-standing {
   width: 100%;
   max-width: 420px;
+  /* Dashed because it is a forecast, not a result; filled like every other card. */
   border: 2px dashed var(--border);
   border-radius: 12px;
   padding: 16px;
+  background: var(--paper);
 }
 .predicted-standing-label {
   font-size: 12px;
@@ -1232,7 +1244,8 @@
   background: var(--paper);
 }
 .postseason-callout.missed {
-  background: var(--paper-soft);
+  /* Same solid card as .qualified; only the quieter border marks the difference. */
+  background: var(--paper);
 }
 .postseason-callout-label {
   font-family: var(--display);
@@ -1625,6 +1638,7 @@
   border: 2px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
+  background: var(--paper);
 }
 .hall-of-champions li {
   display: flex;
