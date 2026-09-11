@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 // A team's dedication card, shown once between "Start" and the first spin: the
-// image fades in (0.5s), holds (1.5s), fades out (0.8s), and the draft begins. The
+// image fades in (0.5s), holds (1s), fades out (0.8s), and the draft begins. The
 // timing lives in the .dedication-banner animation in App.css; TOTAL_MS mirrors it.
-const TOTAL_MS = 2800;
+const TOTAL_MS = 2300;
 
 export function DedicationScreen({ src, srcLight, alt, onDone }: { src: string; srcLight?: string; alt: string; onDone: () => void }) {
   // Ref so the timer is armed once on mount and still calls the latest onDone.
