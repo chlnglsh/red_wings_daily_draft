@@ -9,4 +9,12 @@
   /* Elite rating badge. Dark gold rather than the bright one so the badge text
      stays legible on the white card. Revisit with the art pass. */
   --rating-elite: #d99a00;
+  /* Outline drawn around gold surfaces (buttons, pills, badges): none on the
+     dark ground, a black line in light mode where gold on white needs an edge. */
+  --team-primary-outline: transparent;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --team-primary-outline: #000;
+  }
 }

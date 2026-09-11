@@ -21,6 +21,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 .primary-btn:hover {
   background: var(--team-primary-dark);
@@ -60,6 +61,7 @@
 .secondary-btn:hover {
   background: var(--team-primary);
   color: var(--team-on-primary);
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 .secondary-btn:active {
   transform: scale(0.98);
@@ -250,6 +252,7 @@
   border-color: var(--team-primary-dark);
   background: var(--team-primary);
   color: var(--team-on-primary);
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 .progress-pill.filled .progress-pill-slot {
   color: #fff;
@@ -401,6 +404,7 @@
 }
 .strength-bar.on {
   background: var(--team-primary);
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 .strength-meter-tag {
   font-weight: 700;
@@ -617,6 +621,7 @@
 .slot-choice-btn:hover {
   background: var(--team-primary);
   color: var(--team-on-primary);
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 
 /* ---------- Results ---------- */
@@ -648,6 +653,7 @@
   border-radius: 50%;
   background: var(--team-primary);
   border: 2px solid var(--team-primary-dark);
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 /* Real trophy art (Stanley Cup champions only) — no red-circle badge like the
    other tiers' emoji get, since actual artwork doesn't need a colored frame
@@ -1640,6 +1646,7 @@
 .hall-of-champions-badge.cup {
   background: var(--team-primary);
   color: var(--team-on-primary);
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 .hall-of-champions-badge.conference {
   background: #fff;
@@ -1701,6 +1708,7 @@
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 .sim-action-btn:hover {
   background: var(--team-primary-dark);
@@ -2381,6 +2389,7 @@
   -webkit-user-select: none;
   touch-action: manipulation;
   transition: transform 0.05s ease, background-color 0.15s ease;
+  box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
 
 .fight-pull-btn:active {

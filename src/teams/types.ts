@@ -97,7 +97,12 @@ export interface TeamAssets {
   };
   /** Optional dedication card shown once between "Start" and the first spin:
    *  fades in, holds, fades out, then the draft begins. `alt` carries its text. */
-  dedication?: { src: string; alt: string };
+  dedication?: {
+    src: string;
+    /** Variant for light mode (prefers-color-scheme: light), if the art needs one. */
+    srcLight?: string;
+    alt: string;
+  };
 }
 
 export interface LateSeasonEventFlowProps {

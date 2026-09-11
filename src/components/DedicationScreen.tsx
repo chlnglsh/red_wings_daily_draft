@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 // timing lives in the .dedication-banner animation in App.css; TOTAL_MS mirrors it.
 const TOTAL_MS = 2800;
 
-export function DedicationScreen({ src, alt, onDone }: { src: string; alt: string; onDone: () => void }) {
+export function DedicationScreen({ src, srcLight, alt, onDone }: { src: string; srcLight?: string; alt: string; onDone: () => void }) {
   // Ref so the timer is armed once on mount and still calls the latest onDone.
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
@@ -15,7 +15,11 @@ export function DedicationScreen({ src, alt, onDone }: { src: string; alt: strin
   }, []);
   return (
     <div className="dedication-screen" role="status" aria-live="polite">
-      <img className="dedication-banner" src={src} alt={alt} />
+      {/* The page follows the device color scheme, so the light variant is picked by media query. */}
+      <picture>
+        {srcLight && <source media="(prefers-color-scheme: light)" srcSet={srcLight} />}
+        <img className="dedication-banner" src={src} alt={alt} />
+      </picture>
     </div>
   );
 }

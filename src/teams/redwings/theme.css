@@ -8,4 +8,7 @@
   /* Rating badge tier for elite players — deliberately separate from --good/--mid/
      --low so those shared UI colors don't change just because a team's badge does. */
   --rating-elite: #ce1126;
+  /* Outline drawn around --team-primary surfaces (buttons, pills, badges). Red
+     reads fine on both grounds, so none. */
+  --team-primary-outline: transparent;
 }

@@ -568,7 +568,7 @@ export default function App({ platform: platformProp = defaultPlatform }: { plat
   if (screen === 'dedication' && TEAM.assets.dedication) {
     return (
       <div className="app-shell">
-        <DedicationScreen src={TEAM.assets.dedication.src} alt={TEAM.assets.dedication.alt} onDone={() => setScreen('round')} />
+        <DedicationScreen src={TEAM.assets.dedication.src} srcLight={TEAM.assets.dedication.srcLight} alt={TEAM.assets.dedication.alt} onDone={() => setScreen('round')} />
       </div>
     );
   }
