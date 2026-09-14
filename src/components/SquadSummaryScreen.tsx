@@ -89,7 +89,7 @@ export function SquadSummaryScreen({
       </div>
 
       <button type="button" className="primary-btn" onClick={onSimulate}>
-        🎲 Simulate Season
+        Simulate Season
       </button>
     </div>
   );
