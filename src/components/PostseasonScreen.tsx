@@ -11,6 +11,7 @@ import { ShootoutCeremony } from './ShootoutCeremony';
 import { PostseasonRecapScreen } from './PostseasonRecapScreen';
 import type { GmCoachResult } from '../lib/gmCoach';
 import stanleyCupSrc from '../assets/stanley-cup.png';
+import { PLAYOFF_BADGE_ART } from '../lib/badgeArt';
 
 // Round win → matching championship banner shown on that round's "Series won!"
 // screen. Round 1 (winning your first series) isn't a title, so it gets none.
@@ -392,7 +393,9 @@ export function PostseasonScreen({
           </>
         ) : postseason.playerWonConference ? (
           <>
-            <span className="results-tier-emoji">🥈</span>
+            <span className="results-tier-emoji">
+              <img className="results-tier-emoji-art" src={PLAYOFF_BADGE_ART.lostFinal} alt="" />
+            </span>
             <h1 className="results-tier-label">Lost the Final</h1>
             <p className="results-tier-flavor">
               {postseason.cupChampion.team.name} won it in {ROUND_NAMES[4]}.
@@ -400,7 +403,9 @@ export function PostseasonScreen({
           </>
         ) : (
           <>
-            <span className="results-tier-emoji">🥊</span>
+            <span className="results-tier-emoji">
+              <img className="results-tier-emoji-art" src={PLAYOFF_BADGE_ART.eliminated} alt="" />
+            </span>
             <h1 className="results-tier-label">Eliminated in {ROUND_NAMES[postseason.playerEliminatedRound ?? 1]}</h1>
             <p className="results-tier-flavor">
               Beaten by the {postseason.eliminatedBy?.team.name}.

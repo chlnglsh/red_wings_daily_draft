@@ -678,6 +678,23 @@
   border: 2px solid var(--team-primary-dark);
   box-shadow: 0 0 0 1.5px var(--team-primary-outline);
 }
+/* Pixel art standing in for a tier's emoji inside the same team-colour circle
+   (user art drawn for this size, no glow; the set lives in lib/badgeArt.ts).
+   Pinned to the circle's centre with absolute positioning rather than flex so a
+   glyph taller than the circle can't drift in any browser. Assets are 256px
+   (green-screen keyed, cropped, centred in a square) for 2x and 3x phones. */
+.results-tier-emoji {
+  position: relative;
+}
+.results-tier-emoji-art {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70px;
+  height: 70px;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+}
 /* Real trophy art (Stanley Cup champions only) — no red-circle badge like the
    other tiers' emoji get, since actual artwork doesn't need a colored frame
    the way a plain emoji glyph did, and cropping it into a small circle would

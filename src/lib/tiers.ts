@@ -1,14 +1,13 @@
 import { TEAM } from '../teams/current';
-import type { TierId } from '../teams/types';
+import type { TierCopy, TierId } from '../teams/types';
 
-export interface Tier {
-  label: string;
-  flavor: string;
-  emoji: string;
+export interface Tier extends TierCopy {
+  /** Which tier this is, so screens can swap pixel art in for specific tiers. */
+  id: TierId;
 }
 
 function tierFor(id: TierId): Tier {
-  return TEAM.flavor.tiers[id];
+  return { id, ...TEAM.flavor.tiers[id] };
 }
 
 // Placeholder thresholds — TBD per spec, tune once real score/points distributions

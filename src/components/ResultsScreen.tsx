@@ -10,6 +10,7 @@ import { buildShareText } from '../lib/share';
 import type { PostseasonResult } from '../lib/postseason';
 import { TEAM } from '../teams/current';
 import { CONFERENCE_LABEL, siblingDivision } from '../data/nhlAlignment';
+import { TIER_BADGE_ART } from '../lib/badgeArt';
 
 function squareClass(percentile: number): string {
   if (percentile >= 0.75) return 'pick-square good';
@@ -116,7 +117,9 @@ export function ResultsScreen({
     <div className="results-screen rink-backdrop">
       {platform.showsLeaderboard && <p className="results-eyebrow">r/{subreddit} · {dateStr}</p>}
       <div className="results-tier">
-        <span className="results-tier-emoji">{tier.emoji}</span>
+        <span className="results-tier-emoji">
+          <img className="results-tier-emoji-art" src={TIER_BADGE_ART[tier.id]} alt="" />
+        </span>
         <h1 className="results-tier-label">{tier.label}</h1>
         <p className="results-tier-flavor">{tier.flavor}</p>
       </div>
