@@ -6,6 +6,7 @@ import { computeSquadRatings } from '../lib/ratings';
 import { simulateRecord } from '../lib/simulate';
 import { getTierFromRosterScore } from '../lib/tiers';
 import type { GmCoachResult } from '../lib/gmCoach';
+import { TIER_BADGE_ART } from '../lib/badgeArt';
 
 function RatingBar({ label, value }: { label: string; value: number }) {
   return (
@@ -81,7 +82,8 @@ export function SquadSummaryScreen({
           {predicted.wins}-{predicted.losses}-{predicted.otl}
         </p>
         <p className="predicted-standing-tier">
-          {predictedTier.emoji} {predictedTier.label}
+          <img className="tier-inline-art" src={TIER_BADGE_ART[predictedTier.id]} alt="" />
+          {predictedTier.label}
         </p>
         <p className="predicted-standing-note">
           Based on roster quality alone. The real season still has to be played.

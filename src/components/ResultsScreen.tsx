@@ -136,7 +136,8 @@ export function ResultsScreen({
       </p>
 
       <p className="predicted-comparison">
-        Predicted standing: {predictedTier.emoji} {predictedTier.label} ({predicted.wins}-{predicted.losses}-{predicted.otl})
+        Predicted standing: <img className="tier-inline-art" src={TIER_BADGE_ART[predictedTier.id]} alt="" />
+        {predictedTier.label} ({predicted.wins}-{predicted.losses}-{predicted.otl})
       </p>
 
       {postseason &&

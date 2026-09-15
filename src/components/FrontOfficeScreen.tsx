@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { GmCoachResult } from '../lib/gmCoach';
 import { TEAM } from '../teams/current';
 import { useSpinAnimation } from '../hooks/useSpinAnimation';
+// Pixel-art dice above the roll button, before the reels start (user art, 2026-09-14).
+import diceSrc from '../assets/dice.png';
 
 // Name lists for the spin-reel animation (display only). This screen is only ever
 // reached when the team has a front office, so the fallbacks never show.
@@ -73,9 +75,12 @@ export function FrontOfficeScreen({
       <h2 className="front-office-title">Your Front Office</h2>
 
       {!started ? (
-        <p className="front-office-intro">
-          The roster's set, now you need a GM and a coach. Good luck!
-        </p>
+        <>
+          <p className="front-office-intro">
+            The roster's set, now you need a GM and a coach. Good luck!
+          </p>
+          <img className="front-office-dice" src={diceSrc} alt="" />
+        </>
       ) : (
         <div className="front-office-cards">
           <Reel

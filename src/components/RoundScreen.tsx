@@ -4,9 +4,6 @@ import { RosterPicker } from './RosterPicker';
 import { ProgressTracker } from './ProgressTracker';
 import { useSpinAnimation } from '../hooks/useSpinAnimation';
 import { TEAM } from '../teams/current';
-// Dice tumble under the season name while a spin is running, and the roster
-// takes their place the moment it lands (user art and placement, 2026-09-14).
-import diceSrc from '../assets/dice.png';
 
 export function RoundScreen({
   roundIndex,
@@ -44,10 +41,7 @@ export function RoundScreen({
       />
       <div className="round-content">
         {spinning ? (
-          <div className="spin-placeholder">
-            <img className="spin-dice" src={diceSrc} alt="" />
-            <span>Spinning the wheel…</span>
-          </div>
+          <div className="spin-placeholder">Spinning the wheel…</div>
         ) : (
           <RosterPicker
             season={season}
