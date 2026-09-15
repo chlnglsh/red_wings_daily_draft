@@ -3,8 +3,8 @@
 // emoji-to-pixel-art pass. Each PNG was drawn for this 84px circle, keyed off a
 // green screen, cropped to the glyph and centred in a 256px square so 2x and 3x
 // phone screens stay crisp. Glyph size is set by canvas padding, not CSS: the
-// cup is padded 1.04x its glyph; crown and medal 1.22x; tools, bubbles, skate
-// and flame 1.40x; the broken stick 1.42x, so the busier glyphs sit smaller in the
+// cup is padded 1.04x its glyph; the flaming puck 1.12x (wide and low, so it fills the circle's width);
+// crown and medal 1.22x; tools, bubbles and skate 1.40x; the broken stick 1.42x, so the busier glyphs sit smaller in the
 // circle (user sizing, 2026-09-14). Every tier has one; the emoji in each team's flavor pack is now only used by the
 // share text and the inline 'Predicted standing' lines.
 //
